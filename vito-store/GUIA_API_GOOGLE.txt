@@ -1,0 +1,40 @@
+GUÍA DE CONFIGURACIÓN - GOOGLE SHEETS API
+==========================================
+
+Sigue estos pasos para obtener las credenciales necesarias y conectar tu Google Sheet con la web de Vitoo Store:
+
+1. Crear Proyecto en Google Cloud Console:
+   - Ingresa a https://console.cloud.google.com/
+   - Haz clic en el selector de proyectos (arriba a la izquierda) y selecciona "Nuevo proyecto".
+   - Asigna un nombre (ej. "vitoo-store-web") y haz clic en "Crear".
+
+2. Habilitar la Google Sheets API:
+   - En el menú lateral izquierdo, ve a "API y servicios" > "Biblioteca".
+   - Busca "Google Sheets API".
+   - Haz clic en ella y presiona el botón "Habilitar".
+
+3. Crear una Service Account (Cuenta de Servicio):
+   - En el menú lateral, ve a "API y servicios" > "Credenciales".
+   - Haz clic en "CREAR CREDENCIALES" (arriba) y selecciona "Cuenta de servicio".
+   - Ponle un nombre (ej. "vitoo-sheets-reader") y haz clic en "Crear y continuar", luego en "Listo".
+   - IMPORTANTE: Copia la dirección de correo electrónico que se generó para esta cuenta de servicio (ej. vitoo-sheets-reader@tu-proyecto.iam.gserviceaccount.com). Este es tu CLIENT_EMAIL.
+
+4. Descargar el JSON de la clave (PRIVATE_KEY):
+   - Haz clic en el correo de la cuenta de servicio que acabas de crear.
+   - Ve a la pestaña "CLAVES" (Keys).
+   - Haz clic en "AGREGAR CLAVE" (Add Key) > "Crear clave nueva".
+   - Elige el formato "JSON" y haz clic en "Crear".
+   - Se descargará un archivo. Ábrelo con un bloc de notas. Allí encontrarás tu `private_key` (cópiala entera, incluyendo -----BEGIN PRIVATE KEY----- y -----END PRIVATE KEY-----) y tu `client_email`.
+
+5. PASO CRÍTICO: Compartir la Hoja de Cálculo (Excel):
+   - Abre tu archivo de Google Sheets donde tienes los productos.
+   - Haz clic en el botón verde "Compartir" (Share) arriba a la derecha.
+   - Pega el correo de la cuenta de servicio (CLIENT_EMAIL) en el cuadro de búsqueda y dale permisos de "Lector" (Viewer).
+   - Haz clic en "Enviar".
+
+6. Obtener el SHEET_ID:
+   - El SHEET_ID es la parte de la URL de tu hoja de cálculo que está entre "/d/" y "/edit".
+   - Ejemplo: si la URL es https://docs.google.com/spreadsheets/d/1X2Y3Z4W5V6U7T8S/edit#gid=0, tu SHEET_ID es 1X2Y3Z4W5V6U7T8S.
+
+7. Configurar Variables de Entorno:
+   - Pega el SHEET_ID, CLIENT_EMAIL y PRIVATE_KEY en tu archivo `.env.local` (localmente) o en la configuración de entorno de Vercel/Netlify en producción.

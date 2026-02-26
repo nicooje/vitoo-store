@@ -1,0 +1,37 @@
+:root {
+  --background: #ffffff;
+  --foreground: #1c1c1e;
+
+  --primary: #8a2be2;
+  /* Purple/Violet */
+  --primary-light: #fadadd;
+  /* Pastel Pink */
+  --accent: #d90429;
+  /* Intense Red */
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  scroll-behavior: smooth;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}

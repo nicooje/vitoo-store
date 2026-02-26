@@ -1,0 +1,35 @@
+# Vito Store Landing Page Prototype
+
+This plan outlines the steps and architecture for creating a high-conversion Next.js landing page for Vito Store, based on the Instagram analysis.
+
+## Proposed Changes
+
+### Setup Envrionment
+- Initialize a new Next.js project in `c:\Users\Usuario\VitoStoreWeb`.
+- Use the App Router and TypeScript.
+- **Styling:** Use standard CSS Modules (since the use of Tailwind is restricted unless requested).
+
+### Components Structure
+- **[NEW] `src/app/page.tsx`:** The main landing page joining all sections.
+- **[NEW] `src/app/globals.css`:** Global styles applying the color palette:
+  - Background: White (`#FFFFFF`)
+  - Accents: Purple (`#6A0DAD`) / Pink (`#FFC0CB`)
+  - Highlights: Red (`#E50914`) for product elements.
+- **[NEW] `src/components/Header.tsx`:** Sticky navigation bar with the Vito Store logo.
+- **[NEW] `src/components/HeroSection.tsx`:** High-impact "Above the fold" section with a catchy phrase ("Lencería que te abraza en Corrientes") and a call to action.
+- **[NEW] `src/components/CatalogoSection.tsx`:** A grid displaying three distinct categories: `Lencería`, `Trajes de Baño`, and `Pijamas`.
+- **[NEW] `src/components/MayoristaSection.tsx`:** A dedicated block for resellers with a clear Call to Action leading to WhatsApp.
+- **[NEW] `src/components/SocialProofSection.tsx`:** The `Team Vitö` dynamic carousel showing customer reviews/photos.
+- **[NEW] `src/components/FloatingWhatsApp.tsx`:** A persistent floating button for quick contact.
+
+### Backend Integrations (Mocked)
+- **[NEW] `src/services/sheets.ts`:** A placeholder function demonstrating how to fetch prices or catalog data from a Google Sheet in the future.
+
+## Verification Plan
+
+### Automated Tests
+* The setup will be verified by running `npm run build` and ensuring there are no TypeScript or Next.js build errors.
+
+### Manual Verification
+* Execute `npm run dev` to start the local Next.js server.
+* Capture a visual screenshot of the Header and Hero section to validate the design against the requested palette and high-conversion structure.
