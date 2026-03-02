@@ -54,6 +54,17 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
         <h2 className="text-center text-4xl font-bold text-gray-800 mb-8">
           Nuestro Catálogo
         </h2>
+        <h2 className="text-center text-4xl font-bold text-gray-800 mb-8">
+          Nuestro Catálogo
+        </h2>
+
+        {/* --- AGREGÁ ESTO PARA PROBAR --- */}
+        <div className="bg-red-500 text-white p-4 text-center font-bold text-2xl mb-4 border-4 border-black">
+          SI VES ESTO, LA PAGINA SE ACTUALIZÓ
+        </div>
+        {/* ------------------------------- */}
+
+        <Suspense fallback={<div className="text-center mb-8">Cargando filtros...</div>}></Suspense>
 
         {/* Usamos Suspense porque useSearchParams desactiva el render pre-estático si no lo envolvemos */}
         <Suspense fallback={<div className="text-center mb-8">Cargando filtros...</div>}>
