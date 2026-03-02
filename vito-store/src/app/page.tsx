@@ -9,44 +9,60 @@ import Footer from '@/components/Footer';
 import CategoryFilter from '@/components/CategoryFilter';
 import { getProductsFromSheet } from '@/lib/googleSheets';
 
-export const revalidate = 60; // Actualización Automática (ISR)
+// ISR: Regeneración estática cada 60 segundos
+export const revalidate = 60;
 
 export default async function Home(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> | { [key: string]: string | string[] | undefined } }) {
+  // Obtenemos todos los datos (del Excel o fallback JSON)
   const products = await getProductsFromSheet();
+
+  // Resolvemos los Search Params
   const searchParams = await Promise.resolve(props.searchParams);
   const activeCategory = (searchParams?.category as string) || 'Todos';
 
-  // Limpieza de categorías para UI prolija (ej: "Verano 25/26 > Bikinis" -> "Bikinis")
-  const cleanedProducts = products.map(p => {
+  // Limpieza de datos (Separamos ">" y ",", nos quedamos con la primer keyword limpia)
+  const cleanedProducts = products.map((p) => {
     let rawCat = p.category || '';
+
     if (rawCat.includes('>')) {
       const parts = rawCat.split('>');
       rawCat = parts[parts.length - 1];
     }
+
+    if (rawCat.includes(',')) {
+      rawCat = rawCat.split(',')[0];
+    }
+
     return { ...p, category: rawCat.trim() || 'General' };
   });
 
-  const uniqueCategories = Array.from(new Set(cleanedProducts.map(p => p.category)));
+  // Extracción de Categorías Únicas
+  const uniqueCategories = Array.from(new Set(cleanedProducts.map((p) => p.category)));
   const filterCategories = ['Todos', ...uniqueCategories];
 
+  // Filtramos la lista final que pasaremos al componente
   const filteredProducts = activeCategory === 'Todos'
     ? cleanedProducts
-    : cleanedProducts.filter(p => p.category === activeCategory);
+    : cleanedProducts.filter((p) => p.category === activeCategory);
 
   return (
     <main>
       <Header />
       <HeroSection />
 
-      <section id="catalogo" style={{ padding: '4rem 5%', backgroundColor: 'var(--background)' }}>
-        <h2 style={{ textAlign: 'center', fontSize: '2.5rem', color: 'var(--foreground)', marginBottom: '2rem' }}>
+      <section id="catalogo" className="py-16 px-5 lg:px-20 bg-white">
+        <h2 className="text-center text-4xl font-bold text-gray-800 mb-8">
           Nuestro Catálogo
         </h2>
-        <Suspense fallback={<div style={{ textAlign: 'center', marginBottom: '2rem' }}>Cargando filtros...</div>}>
+
+        {/* Usamos Suspense porque useSearchParams desactiva el render pre-estático si no lo envolvemos */}
+        <Suspense fallback={<div className="text-center mb-8">Cargando filtros...</div>}>
           <CategoryFilter categories={filterCategories} />
         </Suspense>
+
         <CatalogoSection products={filteredProducts} />
       </section>
+
       <MayoristaSection />
       <SocialProofSection />
       <Footer />
