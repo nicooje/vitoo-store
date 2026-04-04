@@ -51,6 +51,7 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
       <MayoristaSection />
       <SocialProofSection />
       <Footer />
+      <FloatingCart />
       <FloatingWhatsApp />
     </main>
   );
