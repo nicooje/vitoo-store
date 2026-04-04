@@ -8,6 +8,7 @@ import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import Footer from '@/components/Footer';
 import CategoryFilter from '@/components/CategoryFilter';
 import { getProductsFromSheet } from '@/lib/googleSheets';
+import FloatingCart from '@/components/FloatingCart';
 
 export const revalidate = 60;
 
