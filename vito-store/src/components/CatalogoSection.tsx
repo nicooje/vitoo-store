@@ -7,13 +7,17 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     const addToCart = useCartStore((state) => state.addToCart);
 
     const handleAddToCart = (product: Product) => {
+        // Le ponemos un ID seguro (si el Excel no tiene ID, usa el nombre del producto)
         addToCart({
-            id: String(product.id),
+            id: String(product.id || product.name),
             nombre: String(product.name),
             precio: Number(product.price) || 0,
             imagenUrl: String(product.image_url),
             categoria: String(product.category)
         });
+
+        // Hacemos que la pantalla nos avise para saber que el botón sí se apretó
+        alert(`¡Agregaste: ${product.name} al carrito! 🛒`);
     };
 
     if (!products || products.length === 0) {
