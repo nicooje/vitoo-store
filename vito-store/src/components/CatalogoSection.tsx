@@ -7,7 +7,6 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     const addToCart = useCartStore((state) => state.addToCart);
 
     const handleAddToCart = (product: Product) => {
-        // Blindamos los datos convirtiéndolos al tipo exacto que espera Zustand
         addToCart({
             id: String(product.id),
             nombre: String(product.name),
@@ -32,8 +31,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
             gap: '2rem'
         }}>
             {products.map((product) => {
-                // Chequeo de seguridad por si el stock viene como "SI"/"NO" o como true/false desde el Excel
-                const hasStock = product.stock === true || product.stock === "SI" || product.stock === "Si";
+                // TRUCO ANTI-TYPESCRIPT: Convertimos a String y mayúsculas para comparar sin errores rojos
+                const stockAtexto = String(product.stock).toUpperCase();
+                const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
 
                 return (
                     <div key={product.id} style={{
@@ -67,7 +67,6 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                 ${Number(product.price).toLocaleString('es-AR')}
                             </span>
 
-                            {/* BOTÓN DE CARRITO */}
                             <button
                                 onClick={() => handleAddToCart(product)}
                                 disabled={!hasStock}
