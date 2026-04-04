@@ -1,25 +1,34 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
 export default function FloatingCart() {
-    // Leemos el carrito desde nuestro "Cerebro" (Zustand)
+    // 1. Agregamos un estado para saber si la página ya cargó completamente
+    const [mounted, setMounted] = useState(false);
+
     const cart = useCartStore((state) => state.cart);
     const getTotal = useCartStore((state) => state.getTotal);
 
-    // Calculamos cuántos productos hay en total
+    // 2. El "despertador": le avisa al componente que ya puede mostrarse
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Si la página no cargó del todo, no mostramos nada para evitar errores
+    if (!mounted) return null;
+
     const totalItems = cart.reduce((total, item) => total + item.cantidad, 0);
 
-    // Si el carrito está vacío, no mostramos el botón
     if (totalItems === 0) return null;
 
     return (
         <div
             style={{
                 position: 'fixed',
-                bottom: '90px', // Lo ponemos un poco más arriba para que no tape el de WhatsApp
+                bottom: '90px',
                 right: '20px',
-                zIndex: 50
+                zIndex: 9999 // Le subimos el Z-index al máximo para que nada lo tape
             }}
         >
             <button
@@ -28,7 +37,7 @@ export default function FloatingCart() {
                     color: 'white',
                     padding: '12px 24px',
                     borderRadius: '9999px',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
                     fontWeight: 'bold',
                     fontSize: '16px',
                     display: 'flex',
@@ -41,7 +50,7 @@ export default function FloatingCart() {
                 onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
                 onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-                <span>🛒</span>
+                <span style={{ fontSize: '20px' }}>🛒</span>
                 <span>Ver Carrito ({totalItems})</span>
                 <span style={{ borderLeft: '1px solid #fbcfe8', paddingLeft: '8px', marginLeft: '4px' }}>
                     ${getTotal().toLocaleString('es-AR')}
