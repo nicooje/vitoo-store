@@ -15,11 +15,50 @@ export default function CheckoutPage() {
     const [whatsapp, setWhatsapp] = useState('');
     const [metodoEntrega, setMetodoEntrega] = useState('retiro');
 
+    // Estado para el botón de carga
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         setMounted(true);
     }, []);
 
     if (!mounted) return null;
+
+    const handlePago = async () => {
+        // 1. Validamos que el cliente haya puesto sus datos
+        if (!nombre.trim() || !whatsapp.trim()) {
+            alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 2. Nos comunicamos con el "puente" secreto que creamos recién
+            const res = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cart: cart,
+                    cliente: { nombre, whatsapp, metodoEntrega }
+                })
+            });
+
+            const data = await res.json();
+
+            // 3. Si Mercado Pago nos da el ok, viajamos a su página segura
+            if (data.init_point) {
+                window.location.href = data.init_point;
+            } else {
+                alert("❌ Hubo un error al conectar con Mercado Pago. Intentá de nuevo.");
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("❌ Error de conexión. Revisá tu internet y volvé a intentar.");
+            setLoading(false);
+        }
+    };
 
     // Si el carrito está vacío, mostramos un mensaje para volver
     if (cart.length === 0) {
@@ -86,8 +125,25 @@ export default function CheckoutPage() {
                             </select>
                         </div>
 
-                        <button type="button" style={{ width: '100%', padding: '16px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }}>
-                            Continuar a Pagos 💳
+                        <button
+                            type="button"
+                            onClick={handlePago}
+                            disabled={loading}
+                            style={{
+                                width: '100%',
+                                padding: '16px',
+                                backgroundColor: loading ? '#86efac' : '#25D366',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                cursor: loading ? 'not-allowed' : 'pointer',
+                                marginTop: '10px',
+                                transition: 'background-color 0.3s'
+                            }}
+                        >
+                            {loading ? 'Conectando con Mercado Pago... ⏳' : 'Continuar a Pagos 💳'}
                         </button>
                         <Link href="/" style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px', textDecoration: 'none', marginTop: '10px', display: 'block' }}>
                             ← Seguir comprando
