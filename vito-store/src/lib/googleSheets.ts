@@ -53,7 +53,11 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         }
 
         type StringRow = string[];
-        const products: Product[] = rows.map((row: StringRow, index: number) => {
+        
+        // Filtramos las filas que están completamente vacías (pueden quedar al borrar)
+        const validRows = rows.filter((row: StringRow) => row.length > 0 && row.some(cell => cell.trim() !== ''));
+
+        const products: Product[] = validRows.map((row: StringRow, index: number) => {
             const stockValue = row[5]?.toString().toLowerCase().trim();
             const hasStock = stockValue === 'true' || stockValue === 'v' || stockValue === 'si' || stockValue === '1';
 
@@ -144,6 +148,32 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
                 ]
             ],
         },
+    });
+
+    return { success: true };
+}
+
+export async function deleteProductFromSheet(id: number) {
+    const { sheets, sheetId } = await getGoogleSheetsClient();
+    
+    // Primero, traemos los datos actuales para ubicar la fila del ID buscado
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: sheetId,
+        range: 'A2:A', // Solo traemos la columna de IDs para buscar rápido
+    });
+
+    const rows = response.data.values;
+    if (!rows) throw new Error("La hoja está vacía.");
+
+    // Encontrar el índice (sumar 2 porque arranca en A2)
+    const rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    if (rowIndex === -1) throw new Error("Producto no encontrado en el Excel para eliminar");
+
+    const rowNumber = rowIndex + 2; 
+    
+    await sheets.spreadsheets.values.clear({
+        spreadsheetId: sheetId,
+        range: `A${rowNumber}:I${rowNumber}`,
     });
 
     return { success: true };

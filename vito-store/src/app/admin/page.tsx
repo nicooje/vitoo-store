@@ -172,6 +172,33 @@ export default function AdminPage() {
         }
     };
 
+    const handleDeleteProduct = async (id: number, name: string) => {
+        if (!window.confirm(`¿Seguro que querés eliminar el producto "${name}"? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        setLoading(true);
+        setMensaje(`Eliminando ${name}... ⏳`);
+
+        try {
+            const res = await fetch('/api/admin/products', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+
+            if (!res.ok) throw new Error("Error respondiendo desde API Sheet");
+
+            setMensaje('¡Producto eliminado con éxito! 🗑️');
+            await fetchProducts();
+        } catch (error: any) {
+            console.error(error);
+            setMensaje(`❌ Hubo un error al eliminar. ${error.message || ''}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Lógica Derivada para Paginación y Filtros
     const uniqueCategories = ['Todas', ...Array.from(new Set(products.map(p => p.category)))];
     const filteredProducts = products.filter(p => filterCategory === 'Todas' || p.category === filterCategory);
@@ -490,12 +517,20 @@ export default function AdminPage() {
                                                         </div>
                                                     </td>
                                                     <td className="p-4 text-right">
-                                                        <button 
-                                                            onClick={() => handleEditProduct(p)}
-                                                            className="text-pink-600 font-bold text-sm bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors border border-pink-100"
-                                                        >
-                                                            Editar
-                                                        </button>
+                                                        <div className="flex justify-end gap-2">
+                                                            <button 
+                                                                onClick={() => handleEditProduct(p)}
+                                                                className="text-pink-600 font-bold text-sm bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors border border-pink-100"
+                                                            >
+                                                                Editar
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDeleteProduct(p.id, p.name)}
+                                                                className="text-red-600 font-bold text-sm bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors border border-red-100"
+                                                            >
+                                                                Eliminar
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}

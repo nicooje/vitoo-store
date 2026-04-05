@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProductsFromSheet, appendProductToSheet, updateProductInSheet } from '@/lib/googleSheets';
+import { getProductsFromSheet, appendProductToSheet, updateProductInSheet, deleteProductFromSheet } from '@/lib/googleSheets';
 
 export async function GET() {
     try {
@@ -37,5 +37,22 @@ export async function PUT(request: Request) {
     } catch (error) {
         console.error("Error PUT /api/admin/products:", error);
         return NextResponse.json({ error: 'Error actualizando el producto' }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    try {
+        const body = await request.json();
+        const { id } = body;
+
+        if (!id) {
+            return NextResponse.json({ error: 'ID es requerido para eliminar' }, { status: 400 });
+        }
+
+        const result = await deleteProductFromSheet(Number(id));
+        return NextResponse.json(result);
+    } catch (error) {
+        console.error("Error DELETE /api/admin/products:", error);
+        return NextResponse.json({ error: 'Error eliminando el producto' }, { status: 500 });
     }
 }
