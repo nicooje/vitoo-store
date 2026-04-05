@@ -29,52 +29,77 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     }
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-12 md:gap-x-4 max-w-7xl mx-auto w-full">
             {products.map((product) => {
                 const stockAtexto = String(product.stock).toUpperCase();
                 const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
 
                 return (
-                    <div key={product.id} className="group relative flex flex-col bg-white transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 rounded-2xl overflow-hidden border border-slate-100">
-                        {/* Imagen - Mantenemos la relación de aspecto 3/4 */}
-                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50">
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <div key={product.id} className="group flex flex-col relative w-full">
+                        {/* Imagen con Badges y Quick Buy - Aspecto 3:4 */}
+                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm">
+                            <img 
+                                src={product.image_url} 
+                                alt={product.name} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                            />
                             
+                            {/* Badge flotante Arriba a la Izquierda */}
                             {!hasStock && (
-                                <div className="absolute top-3 right-3 bg-slate-900/90 text-white px-3 py-1 text-[10px] sm:text-xs font-bold rounded-full backdrop-blur-sm uppercase tracking-wide">
+                                <div className="absolute top-2 left-2 bg-pink-600 text-white px-3 py-1 text-[10px] md:text-xs font-bold rounded-2xl uppercase tracking-wider shadow-sm z-10">
                                     Agotado
                                 </div>
                             )}
+
+                            {/* Botón Quick Buy Flotante (Desktop Hover) */}
+                            {hasStock && (
+                                <button
+                                    onClick={(e) => { e.preventDefault(); handleAddToCart(product); }}
+                                    className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur border border-pink-100 hover:bg-pink-600 hover:text-white hover:border-pink-600 text-pink-600 rounded-full w-12 h-12 shadow-lg items-center justify-center z-20"
+                                    title="Agregar al carrito"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+                                    </svg>
+                                </button>
+                            )}
                         </div>
 
-                        {/* Información del Producto */}
-                        <div className="flex flex-col flex-1 p-4 md:p-5">
-                            <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2 block">
-                                {product.category}
-                            </span>
-                            <h3 className="text-sm md:text-base text-slate-800 font-medium leading-snug line-clamp-2 min-h-[40px] md:min-h-[48px]">
+                        {/* Bloque Inferior - Minimalista */}
+                        <div className="flex flex-col mt-4 px-1">
+                            {/* Título en texto negro puro */}
+                            <h3 className="text-sm md:text-[15px] text-gray-900 font-normal leading-tight min-h-[40px] md:min-h-[44px] group-hover:underline decoration-pink-300 underline-offset-4">
                                 {product.name}
                             </h3>
-                            <div className="mt-2 md:mt-3 flex items-center justify-between">
-                                <span className="text-lg md:text-xl font-bold text-slate-950">
+                            
+                            {/* Precio fuerte */}
+                            <div className="mt-1 flex flex-col">
+                                <span className="text-[17px] font-bold text-gray-900">
                                     ${Number(product.price).toLocaleString('es-AR')}
                                 </span>
+                                <span className="text-[11px] text-slate-500 mt-0.5">3 cuotas sin interés</span>
                             </div>
 
-                            {/* Botón Carrito: visible en móvil, oculto y animado on-hover en desktop */}
-                            <div className="mt-4 md:absolute md:bottom-5 md:left-5 md:right-5 overflow-hidden transition-all duration-300">
-                                <button
-                                    onClick={() => handleAddToCart(product)}
-                                    disabled={!hasStock}
-                                    className={`w-full py-3 px-4 rounded-full font-bold text-sm transition-all duration-300 transform md:translate-y-8 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100
-                                        ${hasStock ? 'bg-pink-600 text-white hover:bg-pink-700 shadow-xl shadow-pink-600/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
-                                >
-                                    {hasStock ? 'Agregar al Carrito' : 'Sin Stock'}
-                                </button>
-                            </div>
+                            {/* Botón Carrito en Mobile: ocupa todo el ancho, visible solo en pantallas xs */}
+                            <button
+                                onClick={(e) => { e.preventDefault(); handleAddToCart(product); }}
+                                disabled={!hasStock}
+                                className={`md:hidden mt-3 w-full py-2.5 rounded-full font-bold text-xs shadow-sm transition-colors ${
+                                    hasStock 
+                                    ? 'bg-pink-50 text-pink-700 border flex items-center justify-center gap-2 border-pink-200' 
+                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                }`}
+                            >
+                                {hasStock ? (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
+                                        </svg>
+                                        Comprar
+                                    </>
+                                ) : 'Agotado'}
+                            </button>
                         </div>
-                        {/* Box invisible para compensar el height del botón absolute en Desktop */}
-                        <div className="hidden md:block h-12"></div>
                     </div>
                 );
             })}
