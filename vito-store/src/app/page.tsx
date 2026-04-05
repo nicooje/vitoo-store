@@ -32,20 +32,22 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
     : cleanedProducts.filter((p) => p.category === activeCategory);
 
   return (
-    <main>
+    <main className="bg-slate-50 font-sans text-slate-900 min-h-screen">
       <Header />
       <HeroSection />
 
-      <section id="catalogo" className="py-16 px-5 lg:px-20 bg-white">
-        <h2 className="text-center text-4xl font-bold text-gray-800 mb-8">
-          Nuestro Catálogo
-        </h2>
+      <section id="catalogo" className="py-24 px-6 lg:px-8 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-center text-4xl lg:text-5xl font-black text-slate-950 tracking-tight mb-12">
+            Nuestro Catálogo
+          </h2>
 
-        <Suspense fallback={<div className="text-center mb-8">Cargando filtros...</div>}>
-          <CategoryFilter categories={filterCategories} />
-        </Suspense>
+          <Suspense fallback={<div className="text-center mb-8 font-medium text-slate-500 animate-pulse">Cargando catálogo...</div>}>
+            <CategoryFilter categories={filterCategories} />
+          </Suspense>
 
-        <CatalogoSection products={filteredProducts} />
+          <CatalogoSection products={filteredProducts} />
+        </div>
       </section>
 
       <MayoristaSection />

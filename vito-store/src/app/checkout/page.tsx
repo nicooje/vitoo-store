@@ -56,9 +56,9 @@ export default function CheckoutPage() {
 
     if (cart.length === 0) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb', fontFamily: 'system-ui, sans-serif' }}>
-                <h2 style={{ fontSize: '24px', color: '#374151', marginBottom: '20px' }}>Tu carrito está vacío 🛒</h2>
-                <Link href="/" style={{ backgroundColor: '#db2777', color: 'white', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6">Tu carrito está vacío 🛒</h2>
+                <Link href="/" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-md">
                     Volver a la tienda
                 </Link>
             </div>
@@ -66,80 +66,106 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div style={{ backgroundColor: '#f9fafb', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-            <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+        <div className="bg-slate-50 min-h-screen py-12 px-5 lg:px-8">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px', borderBottom: '2px solid #f3f4f6', paddingBottom: '10px' }}>Resumen de Compra</h2>
+                {/* Columna Izquierda: Resumen */}
+                <div className="lg:col-span-7 bg-transparent">
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">Resumen de Compra ({cart.length} {cart.length === 1 ? 'producto' : 'productos'})</h2>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div className="flex flex-col gap-6">
                         {cart.map((item) => (
-                            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '15px', borderBottom: '1px solid #f3f4f6', paddingBottom: '15px' }}>
-                                <img src={item.imagenUrl} alt={item.nombre} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#111827' }}>{item.nombre}</h4>
-                                    <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Cantidad: {item.cantidad}</p>
+                            <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                <div className="w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                    <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#db2777' }}>${(item.precio * item.cantidad).toLocaleString('es-AR')}</p>
-                                    <button onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: 0 }}>Eliminar</button>
+                                <div className="flex flex-col flex-1">
+                                    <h4 className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2">{item.nombre}</h4>
+                                    <p className="text-sm text-slate-500 mt-1">Cantidad: <span className="font-medium text-slate-700">{item.cantidad}</span></p>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <p className="text-base md:text-lg font-bold text-slate-900 pr-2">${(item.precio * item.cantidad).toLocaleString('es-AR')}</p>
+                                    <button 
+                                        onClick={() => removeFromCart(item.id)} 
+                                        className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-2 py-1"
+                                    >
+                                        Eliminar
+                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '2px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151' }}>Total a Pagar:</span>
-                        <span style={{ fontSize: '24px', fontWeight: '900', color: '#db2777' }}>${getTotal().toLocaleString('es-AR')}</span>
+                    <div className="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                        <span className="text-lg font-bold text-slate-700">Total a Pagar:</span>
+                        <span className="text-2xl md:text-3xl font-black text-pink-600">${getTotal().toLocaleString('es-AR')}</span>
                     </div>
                 </div>
 
-                <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px', borderBottom: '2px solid #f3f4f6', paddingBottom: '10px' }}>Tus Datos</h2>
+                {/* Columna Derecha: Formulario de Datos */}
+                <div className="lg:col-span-5 relative">
+                    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-slate-100 sticky top-24">
+                        <h2 className="text-xl font-bold text-slate-900 mb-6">Tus Datos</h2>
 
-                    <form style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>Nombre y Apellido</label>
-                            <input type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '6px', boxSizing: 'border-box' }} placeholder="Ej: María Gómez" />
-                        </div>
+                        <form className="flex flex-col gap-5">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Nombre y Apellido</label>
+                                <input 
+                                    type="text" 
+                                    required 
+                                    value={nombre} 
+                                    onChange={(e) => setNombre(e.target.value)} 
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50" 
+                                    placeholder="Ej: María Gómez" 
+                                />
+                            </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>WhatsApp</label>
-                            <input type="tel" required value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '6px', boxSizing: 'border-box' }} placeholder="Ej: 3794123456" />
-                        </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp</label>
+                                <input 
+                                    type="tel" 
+                                    required 
+                                    value={whatsapp} 
+                                    onChange={(e) => setWhatsapp(e.target.value)} 
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50" 
+                                    placeholder="Ej: 3794123456" 
+                                />
+                            </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#4b5563' }}>Método de Entrega</label>
-                            <select value={metodoEntrega} onChange={(e) => setMetodoEntrega(e.target.value)} style={{ width: '100%', padding: '12px', border: '1px solid #d1d5db', borderRadius: '6px', boxSizing: 'border-box', backgroundColor: 'white' }}>
-                                <option value="retiro">Retirar en el Local (Gratis)</option>
-                                <option value="envio">Envío a Domicilio (Costo a coordinar)</option>
-                            </select>
-                        </div>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Método de Entrega</label>
+                                <select 
+                                    value={metodoEntrega} 
+                                    onChange={(e) => setMetodoEntrega(e.target.value)} 
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 bg-slate-50/50 cursor-pointer appearance-none"
+                                    style={{
+                                        backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 16px top 50%',
+                                        backgroundSize: '12px auto',
+                                    }}
+                                >
+                                    <option value="retiro">Retirar en el Local (Gratis)</option>
+                                    <option value="envio">Envío a Domicilio (Costo a coordinar)</option>
+                                </select>
+                            </div>
 
-                        <button
-                            type="button"
-                            onClick={handlePago}
-                            disabled={loading}
-                            style={{
-                                width: '100%',
-                                padding: '16px',
-                                backgroundColor: loading ? '#86efac' : '#25D366',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                marginTop: '10px',
-                                transition: 'background-color 0.3s'
-                            }}
-                        >
-                            {loading ? 'Conectando con Mercado Pago... ⏳' : 'Continuar a Pagos 💳'}
-                        </button>
-                        <Link href="/" style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px', textDecoration: 'none', marginTop: '10px', display: 'block' }}>
-                            ← Seguir comprando
-                        </Link>
-                    </form>
+                            <button
+                                type="button"
+                                onClick={handlePago}
+                                disabled={loading}
+                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
+                                    ${loading ? 'bg-pink-300 cursor-not-allowed shadow-none' : 'bg-pink-600 hover:bg-pink-700 hover:-translate-y-1 hover:shadow-pink-600/30'}
+                                `}
+                            >
+                                {loading ? 'Procesando pago... ⏳' : 'Continuar a Pagos 💳'}
+                            </button>
+                            
+                            <Link href="/#catalogo" className="text-center text-slate-500 text-sm font-medium mt-4 hover:text-pink-600 transition-colors block">
+                                ← Volver al catálogo
+                            </Link>
+                        </form>
+                    </div>
                 </div>
 
             </div>

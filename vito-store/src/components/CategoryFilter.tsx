@@ -22,42 +22,24 @@ export default function CategoryFilter({ categories }: Props) {
     };
 
     return (
-        <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '2rem' }}>
-            <div style={{
-                display: 'flex',
-                gap: '12px',
-                padding: '0 1rem',
-                justifyContent: 'center',
-                minWidth: 'max-content',
-                margin: '0 auto'
-            }}>
+        <div className="w-full overflow-x-auto pb-4 mb-10 no-scrollbar">
+            <div className="flex gap-8 px-4 justify-center min-w-max mx-auto">
                 {categories.map((cat) => {
                     const isActive = activeCategory === cat;
                     return (
                         <button
                             key={cat}
                             onClick={() => handleFilter(cat)}
-                            style={{
-                                padding: '10px 24px',
-                                borderRadius: '50px',
-                                fontSize: '14px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                border: isActive ? '2px solid #e11d48' : '1px solid #d1d5db',
-                                backgroundColor: isActive ? '#e11d48' : '#ffffff',
-                                color: isActive ? '#ffffff' : '#4b5563',
-                                transition: 'all 0.3s ease',
-                                boxShadow: isActive ? '0 4px 10px rgba(225, 29, 72, 0.3)' : '0 1px 2px rgba(0,0,0,0.05)',
-                                transform: isActive ? 'scale(1.05)' : 'scale(1)'
-                            }}
-                            onMouseOver={(e) => {
-                                if (!isActive) e.currentTarget.style.borderColor = '#fda4af';
-                            }}
-                            onMouseOut={(e) => {
-                                if (!isActive) e.currentTarget.style.borderColor = '#d1d5db';
-                            }}
+                            className={`group relative pb-2 text-sm md:text-base transition-colors ${
+                                isActive ? 'text-pink-600 font-extrabold' : 'text-slate-500 font-semibold hover:text-slate-900'
+                            }`}
                         >
                             {cat}
+                            <span 
+                                className={`absolute left-0 bottom-0 w-full h-[2.5px] bg-pink-600 rounded-full transition-transform origin-left ${
+                                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                                }`} 
+                            />
                         </button>
                     );
                 })}
