@@ -1,6 +1,6 @@
 export default function FloatingWhatsApp() {
     return (
-        <a href="https://wa.me/1234567890" target="_blank" rel="noopener noreferrer" style={{
+        <a href="https://wa.me/5493794088240" target="_blank" rel="noopener noreferrer" style={{
             position: 'fixed',
             bottom: '2rem',
             right: '2rem',

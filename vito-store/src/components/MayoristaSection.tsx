@@ -80,7 +80,7 @@ export default function MayoristaSection() {
 
                 {/* CTA General */}
                 <a 
-                    href="https://wa.me/1234567890?text=Hola,%20me%20interesa%20comprar%20por%20mayor!" 
+                    href="https://wa.me/5493794088240?text=Hola,%20me%20interesa%20comprar%20por%20mayor!" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-lg shadow-[0_4px_20px_rgba(37,211,102,0.3)] hover:shadow-[0_6px_25px_rgba(37,211,102,0.4)] transition-all hover:-translate-y-1"
