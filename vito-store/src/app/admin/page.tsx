@@ -1,19 +1,76 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+// Tipado del producto que vendrá de la API
+export type Product = {
+    id: number;
+    name: string;
+    category: string;
+    price: number;
+    image_url: string;
+    stock: boolean;
+};
 
 export default function AdminPage() {
+    const [products, setProducts] = useState<Product[]>([]);
+    
+    // Estados del Formulario
+    const [editingProductId, setEditingProductId] = useState<number | null>(null);
     const [nombre, setNombre] = useState('');
     const [categoria, setCategoria] = useState('Conjuntos');
     const [precio, setPrecio] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [existingImageUrl, setExistingImageUrl] = useState('');
+    const [hasStock, setHasStock] = useState(true);
+
     const [loading, setLoading] = useState(false);
     const [mensaje, setMensaje] = useState('');
 
-    // Tus credenciales maestras
+    // Tus credenciales maestras Cloudinary
     const CLOUD_NAME = "dzhz0gz5i";
     const UPLOAD_PRESET = "vitoo_store";
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhNhp7fmaqKKJAxfY5Dsmlh5P_iugTi_M6QxF7pXolKKDpBOgTHFzF_HbzL3jZoCuM4Q/exec";
+
+    const fetchProducts = async () => {
+        try {
+            const res = await fetch('/api/admin/products');
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(data);
+            }
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const handleEditProduct = (p: Product) => {
+        setEditingProductId(p.id);
+        setNombre(p.name);
+        setCategoria(p.category);
+        setPrecio(p.price.toString());
+        setExistingImageUrl(p.image_url);
+        setHasStock(p.stock);
+        setFile(null); // Resetear archivo nuevo
+        setMensaje(`Editando producto: ${p.name}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' }); // Subir al formulario
+    };
+
+    const handleCancelEdit = () => {
+        setEditingProductId(null);
+        setNombre('');
+        setCategoria('Conjuntos');
+        setPrecio('');
+        setExistingImageUrl('');
+        setHasStock(true);
+        setFile(null);
+        setMensaje('');
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,9 +78,9 @@ export default function AdminPage() {
         setMensaje('Subiendo foto... ⏳');
 
         try {
-            let imageUrl = '';
+            let imageUrl = existingImageUrl;
 
-            // 1. Subir foto a Cloudinary
+            // 1. Subir foto a Cloudinary si se seleccionó una nueva
             if (file) {
                 const formData = new FormData();
                 formData.append('file', file);
@@ -42,113 +99,159 @@ export default function AdminPage() {
                 }
             }
 
+            // Si es producto nuevo y no hay foto
+            if (!imageUrl && !file) {
+                throw new Error("Agrega una foto obligatoriamente");
+            }
+
             setMensaje('Guardando en Excel... ⏳');
 
-            // 2. Armar paquete de datos para Excel
+            // 2. Armar paquete de datos para la API
             const productData = {
-                nombre: nombre,
-                categoria: categoria,
-                precio: parseFloat(precio),
-                imagenUrl: imageUrl,
-                stock: 1 // Por defecto le ponemos 1 para que figure "SI" en stock
+                name: nombre,
+                category: categoria,
+                price: parseFloat(precio),
+                image_url: imageUrl,
+                stock: hasStock
             };
 
-            // 3. Mandar a Google Sheets
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Evita errores de seguridad en el navegador
-                headers: {
-                    'Content-Type': 'text/plain',
-                },
-                body: JSON.stringify(productData)
+            // 3. Mandar a la API según si es Edición o Creación
+            const apiUrl = '/api/admin/products';
+            const method = editingProductId ? 'PUT' : 'POST';
+            
+            const payload = editingProductId 
+                ? { id: editingProductId, ...productData } 
+                : productData;
+
+            const finalRes = await fetch(apiUrl, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
+            if (!finalRes.ok) throw new Error("Error respondiendo desde API Sheet");
+
             // 4. ¡Éxito!
-            setMensaje('¡Producto subido con éxito a la tienda! 🎉');
+            setMensaje(editingProductId ? '¡Producto actualizado con éxito! 🎉' : '¡Producto subido con éxito! 🎉');
+            
+            // Refrescar listado
+            await fetchProducts();
 
-            // Limpiar formulario para cargar otro
-            setNombre('');
-            setPrecio('');
-            setFile(null);
-            (document.getElementById('fileInput') as HTMLInputElement).value = '';
+            // Limpiar formulario dejando el mensaje de exito
+            const msjExito = editingProductId ? '¡Producto actualizado! 🎉' : '¡Producto creado! 🎉';
+            handleCancelEdit();
+            setMensaje(msjExito);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            setMensaje('❌ Hubo un error. Revisá tu conexión o las claves.');
+            setMensaje(`❌ Hubo un error. ${error.message || ''}`);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-900 pb-24 font-sans">
+        <div className="min-h-screen bg-gray-50 text-gray-900 pb-32 font-sans">
             {/* Header */}
             <header className="bg-white border-b border-gray-200 px-6 py-5 shadow-sm">
                 <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Agregar producto</h1>
-                        <p className="text-sm text-gray-600 mt-1">Panel de Carga - Vitoo Store 🎀</p>
+                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Gestor de Catálogo</h1>
+                        <p className="text-sm text-gray-600 mt-1">Panel de Control General - Vitoo Store 🎀</p>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto p-6 md:p-8">
-                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                        
-                        {/* COLUMNA IZQUIERDA: Detalles */}
-                        <div className="md:col-span-7 flex flex-col gap-6">
-                            {/* Tarjeta: Información Básica */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6">Información básica</h2>
-                                <div className="flex flex-col gap-5">
-                                    
-                                    {/* Nombre */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del producto</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={nombre}
-                                            onChange={(e) => setNombre(e.target.value)}
-                                            placeholder="Ej: Conjunto de Encaje Rojo"
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
-                                        />
-                                    </div>
+            <main className="max-w-5xl mx-auto p-6 md:p-8 flex flex-col gap-12">
+                
+                {/* ZONA 1: FORMULARIO */}
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-black text-gray-900">
+                            {editingProductId ? '✏️ Editando Producto' : '✨ Agregar Nuevo Producto'}
+                        </h2>
+                        {editingProductId && (
+                            <button 
+                                onClick={handleCancelEdit} 
+                                className="text-sm text-pink-600 font-bold bg-pink-50 px-3 py-1.5 rounded-full hover:bg-pink-100 transition-colors"
+                            >
+                                Cancelar Edición
+                            </button>
+                        )}
+                    </div>
+                    
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                            
+                            {/* COLUMNA IZQUIERDA: Detalles */}
+                            <div className="md:col-span-7 flex flex-col gap-6">
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                    <div className="flex flex-col gap-5">
+                                        {/* Nombre */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del producto</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={nombre}
+                                                onChange={(e) => setNombre(e.target.value)}
+                                                placeholder="Ej: Conjunto de Encaje Rojo"
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                            />
+                                        </div>
 
-                                    {/* Categoría */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-                                        <select
-                                            value={categoria}
-                                            onChange={(e) => setCategoria(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all appearance-none cursor-pointer"
-                                            style={{
-                                                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
-                                                backgroundRepeat: 'no-repeat',
-                                                backgroundPosition: 'right 16px top 50%',
-                                                backgroundSize: '12px auto',
-                                            }}
-                                        >
-                                            <option value="Conjuntos">Conjuntos</option>
-                                            <option value="Bikinis">Bikinis</option>
-                                            <option value="Bombachas">Bombachas</option>
-                                            <option value="Lubricantes & juegos">Lubricantes & juegos</option>
-                                            <option value="Corpiños-Tops">Corpiños / Tops</option>
-                                            <option value="Varios">Varios</option>
-                                        </select>
+                                        {/* Categoría */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                                            <select
+                                                value={categoria}
+                                                onChange={(e) => setCategoria(e.target.value)}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all appearance-none cursor-pointer"
+                                                style={{
+                                                    backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    backgroundPosition: 'right 16px top 50%',
+                                                    backgroundSize: '12px auto',
+                                                }}
+                                            >
+                                                <option value="Conjuntos">Conjuntos</option>
+                                                <option value="Bikinis">Bikinis</option>
+                                                <option value="Bombachas">Bombachas</option>
+                                                <option value="Lubricantes & juegos">Lubricantes & juegos</option>
+                                                <option value="Corpiños-Tops">Corpiños / Tops</option>
+                                                <option value="Varios">Varios</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Interruptor de Stock */}
+                                        <div className="pt-2 flex flex-col gap-2">
+                                            <span className="text-sm font-medium text-gray-700">Disponibilidad de Stock</span>
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="sr-only" 
+                                                        checked={hasStock} 
+                                                        onChange={(e) => setHasStock(e.target.checked)} 
+                                                    />
+                                                    <div className={`block w-14 h-8 rounded-full transition-colors ${hasStock ? 'bg-pink-500' : 'bg-gray-300'}`}></div>
+                                                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${hasStock ? 'transform translate-x-6' : ''}`}></div>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-900 leading-tight">Estado público</span>
+                                                    <span className="text-xs text-gray-500">{hasStock ? '✅ Disponible en tienda' : '🚫 Agotado (Etiqueta rojiza)'}</span>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* COLUMNA DERECHA: Precio y Fotos */}
-                        <div className="md:col-span-5 flex flex-col gap-6">
-                            
-                            {/* Tarjeta: Precio */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6">Precio</h2>
-                                <div>
+                            {/* COLUMNA DERECHA: Precio y Fotos */}
+                            <div className="md:col-span-5 flex flex-col gap-6">
+                                
+                                {/* Tarjeta: Precio */}
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Precio de venta</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -164,72 +267,135 @@ export default function AdminPage() {
                                         />
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Tarjeta: Multimedia (Modificado) */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4">Multimedia</h2>
-                                <div>
+                                {/* Tarjeta: Multimedia */}
+                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
                                     <label className="block text-sm font-medium text-gray-700 mb-3">Foto del producto</label>
                                     <div className="flex flex-col gap-3">
+                                        {existingImageUrl && (
+                                            <div className="mb-2 relative rounded-lg overflow-hidden border border-gray-200 aspect-[3/4] w-24">
+                                                <img src={existingImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                            </div>
+                                        )}
                                         <input
                                             id="fileInput"
                                             type="file"
                                             accept="image/*"
-                                            required
+                                            required={!existingImageUrl}
                                             onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
                                             className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 file:transition-colors file:cursor-pointer cursor-pointer border border-gray-200 rounded-full py-1.5 focus:outline-none"
                                         />
-                                        <p className="text-xs text-gray-500 ml-2">PNG, JPG hasta 10MB</p>
+                                        <p className="text-xs text-gray-500 ml-2">PNG, JPG. {existingImageUrl && "Sube otra para cambiar."}</p>
                                     </div>
                                 </div>
+
                             </div>
-
                         </div>
-                    </div>
 
-                    {/* Barra Fija Inferior */}
-                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                            
-                            <div className="text-sm flex-1">
-                                {mensaje ? (
-                                    <span className={`inline-flex items-center px-4 py-2 rounded-lg font-medium border ${
-                                        mensaje.includes('error') ? 'bg-red-50 text-red-700 border-red-200' :
-                                        mensaje.includes('éxito') ? 'bg-green-50 text-green-700 border-green-200' :
-                                        'bg-blue-50 text-blue-700 border-blue-200'
-                                    }`}>
-                                        {mensaje}
-                                    </span>
-                                ) : (
-                                    <span className="text-gray-500">Completa todos los campos para publicar.</span>
-                                )}
+                        {/* Barra Fija Inferior */}
+                        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                                
+                                <div className="text-sm flex-1">
+                                    {mensaje ? (
+                                        <span className={`inline-flex items-center px-4 py-2 rounded-lg font-medium border ${
+                                            mensaje.includes('error') || mensaje.includes('❌') ? 'bg-red-50 text-red-700 border-red-200' :
+                                            mensaje.includes('éxito') || mensaje.includes('🎉') ? 'bg-green-50 text-green-700 border-green-200' :
+                                            'bg-blue-50 text-blue-700 border-blue-200'
+                                        }`}>
+                                            {mensaje}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-500">Completa los datos para subir o editar.</span>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={`flex justify-center items-center px-8 py-3.5 rounded-xl font-bold text-white transition-all min-w-[220px] shadow-sm ${
+                                        loading 
+                                        ? 'bg-pink-400 cursor-not-allowed shadow-none' 
+                                        : 'bg-pink-600 hover:bg-pink-700 hover:shadow-pink-600/30 hover:-translate-y-0.5 active:translate-y-0'
+                                    }`}
+                                >
+                                    {loading ? (
+                                        <span className="flex items-center gap-2">
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Procesando...
+                                        </span>
+                                    ) : (
+                                        editingProductId ? 'Actualizar Producto' : 'Guardar Nuevo Producto'
+                                    )}
+                                </button>
                             </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className={`flex justify-center items-center px-8 py-3.5 rounded-xl font-bold text-white transition-all min-w-[220px] shadow-sm ${
-                                    loading 
-                                    ? 'bg-pink-400 cursor-not-allowed shadow-none' 
-                                    : 'bg-pink-600 hover:bg-pink-700 hover:shadow-pink-600/30 hover:-translate-y-0.5 active:translate-y-0'
-                                }`}
-                            >
-                                {loading ? (
-                                    <span className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        {mensaje === 'Subiendo foto... ⏳' ? 'Subiendo foto...' : 'Guardando...'}
-                                    </span>
-                                ) : (
-                                    'Guardar Producto'
-                                )}
-                            </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </section>
+
+                <hr className="border-gray-200 my-4" />
+
+                {/* ZONA 2: LISTADO DE PRODUCTOS */}
+                <section>
+                    <h2 className="text-2xl font-black text-gray-900 mb-6">Tus Productos Publicados</h2>
+                    
+                    {products.length === 0 ? (
+                        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
+                            Cargando productos de Google Sheets... ⏳
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left font-sm">
+                                    <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th className="p-4 w-16 text-center">Foto</th>
+                                            <th className="p-4">Info</th>
+                                            <th className="p-4 hidden sm:table-cell">Precio</th>
+                                            <th className="p-4 text-center">Stock</th>
+                                            <th className="p-4 text-right">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {products.map((p) => (
+                                            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="p-4 text-center">
+                                                    <img src={p.image_url} alt={p.name} className="w-12 h-16 object-cover rounded-md mx-auto" />
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className="font-bold text-gray-900 block leading-tight">{p.name}</span>
+                                                    <span className="text-xs text-gray-500">{p.category}</span>
+                                                </td>
+                                                <td className="p-4 font-bold text-gray-900 hidden sm:table-cell">
+                                                    ${p.price.toLocaleString('es-AR')}
+                                                </td>
+                                                <td className="p-4 text-center">
+                                                    {p.stock ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
+                                                    )}
+                                                </td>
+                                                <td className="p-4 text-right">
+                                                    <button 
+                                                        onClick={() => handleEditProduct(p)}
+                                                        className="text-pink-600 font-bold text-sm bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors border border-pink-100"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </section>
+
             </main>
         </div>
     );
