@@ -81,99 +81,53 @@ export default function AdminPage() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb', color: '#1f2937', paddingBottom: '90px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-
-            {/* Header superior simple y elegante */}
-            <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #eaedf1', padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="min-h-screen bg-gray-50 text-gray-900 pb-24 font-sans">
+            {/* Header */}
+            <header className="bg-white border-b border-gray-200 px-6 py-5 shadow-sm">
+                <div className="max-w-5xl mx-auto flex items-center justify-between">
                     <div>
-                        <h1 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>
-                            Agregar producto
-                        </h1>
-                        <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0 0 0' }}>Panel de Carga - Vitoo Store 🎀</p>
+                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Agregar producto</h1>
+                        <p className="text-sm text-gray-600 mt-1">Panel de Carga - Vitoo Store 🎀</p>
                     </div>
                 </div>
             </header>
 
-            <main style={{ maxWidth: '960px', margin: '0 auto', padding: '32px 24px' }}>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
-
+            <main className="max-w-5xl mx-auto p-6 md:p-8">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        
                         {/* COLUMNA IZQUIERDA: Detalles */}
-                        <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div className="md:col-span-7 flex flex-col gap-6">
                             {/* Tarjeta: Información Básica */}
-                            <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9', padding: '28px' }}>
-                                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 20px 0' }}>Información básica</h2>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <h2 className="text-xl font-bold text-gray-900 mb-6">Información básica</h2>
+                                <div className="flex flex-col gap-5">
+                                    
                                     {/* Nombre */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                                            Nombre del producto
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nombre del producto</label>
                                         <input
                                             type="text"
                                             required
                                             value={nombre}
                                             onChange={(e) => setNombre(e.target.value)}
                                             placeholder="Ej: Conjunto de Encaje Rojo"
-                                            onFocus={(e) => {
-                                                e.target.style.borderColor = '#ec4899';
-                                                e.target.style.boxShadow = '0 0 0 3px rgba(236, 72, 153, 0.15)';
-                                            }}
-                                            onBlur={(e) => {
-                                                e.target.style.borderColor = '#e5e7eb';
-                                                e.target.style.boxShadow = 'none';
-                                            }}
-                                            style={{
-                                                width: '100%',
-                                                boxSizing: 'border-box',
-                                                border: '1px solid #e5e7eb',
-                                                borderRadius: '8px',
-                                                padding: '12px 16px',
-                                                fontSize: '15px',
-                                                color: '#1f2937',
-                                                backgroundColor: '#ffffff',
-                                                outline: 'none',
-                                                transition: 'all 0.2s ease',
-                                            }}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
                                         />
                                     </div>
 
                                     {/* Categoría */}
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                                            Categoría
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
                                         <select
                                             value={categoria}
                                             onChange={(e) => setCategoria(e.target.value)}
-                                            onFocus={(e) => {
-                                                e.target.style.borderColor = '#ec4899';
-                                                e.target.style.boxShadow = '0 0 0 3px rgba(236, 72, 153, 0.15)';
-                                            }}
-                                            onBlur={(e) => {
-                                                e.target.style.borderColor = '#e5e7eb';
-                                                e.target.style.boxShadow = 'none';
-                                            }}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all appearance-none cursor-pointer"
                                             style={{
-                                                width: '100%',
-                                                boxSizing: 'border-box',
-                                                border: '1px solid #e5e7eb',
-                                                borderRadius: '8px',
-                                                padding: '12px 16px',
-                                                fontSize: '15px',
-                                                color: '#1f2937',
-                                                backgroundColor: '#ffffff',
-                                                outline: 'none',
-                                                transition: 'all 0.2s ease',
-                                                cursor: 'pointer',
-                                                appearance: 'none', // Quita la flecha por defecto para poner una propia
                                                 backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
                                                 backgroundRepeat: 'no-repeat',
                                                 backgroundPosition: 'right 16px top 50%',
-                                                backgroundSize: '10px auto',
+                                                backgroundSize: '12px auto',
                                             }}
                                         >
                                             <option value="Conjuntos">Conjuntos</option>
@@ -189,18 +143,16 @@ export default function AdminPage() {
                         </div>
 
                         {/* COLUMNA DERECHA: Precio y Fotos */}
-                        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
+                        <div className="md:col-span-5 flex flex-col gap-6">
+                            
                             {/* Tarjeta: Precio */}
-                            <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9', padding: '28px' }}>
-                                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 20px 0' }}>Precio</h2>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <h2 className="text-xl font-bold text-gray-900 mb-6">Precio</h2>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>
-                                        Precio de venta
-                                    </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', top: '0', bottom: '0', left: '0', paddingLeft: '14px', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
-                                            <span style={{ color: '#9ca3af', fontSize: '15px' }}>$</span>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Precio de venta</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <span className="text-gray-400 font-medium">$</span>
                                         </div>
                                         <input
                                             type="number"
@@ -208,104 +160,28 @@ export default function AdminPage() {
                                             value={precio}
                                             onChange={(e) => setPrecio(e.target.value)}
                                             placeholder="0.00"
-                                            onFocus={(e) => {
-                                                e.target.style.borderColor = '#ec4899';
-                                                e.target.style.boxShadow = '0 0 0 3px rgba(236, 72, 153, 0.15)';
-                                            }}
-                                            onBlur={(e) => {
-                                                e.target.style.borderColor = '#e5e7eb';
-                                                e.target.style.boxShadow = 'none';
-                                            }}
-                                            style={{
-                                                width: '100%',
-                                                boxSizing: 'border-box',
-                                                border: '1px solid #e5e7eb',
-                                                borderRadius: '8px',
-                                                padding: '12px 16px 12px 32px',
-                                                fontSize: '15px',
-                                                color: '#1f2937',
-                                                backgroundColor: '#ffffff',
-                                                outline: 'none',
-                                                transition: 'all 0.2s ease',
-                                            }}
+                                            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Tarjeta: Multimedia (Dropzone) */}
-                            <div style={{ backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9', padding: '28px' }}>
-                                <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '0 0 20px 0' }}>Multimedia</h2>
+                            {/* Tarjeta: Multimedia (Modificado) */}
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">Multimedia</h2>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '12px' }}>
-                                        Foto del producto
-                                    </label>
-
-                                    {/* Dropzone con interacciones manejadas en Javascript */}
-                                    <label
-                                        htmlFor="fileInput"
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.borderColor = '#f472b6';
-                                            e.currentTarget.style.backgroundColor = '#fdf2f8'; // Tono muy sutil de rosa
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.borderColor = '#e5e7eb';
-                                            e.currentTarget.style.backgroundColor = '#fafafa';
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            padding: '32px 24px',
-                                            border: '2px dashed #e5e7eb',
-                                            borderRadius: '12px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s ease',
-                                            backgroundColor: '#fafafa',
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        <svg
-                                            style={{ width: '48px', height: '48px', color: '#9ca3af', marginBottom: '16px' }}
-                                            stroke="currentColor"
-                                            fill="none"
-                                            viewBox="0 0 48 48"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                        <div style={{ fontSize: '14px', color: '#4b5563' }}>
-                                            <span style={{ fontWeight: '600', color: '#ec4899' }}>
-                                                Haz clic para seleccionar
-                                            </span>
-                                            {/* Ocultamiento del input estándar accesible */}
-                                            <input
-                                                id="fileInput"
-                                                type="file"
-                                                accept="image/*"
-                                                required
-                                                onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                                                style={{
-                                                    position: 'absolute', width: '1px', height: '1px', padding: '0',
-                                                    margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)',
-                                                    whiteSpace: 'nowrap', borderWidth: '0'
-                                                }}
-                                            />
-                                        </div>
-                                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '8px 0 0 0' }}>
-                                            {file ? (
-                                                <span style={{ fontWeight: '500', color: '#db2777', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', display: 'inline-block' }}>{file.name}</span>
-                                            ) : (
-                                                "PNG, JPG hasta 10MB"
-                                            )}
-                                        </p>
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Foto del producto</label>
+                                    <div className="flex flex-col gap-3">
+                                        <input
+                                            id="fileInput"
+                                            type="file"
+                                            accept="image/*"
+                                            required
+                                            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+                                            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 file:transition-colors file:cursor-pointer cursor-pointer border border-gray-200 rounded-full py-1.5 focus:outline-none"
+                                        />
+                                        <p className="text-xs text-gray-500 ml-2">PNG, JPG hasta 10MB</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -313,72 +189,39 @@ export default function AdminPage() {
                     </div>
 
                     {/* Barra Fija Inferior */}
-                    <div style={{ position: 'fixed', bottom: '0', left: '0', right: '0', backgroundColor: '#ffffff', borderTop: '1px solid #eaedf1', padding: '16px 24px', boxShadow: '0 -4px 12px rgba(0,0,0,0.03)', zIndex: 10 }}>
-                        <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
-
-                            <div style={{ fontSize: '14px', flex: '1 1 auto', minWidth: '200px' }}>
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                            
+                            <div className="text-sm flex-1">
                                 {mensaje ? (
-                                    <span style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        padding: '8px 16px',
-                                        borderRadius: '8px',
-                                        fontWeight: '500',
-                                        backgroundColor: mensaje.includes('error') ? '#fef2f2' : (mensaje.includes('éxito') ? '#f0fdf4' : '#f0f9ff'),
-                                        color: mensaje.includes('error') ? '#b91c1c' : (mensaje.includes('éxito') ? '#15803d' : '#0369a1'),
-                                        border: '1px solid ' + (mensaje.includes('error') ? '#fecaca' : (mensaje.includes('éxito') ? '#bbf7d0' : '#bae6fd'))
-                                    }}>
+                                    <span className={`inline-flex items-center px-4 py-2 rounded-lg font-medium border ${
+                                        mensaje.includes('error') ? 'bg-red-50 text-red-700 border-red-200' :
+                                        mensaje.includes('éxito') ? 'bg-green-50 text-green-700 border-green-200' :
+                                        'bg-blue-50 text-blue-700 border-blue-200'
+                                    }`}>
                                         {mensaje}
                                     </span>
                                 ) : (
-                                    <span style={{ color: '#6b7280' }}>Completa todos los campos para publicar.</span>
+                                    <span className="text-gray-500">Completa todos los campos para publicar.</span>
                                 )}
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                onMouseEnter={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.backgroundColor = '#be185d'; // Rosa oscuro
-                                        e.currentTarget.style.transform = 'translateY(-1px)';
-                                        e.currentTarget.style.boxShadow = '0 6px 12px -2px rgba(236,72,153,0.3)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.backgroundColor = '#ec4899'; // Rosa original
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(236,72,153,0.2)';
-                                    }
-                                }}
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: '12px 28px',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    fontSize: '15px',
-                                    fontWeight: '600',
-                                    color: '#ffffff',
-                                    backgroundColor: loading ? '#f9a8d4' : '#ec4899',
-                                    cursor: loading ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: loading ? 'none' : '0 2px 4px rgba(236,72,153,0.2)',
-                                    minWidth: '200px'
-                                }}
+                                className={`flex justify-center items-center px-8 py-3.5 rounded-xl font-bold text-white transition-all min-w-[220px] shadow-sm ${
+                                    loading 
+                                    ? 'bg-pink-400 cursor-not-allowed shadow-none' 
+                                    : 'bg-pink-600 hover:bg-pink-700 hover:shadow-pink-600/30 hover:-translate-y-0.5 active:translate-y-0'
+                                }`}
                             >
                                 {loading ? (
-                                    <span style={{ display: 'flex', alignItems: 'center' }}>
-                                        <svg
-                                            style={{ animation: 'spin 1s linear infinite', marginLeft: '-4px', marginRight: '8px', height: '16px', width: '16px', color: '#ffffff' }}
-                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        >
-                                            <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        {mensaje === 'Subiendo foto... ⏳' ? 'Procesando...' : 'Guardando...'}
+                                        {mensaje === 'Subiendo foto... ⏳' ? 'Subiendo foto...' : 'Guardando...'}
                                     </span>
                                 ) : (
                                     'Guardar Producto'
@@ -386,14 +229,6 @@ export default function AdminPage() {
                             </button>
                         </div>
                     </div>
-
-                    {/* Pequeño hack para la animación de rotación del loader de carga en estilos inline */}
-                    <style>{`
-            @keyframes spin {
-              from { transform: rotate(0deg); }
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
                 </form>
             </main>
         </div>
