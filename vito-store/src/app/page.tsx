@@ -16,6 +16,7 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
   const products = await getProductsFromSheet();
   const searchParams = await Promise.resolve(props.searchParams);
   const activeCategory = (searchParams?.category as string) || 'Todos';
+  const searchQuery = (searchParams?.search as string) || '';
 
   const cleanedProducts = products.map((p) => {
     let rawCat = p.category || '';
@@ -27,9 +28,17 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
   const uniqueCategories = Array.from(new Set(cleanedProducts.map((p) => p.category)));
   const filterCategories = ['Todos', ...uniqueCategories];
 
-  const filteredProducts = activeCategory === 'Todos'
+  // Filtramos por categoría primero, y si hay búsqueda, filtramos por texto
+  let filteredProducts = activeCategory === 'Todos'
     ? cleanedProducts
     : cleanedProducts.filter((p) => p.category === activeCategory);
+
+  if (searchQuery) {
+      filteredProducts = filteredProducts.filter((p) => 
+          p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          p.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+  }
 
     return (
         <main className="bg-white font-sans text-gray-900 min-h-screen">
