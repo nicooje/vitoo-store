@@ -15,6 +15,11 @@ export type Product = {
 export default function AdminPage() {
     const [products, setProducts] = useState<Product[]>([]);
     
+    // Paginación y Filtro
+    const [filterCategory, setFilterCategory] = useState('Todas');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+    
     // Estados del Formulario
     const [editingProductId, setEditingProductId] = useState<number | null>(null);
     const [nombre, setNombre] = useState('');
@@ -149,6 +154,16 @@ export default function AdminPage() {
             setLoading(false);
         }
     };
+
+    // Lógica Derivada para Paginación y Filtros
+    const uniqueCategories = ['Todas', ...Array.from(new Set(products.map(p => p.category)))];
+    const filteredProducts = products.filter(p => filterCategory === 'Todas' || p.category === filterCategory);
+    
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    
+    const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 pb-32 font-sans">
@@ -340,58 +355,146 @@ export default function AdminPage() {
 
                 {/* ZONA 2: LISTADO DE PRODUCTOS */}
                 <section>
-                    <h2 className="text-2xl font-black text-gray-900 mb-6">Tus Productos Publicados</h2>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                        <h2 className="text-2xl font-black text-gray-900">Tus Productos Publicados</h2>
+                        
+                        {/* Filtro por Categoría */}
+                        <div className="w-full sm:w-auto">
+                            <select
+                                value={filterCategory}
+                                onChange={(e) => {
+                                    setFilterCategory(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full sm:w-48 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 appearance-none cursor-pointer"
+                                style={{
+                                    backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'right 12px top 50%',
+                                    backgroundSize: '10px auto',
+                                }}
+                            >
+                                {uniqueCategories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                     
                     {products.length === 0 ? (
                         <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
                             Cargando productos de Google Sheets... ⏳
                         </div>
+                    ) : paginatedProducts.length === 0 ? (
+                        <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
+                            No hay productos en esta categoría.
+                        </div>
                     ) : (
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left font-sm">
-                                    <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
-                                        <tr>
-                                            <th className="p-4 w-16 text-center">Foto</th>
-                                            <th className="p-4">Info</th>
-                                            <th className="p-4 hidden sm:table-cell">Precio</th>
-                                            <th className="p-4 text-center">Stock</th>
-                                            <th className="p-4 text-right">Acción</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {products.map((p) => (
-                                            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="p-4 text-center">
-                                                    <img src={p.image_url} alt={p.name} className="w-12 h-16 object-cover rounded-md mx-auto" />
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className="font-bold text-gray-900 block leading-tight">{p.name}</span>
-                                                    <span className="text-xs text-gray-500">{p.category}</span>
-                                                </td>
-                                                <td className="p-4 font-bold text-gray-900 hidden sm:table-cell">
-                                                    ${p.price.toLocaleString('es-AR')}
-                                                </td>
-                                                <td className="p-4 text-center">
-                                                    {p.stock ? (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-4 text-right">
-                                                    <button 
-                                                        onClick={() => handleEditProduct(p)}
-                                                        className="text-pink-600 font-bold text-sm bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors border border-pink-100"
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                </td>
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left font-sm">
+                                        <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
+                                            <tr>
+                                                <th className="p-4 w-16 text-center">Foto</th>
+                                                <th className="p-4">Info</th>
+                                                <th className="p-4 hidden sm:table-cell">Precio</th>
+                                                <th className="p-4 text-center">Stock</th>
+                                                <th className="p-4 text-right">Acción</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {paginatedProducts.map((p) => (
+                                                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="p-4 text-center">
+                                                        <img src={p.image_url} alt={p.name} className="w-12 h-16 object-cover rounded-md mx-auto shadow-sm" />
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="font-bold text-gray-900 block leading-tight">{p.name}</span>
+                                                        <span className="text-xs text-gray-500">{p.category}</span>
+                                                    </td>
+                                                    <td className="p-4 font-bold text-gray-900 hidden sm:table-cell">
+                                                        ${p.price.toLocaleString('es-AR')}
+                                                    </td>
+                                                    <td className="p-4 text-center">
+                                                        {p.stock ? (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        <button 
+                                                            onClick={() => handleEditProduct(p)}
+                                                            className="text-pink-600 font-bold text-sm bg-pink-50 hover:bg-pink-100 px-3 py-1.5 rounded-lg transition-colors border border-pink-100"
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+
+                            {/* Paginación */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-100 rounded-xl shadow-sm">
+                                    <div className="flex flex-1 justify-between sm:hidden">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={safeCurrentPage === 1}
+                                            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Anterior
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={safeCurrentPage === totalPages}
+                                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Siguiente
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700">
+                                                Mostrando <span className="font-bold">{startIndex + 1}</span> a <span className="font-bold">{Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)}</span> de <span className="font-bold">{filteredProducts.length}</span> resultados
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                                <button
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={safeCurrentPage === 1}
+                                                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                                                >
+                                                    <span className="sr-only">Anterior</span>
+                                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                                
+                                                <div className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 focus:outline-none">
+                                                    Página {safeCurrentPage} de {totalPages}
+                                                </div>
+
+                                                <button
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={safeCurrentPage === totalPages}
+                                                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                                                >
+                                                    <span className="sr-only">Siguiente</span>
+                                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </section>
