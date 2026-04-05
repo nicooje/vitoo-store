@@ -10,6 +10,9 @@ export type Product = {
     price: number;
     image_url: string;
     stock: boolean;
+    size?: string;
+    color?: string;
+    quantity?: number;
 };
 
 export default function AdminPage() {
@@ -28,6 +31,11 @@ export default function AdminPage() {
     const [file, setFile] = useState<File | null>(null);
     const [existingImageUrl, setExistingImageUrl] = useState('');
     const [hasStock, setHasStock] = useState(true);
+    
+    // Variantes y Control de Stock
+    const [talle, setTalle] = useState('');
+    const [colorItem, setColorItem] = useState('');
+    const [cantidad, setCantidad] = useState<number | string>(1);
 
     const [loading, setLoading] = useState(false);
     const [mensaje, setMensaje] = useState('');
@@ -59,6 +67,9 @@ export default function AdminPage() {
         setPrecio(p.price.toString());
         setExistingImageUrl(p.image_url);
         setHasStock(p.stock);
+        setTalle(p.size || '');
+        setColorItem(p.color || '');
+        setCantidad(p.quantity ?? 1);
         setFile(null); // Resetear archivo nuevo
         setMensaje(`Editando producto: ${p.name}`);
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Subir al formulario
@@ -71,6 +82,9 @@ export default function AdminPage() {
         setPrecio('');
         setExistingImageUrl('');
         setHasStock(true);
+        setTalle('');
+        setColorItem('');
+        setCantidad(1);
         setFile(null);
         setMensaje('');
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -117,7 +131,10 @@ export default function AdminPage() {
                 category: categoria,
                 price: parseFloat(precio),
                 image_url: imageUrl,
-                stock: hasStock
+                stock: hasStock,
+                size: talle,
+                color: colorItem,
+                quantity: parseInt(cantidad.toString()) || 0
             };
 
             // 3. Mandar a la API según si es Edición o Creación
@@ -236,6 +253,46 @@ export default function AdminPage() {
                                                 <option value="Corpiños-Tops">Corpiños / Tops</option>
                                                 <option value="Varios">Varios</option>
                                             </select>
+                                        </div>
+
+                                        {/* Variantes y Stock Exacto */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            {/* Talle */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Talle</label>
+                                                <input
+                                                    type="text"
+                                                    value={talle}
+                                                    onChange={(e) => setTalle(e.target.value)}
+                                                    placeholder="Ej: M / 90"
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+
+                                            {/* Color */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                                                <input
+                                                    type="text"
+                                                    value={colorItem}
+                                                    onChange={(e) => setColorItem(e.target.value)}
+                                                    placeholder="Ej: Rojo"
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+
+                                            {/* Cantidad */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Stock (Cant.)</label>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={cantidad}
+                                                    onChange={(e) => setCantidad(e.target.value)}
+                                                    placeholder="Ej: 5"
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
                                         </div>
 
                                         {/* Interruptor de Stock */}
@@ -412,16 +469,25 @@ export default function AdminPage() {
                                                     <td className="p-4">
                                                         <span className="font-bold text-gray-900 block leading-tight">{p.name}</span>
                                                         <span className="text-xs text-gray-500">{p.category}</span>
+                                                        {(p.size || p.color) && (
+                                                            <div className="mt-1 flex items-center gap-2 text-xs">
+                                                                {p.size && <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Talle: {p.size}</span>}
+                                                                {p.color && <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Color: {p.color}</span>}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="p-4 font-bold text-gray-900 hidden sm:table-cell">
                                                         ${p.price.toLocaleString('es-AR')}
                                                     </td>
                                                     <td className="p-4 text-center">
-                                                        {p.stock ? (
-                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
-                                                        )}
+                                                        <div className="flex flex-col justify-center items-center gap-1">
+                                                            {p.stock ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
+                                                            )}
+                                                            <span className="text-[11px] font-medium text-gray-500">{p.quantity ?? 0} unid.</span>
+                                                        </div>
                                                     </td>
                                                     <td className="p-4 text-right">
                                                         <button 

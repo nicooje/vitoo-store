@@ -68,9 +68,25 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                         {/* Bloque Inferior - Minimalista */}
                         <div className="flex flex-col mt-4 px-1">
                             {/* Título en texto negro puro */}
-                            <h3 className="text-sm md:text-[15px] text-gray-900 font-normal leading-tight min-h-[40px] md:min-h-[44px] group-hover:underline decoration-pink-300 underline-offset-4">
+                            <h3 className="text-sm md:text-[15px] text-gray-900 font-normal leading-tight group-hover:underline decoration-pink-300 underline-offset-4">
                                 {product.name}
                             </h3>
+                            
+                            {/* Variantes (Talle / Color) */}
+                            {(product.size || product.color) && (
+                                <div className="flex flex-wrap items-center gap-1.5 mt-1.5 mb-2 h-[20px]">
+                                    {product.size && (
+                                        <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-sm">
+                                            {product.size}
+                                        </span>
+                                    )}
+                                    {product.color && (
+                                        <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-sm">
+                                            {product.color}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                             
                             {/* Precio fuerte */}
                             <div className="mt-1 flex flex-col">

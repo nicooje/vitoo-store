@@ -8,6 +8,9 @@ export type Product = {
     price: number;
     image_url: string;
     stock: boolean;
+    size?: string;
+    color?: string;
+    quantity?: number;
 };
 
 // Configuración de credenciales esperada desde variables de entorno
@@ -39,7 +42,7 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         // Se asume que los datos están en la primera pestaña y en el rango A2:F
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: 'A2:F',
+            range: 'A2:I',
         });
 
         const rows = response.data.values;
@@ -61,6 +64,9 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 price: parseFloat(row[3]) || 0,
                 image_url: row[4] || '',
                 stock: hasStock,
+                size: row[6] || '',
+                color: row[7] || '',
+                quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
             };
         });
 
@@ -79,7 +85,7 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
     
     await sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,
-        range: 'A2:F',
+        range: 'A2:I',
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -89,7 +95,10 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
                     product.category, 
                     product.price, 
                     product.image_url, 
-                    product.stock ? 'SI' : 'NO'
+                    product.stock ? 'SI' : 'NO',
+                    product.size || '',
+                    product.color || '',
+                    product.quantity || 0
                 ]
             ],
         },
@@ -118,7 +127,7 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     
     await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `A${rowNumber}:F${rowNumber}`,
+        range: `A${rowNumber}:I${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -128,7 +137,10 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
                     product.category, 
                     product.price, 
                     product.image_url, 
-                    product.stock ? 'SI' : 'NO'
+                    product.stock ? 'SI' : 'NO',
+                    product.size || '',
+                    product.color || '',
+                    product.quantity || 0
                 ]
             ],
         },
