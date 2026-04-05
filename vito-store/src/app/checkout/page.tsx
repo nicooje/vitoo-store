@@ -10,12 +10,9 @@ export default function CheckoutPage() {
     const getTotal = useCartStore((state) => state.getTotal);
     const removeFromCart = useCartStore((state) => state.removeFromCart);
 
-    // Estados para el formulario del cliente
     const [nombre, setNombre] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
     const [metodoEntrega, setMetodoEntrega] = useState('retiro');
-
-    // Estado para el botón de carga
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -25,7 +22,6 @@ export default function CheckoutPage() {
     if (!mounted) return null;
 
     const handlePago = async () => {
-        // 1. Validamos que el cliente haya puesto sus datos
         if (!nombre.trim() || !whatsapp.trim()) {
             alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
             return;
@@ -34,7 +30,6 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            // 2. Nos comunicamos con el "puente" secreto que creamos recién
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -46,7 +41,6 @@ export default function CheckoutPage() {
 
             const data = await res.json();
 
-            // 3. Si Mercado Pago nos da el ok, viajamos a su página segura
             if (data.init_point) {
                 window.location.href = data.init_point;
             } else {
@@ -60,7 +54,6 @@ export default function CheckoutPage() {
         }
     };
 
-    // Si el carrito está vacío, mostramos un mensaje para volver
     if (cart.length === 0) {
         return (
             <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f9fafb', fontFamily: 'system-ui, sans-serif' }}>
@@ -76,7 +69,6 @@ export default function CheckoutPage() {
         <div style={{ backgroundColor: '#f9fafb', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
             <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
 
-                {/* COLUMNA IZQUIERDA: Resumen del Carrito */}
                 <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px', borderBottom: '2px solid #f3f4f6', paddingBottom: '10px' }}>Resumen de Compra</h2>
 
@@ -102,7 +94,6 @@ export default function CheckoutPage() {
                     </div>
                 </div>
 
-                {/* COLUMNA DERECHA: Datos del Cliente */}
                 <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
                     <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px', borderBottom: '2px solid #f3f4f6', paddingBottom: '10px' }}>Tus Datos</h2>
 
