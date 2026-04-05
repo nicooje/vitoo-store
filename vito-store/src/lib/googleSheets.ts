@@ -117,14 +117,18 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     // Primero, traemos los datos actuales para ubicar la fila del ID buscado
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: 'A2:A', // Solo traemos la columna de IDs para buscar rápido
+        range: 'A2:B', // Traemos ID y Nombre
     });
 
     const rows = response.data.values;
     if (!rows) throw new Error("La hoja está vacía.");
 
     // Encontrar el índice (sumar 2 porque arranca en A2)
-    const rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    let rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    if (rowIndex === -1 && product.name) {
+        rowIndex = rows.findIndex(row => row[1]?.toString().trim() === product.name.trim());
+    }
+    
     if (rowIndex === -1) throw new Error("Producto no encontrado en el Excel");
 
     const rowNumber = rowIndex + 2; // +2 porque el rango empieza en A2 (índice 0 es fila 2)
@@ -153,27 +157,37 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     return { success: true };
 }
 
-export async function deleteProductFromSheet(id: number) {
+export async function deleteProductFromSheet(id: number, name?: string) {
     const { sheets, sheetId } = await getGoogleSheetsClient();
     
     // Primero, traemos los datos actuales para ubicar la fila del ID buscado
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: 'A2:A', // Solo traemos la columna de IDs para buscar rápido
+        range: 'A2:B', // Traemos ID y Nombre
     });
 
     const rows = response.data.values;
     if (!rows) throw new Error("La hoja está vacía.");
 
-    // Encontrar el índice (sumar 2 porque arranca en A2)
-    const rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    let rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    if (rowIndex === -1 && name) {
+        rowIndex = rows.findIndex(row => row[1]?.toString().trim() === name.trim());
+    }
+    
     if (rowIndex === -1) throw new Error("Producto no encontrado en el Excel para eliminar");
 
     const rowNumber = rowIndex + 2; 
     
-    await sheets.spreadsheets.values.clear({
+    // Usar 'update' con strings en blanco funciona de manera mucho más confiable que 'clear' en algunas versiones de googleapis
+    await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `A${rowNumber}:I${rowNumber}`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+            values: [
+                ['', '', '', '', '', '', '', '', '']
+            ]
+        }
     });
 
     return { success: true };

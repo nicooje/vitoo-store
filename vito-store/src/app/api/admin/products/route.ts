@@ -43,16 +43,16 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
     try {
         const body = await request.json();
-        const { id } = body;
+        const { id, name } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID es requerido para eliminar' }, { status: 400 });
         }
 
-        const result = await deleteProductFromSheet(Number(id));
+        const result = await deleteProductFromSheet(Number(id), name);
         return NextResponse.json(result);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error DELETE /api/admin/products:", error);
-        return NextResponse.json({ error: 'Error eliminando el producto' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Error eliminando el producto' }, { status: 500 });
     }
 }

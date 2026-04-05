@@ -184,7 +184,7 @@ export default function AdminPage() {
             const res = await fetch('/api/admin/products', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
+                body: JSON.stringify({ id, name })
             });
 
             if (!res.ok) throw new Error("Error respondiendo desde API Sheet");
