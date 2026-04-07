@@ -54,15 +54,20 @@ export async function getProductsFromSheet(): Promise<Product[]> {
 
         type StringRow = string[];
         
-        // Filtramos las filas que están completamente vacías (pueden quedar al borrar)
-        const validRows = rows.filter((row: StringRow) => row.length > 0 && row.some(cell => cell.trim() !== ''));
+        const products: Product[] = [];
+        
+        rows.forEach((row: string[], index: number) => {
+            // Filtramos internamente las filas vacías pero mantenemos el índice real
+            if (!row || row.length === 0 || !row.some(cell => cell.trim() !== '')) {
+                return;
+            }
 
-        const products: Product[] = validRows.map((row: StringRow, index: number) => {
+            const physicalRowNumber = index + 2;
             const stockValue = row[5]?.toString().toLowerCase().trim();
             const hasStock = stockValue === 'true' || stockValue === 'v' || stockValue === 'si' || stockValue === '1';
 
-            return {
-                id: parseInt(row[0]) || index + 1, // Si no hay ID, asigna index + 1
+            products.push({
+                id: parseInt(row[0]) || physicalRowNumber, // El ID fallback es igual al nro de fila exacto
                 name: row[1] || 'Producto sin nombre',
                 category: row[2] || 'General',
                 price: parseFloat(row[3]) || 0,
@@ -71,7 +76,7 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 size: row[6] || '',
                 color: row[7] || '',
                 quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
-            };
+            });
         });
 
         return products;
@@ -123,13 +128,23 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     const rows = response.data.values;
     if (!rows) throw new Error("La hoja está vacía.");
 
-    // Encontrar el índice (sumar 2 porque arranca en A2)
+    // 1. Buscar coincidencia exacta por ID impreso
     let rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    
+    // 2. Fallback: búsqueda por nombre (si no se editó el nombre)
     if (rowIndex === -1 && product.name) {
         rowIndex = rows.findIndex(row => row[1]?.toString().trim() === product.name.trim());
     }
+
+    // 3. Fallback Infalible: si el id fue autogenerado como physicalRowNumber
+    if (rowIndex === -1) {
+        const potentialIndex = id - 2;
+        if (potentialIndex >= 0 && potentialIndex < rows.length) {
+            rowIndex = potentialIndex;
+        }
+    }
     
-    if (rowIndex === -1) throw new Error("Producto no encontrado en el Excel");
+    if (rowIndex === -1) throw new Error(`Producto no encontrado en el Excel (ID: ${id})`);
 
     const rowNumber = rowIndex + 2; // +2 porque el rango empieza en A2 (índice 0 es fila 2)
     
@@ -169,12 +184,23 @@ export async function deleteProductFromSheet(id: number, name?: string) {
     const rows = response.data.values;
     if (!rows) throw new Error("La hoja está vacía.");
 
+    // 1. Coincidencia por ID literal
     let rowIndex = rows.findIndex(row => parseInt(row[0]) === id);
+    
+    // 2. Coincidencia por nombre (si es que vino desde el frontend)
     if (rowIndex === -1 && name) {
         rowIndex = rows.findIndex(row => row[1]?.toString().trim() === name.trim());
     }
+
+    // 3. Fallback Infalible: usar el ID como physicalRowNumber si fue autogenerado
+    if (rowIndex === -1) {
+        const potentialIndex = id - 2;
+        if (potentialIndex >= 0 && potentialIndex < rows.length) {
+            rowIndex = potentialIndex;
+        }
+    }
     
-    if (rowIndex === -1) throw new Error("Producto no encontrado en el Excel para eliminar");
+    if (rowIndex === -1) throw new Error(`Producto no encontrado en el Excel para eliminar (ID: ${id})`);
 
     const rowNumber = rowIndex + 2; 
     

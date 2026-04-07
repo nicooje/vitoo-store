@@ -151,7 +151,8 @@ export default function AdminPage() {
                 body: JSON.stringify(payload)
             });
 
-            if (!finalRes.ok) throw new Error("Error respondiendo desde API Sheet");
+            const data = await finalRes.json();
+            if (!finalRes.ok) throw new Error(data.error || "Error al comunicarse con la hoja de Google Sheets");
 
             // 4. ¡Éxito!
             setMensaje(editingProductId ? '¡Producto actualizado con éxito! 🎉' : '¡Producto subido con éxito! 🎉');
@@ -187,7 +188,8 @@ export default function AdminPage() {
                 body: JSON.stringify({ id, name })
             });
 
-            if (!res.ok) throw new Error("Error respondiendo desde API Sheet");
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Error al eliminar desde Google Sheets");
 
             setMensaje('¡Producto eliminado con éxito! 🗑️');
             await fetchProducts();
