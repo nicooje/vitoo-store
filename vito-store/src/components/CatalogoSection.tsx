@@ -12,7 +12,10 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
             id: String(product.id || product.name),
             nombre: String(product.name),
             precio: Number(product.price) || 0,
-            precioMayorista: product.wholesalePrice ? Number(product.wholesalePrice) : undefined,
+            price3: product.price3 ? Number(product.price3) : undefined,
+            price6: product.price6 ? Number(product.price6) : undefined,
+            price9: product.price9 ? Number(product.price9) : undefined,
+            price12: product.price12 ? Number(product.price12) : undefined,
             imagenUrl: String(product.image_url),
             categoria: String(product.category)
         });
@@ -94,12 +97,12 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                 <span className="text-[17px] font-bold text-gray-900">
                                     ${Number(product.price).toLocaleString('es-AR')}
                                 </span>
-                                {product.wholesalePrice && (
+                                {product.price3 && (
                                     <span className="text-[11px] font-bold text-pink-600 bg-pink-50 inline-block px-1.5 py-0.5 rounded mt-0.5 w-max">
-                                        Llevando 3+: ${Number(product.wholesalePrice).toLocaleString('es-AR')}
+                                        Combo 3+: ${Number(product.price3).toLocaleString('es-AR')}
                                     </span>
                                 )}
-                                {!product.wholesalePrice && (
+                                {!product.price3 && (
                                     <span className="text-[11px] text-slate-500 mt-0.5">3 cuotas sin interés</span>
                                 )}
                             </div>

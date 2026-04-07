@@ -5,7 +5,10 @@ export interface Product {
     id: string;
     nombre: string;
     precio: number;
-    precioMayorista?: number;
+    price3?: number;
+    price6?: number;
+    price9?: number;
+    price12?: number;
     imagenUrl: string;
     categoria: string;
 }
@@ -55,13 +58,19 @@ export const useCartStore = create<CartState>((set, get) => ({
     // Función para vaciar todo el carrito (cuando ya pagaron)
     clearCart: () => set({ cart: [] }),
 
-    // Función que calcula la plata total con regla mayorista
+    // Función que calcula la plata total con regla mayorista por combos
     getTotal: () => {
         const cart = get().cart;
         const totalItems = get().getTotalItems();
 
         return cart.reduce((total, item) => {
-            const activePrice = (totalItems >= 3 && item.precioMayorista) ? item.precioMayorista : item.precio;
+            let activePrice = item.precio;
+            
+            if (totalItems >= 12 && item.price12 && item.price12 > 0) activePrice = item.price12;
+            else if (totalItems >= 9 && item.price9 && item.price9 > 0) activePrice = item.price9;
+            else if (totalItems >= 6 && item.price6 && item.price6 > 0) activePrice = item.price6;
+            else if (totalItems >= 3 && item.price3 && item.price3 > 0) activePrice = item.price3;
+
             return total + (activePrice * item.cantidad);
         }, 0);
     },

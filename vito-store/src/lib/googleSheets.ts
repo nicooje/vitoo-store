@@ -11,7 +11,10 @@ export type Product = {
     size?: string;
     color?: string;
     quantity?: number;
-    wholesalePrice?: number;
+    price3?: number;
+    price6?: number;
+    price9?: number;
+    price12?: number;
 };
 
 // Configuración de credenciales esperada desde variables de entorno
@@ -40,10 +43,10 @@ async function getGoogleSheetsClient() {
 export async function getProductsFromSheet(): Promise<Product[]> {
     try {
         const { sheets, sheetId } = await getGoogleSheetsClient();
-        // Se asume que los datos están en la primera pestaña y en el rango A2:J
+        // Se asume que los datos están en la primera pestaña y en el rango A2:N
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: 'A2:J',
+            range: 'A2:N',
         });
 
         const rows = response.data.values;
@@ -77,7 +80,10 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 size: row[6] || '',
                 color: row[7] || '',
                 quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
-                wholesalePrice: row[9] ? parseFloat(row[9]) : undefined,
+                price3: row[9] ? parseFloat(row[9]) : undefined,
+                price6: row[10] ? parseFloat(row[10]) : undefined,
+                price9: row[11] ? parseFloat(row[11]) : undefined,
+                price12: row[12] ? parseFloat(row[12]) : undefined,
             });
         });
 
@@ -93,10 +99,14 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
     
     // Generar un ID simple basado en timestamp si la hoja no lo auto-genera
     const newId = Date.now();
+    // Para evitar bugs de columnas desconfiguradas, buscamos el fondo de la tabla en lugar de usar append()
+    const fullRes = await sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range: 'A:N' });
+    const rows = fullRes.data.values || [];
+    const maxRow = Math.max(rows.length + 1, 2); // Empezar siempre a partir de la fila 2 mínimo
     
-    await sheets.spreadsheets.values.append({
+    await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: 'A2:J',
+        range: `A${maxRow}:N${maxRow}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -110,7 +120,10 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
                     product.size || '',
                     product.color || '',
                     product.quantity || 0,
-                    product.wholesalePrice || ''
+                    product.price3 || '',
+                    product.price6 || '',
+                    product.price9 || '',
+                    product.price12 || ''
                 ]
             ],
         },
@@ -122,10 +135,10 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
 export async function updateProductInSheet(id: number, product: Omit<Product, 'id'>) {
     const { sheets, sheetId } = await getGoogleSheetsClient();
     
-    // Primero, traemos los datos actuales para ubicar la fila del ID buscado
+    // Usamos el mismo rango completo A2:N para que no dé error si las primeras columnas están vacías
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: 'A2:B', // Traemos ID y Nombre
+        range: 'A2:N',
     });
 
     const rows = response.data.values;
@@ -153,7 +166,7 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     
     await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `A${rowNumber}:J${rowNumber}`,
+        range: `A${rowNumber}:N${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -167,7 +180,10 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
                     product.size || '',
                     product.color || '',
                     product.quantity || 0,
-                    product.wholesalePrice || ''
+                    product.price3 || '',
+                    product.price6 || '',
+                    product.price9 || '',
+                    product.price12 || ''
                 ]
             ],
         },
@@ -179,10 +195,10 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
 export async function deleteProductFromSheet(id: number, name?: string) {
     const { sheets, sheetId } = await getGoogleSheetsClient();
     
-    // Primero, traemos los datos actuales para ubicar la fila del ID buscado
+    // Usamos el mismo rango completo A2:N para que no dé error si las primeras columnas están vacías
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
-        range: 'A2:B', // Traemos ID y Nombre
+        range: 'A2:N',
     });
 
     const rows = response.data.values;
@@ -211,11 +227,11 @@ export async function deleteProductFromSheet(id: number, name?: string) {
     // Usar 'update' con strings en blanco funciona de manera mucho más confiable que 'clear' en algunas versiones de googleapis
     await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `A${rowNumber}:J${rowNumber}`,
+        range: `A${rowNumber}:N${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
-                ['', '', '', '', '', '', '', '', '', '']
+                ['', '', '', '', '', '', '', '', '', '', '', '', '', '']
             ]
         }
     });

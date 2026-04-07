@@ -77,8 +77,14 @@ export default function CheckoutPage() {
 
                     <div className="flex flex-col gap-6">
                         {cart.map((item) => {
-                            const activePrice = (totalItems >= 3 && item.precioMayorista) ? item.precioMayorista : item.precio;
-                            const isDiscounted = (totalItems >= 3 && item.precioMayorista && item.precioMayorista < item.precio);
+                            let activePrice = item.precio;
+                            let isDiscounted = false;
+                            let comboText = '';
+
+                            if (totalItems >= 12 && item.price12 && item.price12 > 0) { activePrice = item.price12; isDiscounted = true; comboText = 'Combo 12+'; }
+                            else if (totalItems >= 9 && item.price9 && item.price9 > 0) { activePrice = item.price9; isDiscounted = true; comboText = 'Combo 9+'; }
+                            else if (totalItems >= 6 && item.price6 && item.price6 > 0) { activePrice = item.price6; isDiscounted = true; comboText = 'Combo 6+'; }
+                            else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
                             
                             return (
                                 <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
@@ -93,7 +99,7 @@ export default function CheckoutPage() {
                                         <p className="text-base md:text-lg font-bold text-slate-900 pr-2">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
                                         {isDiscounted && (
                                             <p className="text-[10px] sm:text-xs font-semibold text-pink-600 bg-pink-50 px-2 py-0.5 rounded mr-2">
-                                                Precio Mayorista
+                                                Precio {comboText}
                                             </p>
                                         )}
                                         <button 
@@ -108,10 +114,10 @@ export default function CheckoutPage() {
                         })}
                     </div>
 
-                    {totalItems >= 3 && cart.some(item => item.precioMayorista) && (
+                    {totalItems >= 3 && cart.some(item => item.price3 || item.price6 || item.price9 || item.price12) && (
                         <div className="mt-6 p-4 bg-pink-50 border border-pink-100 rounded-xl text-sm font-bold text-pink-700 flex items-center gap-3">
                             <span className="text-xl">✨</span>
-                            ¡Estás accediendo a precios por mayor (Llevando 3+ prendas)!
+                            ¡Estás accediendo a precios de combo por cantidad!
                         </div>
                     )}
 

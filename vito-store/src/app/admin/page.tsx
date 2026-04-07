@@ -13,7 +13,10 @@ export type Product = {
     size?: string;
     color?: string;
     quantity?: number;
-    wholesalePrice?: number;
+    price3?: number;
+    price6?: number;
+    price9?: number;
+    price12?: number;
 };
 
 export default function AdminPage() {
@@ -29,7 +32,10 @@ export default function AdminPage() {
     const [nombre, setNombre] = useState('');
     const [categoria, setCategoria] = useState('Conjuntos');
     const [precio, setPrecio] = useState('');
-    const [precioMayorista, setPrecioMayorista] = useState('');
+    const [price3, setPrice3] = useState('');
+    const [price6, setPrice6] = useState('');
+    const [price9, setPrice9] = useState('');
+    const [price12, setPrice12] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [existingImageUrl, setExistingImageUrl] = useState('');
     const [hasStock, setHasStock] = useState(true);
@@ -67,7 +73,10 @@ export default function AdminPage() {
         setNombre(p.name);
         setCategoria(p.category);
         setPrecio(p.price.toString());
-        setPrecioMayorista(p.wholesalePrice ? p.wholesalePrice.toString() : '');
+        setPrice3(p.price3 ? p.price3.toString() : '');
+        setPrice6(p.price6 ? p.price6.toString() : '');
+        setPrice9(p.price9 ? p.price9.toString() : '');
+        setPrice12(p.price12 ? p.price12.toString() : '');
         setExistingImageUrl(p.image_url);
         setHasStock(p.stock);
         setTalle(p.size || '');
@@ -83,7 +92,10 @@ export default function AdminPage() {
         setNombre('');
         setCategoria('Conjuntos');
         setPrecio('');
-        setPrecioMayorista('');
+        setPrice3('');
+        setPrice6('');
+        setPrice9('');
+        setPrice12('');
         setExistingImageUrl('');
         setHasStock(true);
         setTalle('');
@@ -139,7 +151,10 @@ export default function AdminPage() {
                 size: talle,
                 color: colorItem,
                 quantity: parseInt(cantidad.toString()) || 0,
-                wholesalePrice: precioMayorista ? parseFloat(precioMayorista) : undefined
+                price3: price3 ? parseFloat(price3) : undefined,
+                price6: price6 ? parseFloat(price6) : undefined,
+                price9: price9 ? parseFloat(price9) : undefined,
+                price12: price12 ? parseFloat(price12) : undefined
             };
 
             // 3. Mandar a la API según si es Edición o Creación
@@ -431,15 +446,60 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Precio Mayorista (llevando 3+)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Combo 3 Prendas c/u</label>
                                             <div className="relative">
                                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                                     <span className="text-gray-400 font-medium">$</span>
                                                 </div>
                                                 <input
                                                     type="number"
-                                                    value={precioMayorista}
-                                                    onChange={(e) => setPrecioMayorista(e.target.value)}
+                                                    value={price3}
+                                                    onChange={(e) => setPrice3(e.target.value)}
+                                                    placeholder="Opcional"
+                                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Combo 6 Prendas c/u</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <span className="text-gray-400 font-medium">$</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    value={price6}
+                                                    onChange={(e) => setPrice6(e.target.value)}
+                                                    placeholder="Opcional"
+                                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Combo 9 Prendas c/u</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <span className="text-gray-400 font-medium">$</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    value={price9}
+                                                    onChange={(e) => setPrice9(e.target.value)}
+                                                    placeholder="Opcional"
+                                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Combo 12 Prendas c/u</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <span className="text-gray-400 font-medium">$</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    value={price12}
+                                                    onChange={(e) => setPrice12(e.target.value)}
                                                     placeholder="Opcional"
                                                     className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
                                                 />
