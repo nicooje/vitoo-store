@@ -5,6 +5,7 @@ export interface Product {
     id: string;
     nombre: string;
     precio: number;
+    precioMayorista?: number;
     imagenUrl: string;
     categoria: string;
 }
@@ -21,6 +22,7 @@ interface CartState {
     removeFromCart: (productId: string) => void;
     clearCart: () => void;
     getTotal: () => number;
+    getTotalItems: () => number;
 }
 
 // 4. Creamos el Cerebro mágico con Zustand
@@ -53,8 +55,19 @@ export const useCartStore = create<CartState>((set, get) => ({
     // Función para vaciar todo el carrito (cuando ya pagaron)
     clearCart: () => set({ cart: [] }),
 
-    // Función que calcula la plata total
+    // Función que calcula la plata total con regla mayorista
     getTotal: () => {
-        return get().cart.reduce((total, item) => total + item.precio * item.cantidad, 0);
+        const cart = get().cart;
+        const totalItems = get().getTotalItems();
+
+        return cart.reduce((total, item) => {
+            const activePrice = (totalItems >= 3 && item.precioMayorista) ? item.precioMayorista : item.precio;
+            return total + (activePrice * item.cantidad);
+        }, 0);
     },
+
+    // Nueva función para saber el total de prendas llevadas
+    getTotalItems: () => {
+        return get().cart.reduce((total, item) => total + item.cantidad, 0);
+    }
 }));

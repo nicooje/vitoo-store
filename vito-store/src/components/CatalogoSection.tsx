@@ -12,6 +12,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
             id: String(product.id || product.name),
             nombre: String(product.name),
             precio: Number(product.price) || 0,
+            precioMayorista: product.wholesalePrice ? Number(product.wholesalePrice) : undefined,
             imagenUrl: String(product.image_url),
             categoria: String(product.category)
         });
@@ -93,7 +94,14 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                 <span className="text-[17px] font-bold text-gray-900">
                                     ${Number(product.price).toLocaleString('es-AR')}
                                 </span>
-                                <span className="text-[11px] text-slate-500 mt-0.5">3 cuotas sin interés</span>
+                                {product.wholesalePrice && (
+                                    <span className="text-[11px] font-bold text-pink-600 bg-pink-50 inline-block px-1.5 py-0.5 rounded mt-0.5 w-max">
+                                        Llevando 3+: ${Number(product.wholesalePrice).toLocaleString('es-AR')}
+                                    </span>
+                                )}
+                                {!product.wholesalePrice && (
+                                    <span className="text-[11px] text-slate-500 mt-0.5">3 cuotas sin interés</span>
+                                )}
                             </div>
 
                             {/* Botón Carrito en Mobile: ocupa todo el ancho, visible solo en pantallas xs */}

@@ -43,8 +43,23 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
     try {
         const body = await request.json();
-        const { id, name } = body;
 
+        // Soporte para eliminación masiva
+        if (body.items && Array.isArray(body.items)) {
+            if (body.items.length === 0) return NextResponse.json({ error: 'No hay items seleccionados' }, { status: 400 });
+            
+            const results = [];
+            for (const item of body.items) {
+                if (item.id) {
+                    const result = await deleteProductFromSheet(Number(item.id), item.name);
+                    results.push(result);
+                }
+            }
+            return NextResponse.json({ success: true, count: results.length });
+        }
+
+        // Soporte para eliminación individual (retrocompatibilidad)
+        const { id, name } = body;
         if (!id) {
             return NextResponse.json({ error: 'ID es requerido para eliminar' }, { status: 400 });
         }

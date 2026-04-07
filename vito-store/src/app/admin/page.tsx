@@ -13,6 +13,7 @@ export type Product = {
     size?: string;
     color?: string;
     quantity?: number;
+    wholesalePrice?: number;
 };
 
 export default function AdminPage() {
@@ -28,6 +29,7 @@ export default function AdminPage() {
     const [nombre, setNombre] = useState('');
     const [categoria, setCategoria] = useState('Conjuntos');
     const [precio, setPrecio] = useState('');
+    const [precioMayorista, setPrecioMayorista] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [existingImageUrl, setExistingImageUrl] = useState('');
     const [hasStock, setHasStock] = useState(true);
@@ -65,6 +67,7 @@ export default function AdminPage() {
         setNombre(p.name);
         setCategoria(p.category);
         setPrecio(p.price.toString());
+        setPrecioMayorista(p.wholesalePrice ? p.wholesalePrice.toString() : '');
         setExistingImageUrl(p.image_url);
         setHasStock(p.stock);
         setTalle(p.size || '');
@@ -80,6 +83,7 @@ export default function AdminPage() {
         setNombre('');
         setCategoria('Conjuntos');
         setPrecio('');
+        setPrecioMayorista('');
         setExistingImageUrl('');
         setHasStock(true);
         setTalle('');
@@ -134,7 +138,8 @@ export default function AdminPage() {
                 stock: hasStock,
                 size: talle,
                 color: colorItem,
-                quantity: parseInt(cantidad.toString()) || 0
+                quantity: parseInt(cantidad.toString()) || 0,
+                wholesalePrice: precioMayorista ? parseFloat(precioMayorista) : undefined
             };
 
             // 3. Mandar a la API según si es Edición o Creación
@@ -192,6 +197,58 @@ export default function AdminPage() {
             if (!res.ok) throw new Error(data.error || "Error al eliminar desde Google Sheets");
 
             setMensaje('¡Producto eliminado con éxito! 🗑️');
+            await fetchProducts();
+        } catch (error: any) {
+            console.error(error);
+            setMensaje(`❌ Hubo un error al eliminar. ${error.message || ''}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+    const toggleSelection = (id: number) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        setSelectedIds(newSet);
+    };
+
+    const toggleAllSelection = () => {
+        if (selectedIds.size === paginatedProducts.length && paginatedProducts.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedProducts.map(p => p.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        if (!window.confirm(`¿Seguro que querés eliminar ${selectedIds.size} productos seleccionados? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        setLoading(true);
+        setMensaje(`Eliminando ${selectedIds.size} productos... ⏳`);
+
+        try {
+            const itemsToDelete = Array.from(selectedIds).map(id => {
+                const product = products.find(p => p.id === id);
+                return { id, name: product?.name };
+            });
+
+            const res = await fetch('/api/admin/products', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: itemsToDelete })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Error al eliminar masivamente desde Google Sheets");
+
+            setMensaje(`¡${data.count || selectedIds.size} productos eliminados con éxito! 🗑️`);
+            setSelectedIds(new Set());
             await fetchProducts();
         } catch (error: any) {
             console.error(error);
@@ -351,21 +408,43 @@ export default function AdminPage() {
                             {/* COLUMNA DERECHA: Precio y Fotos */}
                             <div className="md:col-span-5 flex flex-col gap-6">
                                 
-                                {/* Tarjeta: Precio */}
+                                {/* Tarjeta: Precios */}
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Precio de venta</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <span className="text-gray-400 font-medium">$</span>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-black text-gray-900 border-b-2 border-pink-500 pb-1 inline-block">Precios</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Precio normal</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <span className="text-gray-400 font-medium">$</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    required
+                                                    value={precio}
+                                                    onChange={(e) => setPrecio(e.target.value)}
+                                                    placeholder="0.00"
+                                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
                                         </div>
-                                        <input
-                                            type="number"
-                                            required
-                                            value={precio}
-                                            onChange={(e) => setPrecio(e.target.value)}
-                                            placeholder="0.00"
-                                            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
-                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Precio Mayorista (llevando 3+)</label>
+                                            <div className="relative">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <span className="text-gray-400 font-medium">$</span>
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    value={precioMayorista}
+                                                    onChange={(e) => setPrecioMayorista(e.target.value)}
+                                                    placeholder="Opcional"
+                                                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -442,7 +521,17 @@ export default function AdminPage() {
                 {/* ZONA 2: LISTADO DE PRODUCTOS */}
                 <section>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                        <h2 className="text-2xl font-black text-gray-900">Tus Productos Publicados</h2>
+                        <div className="flex gap-4 items-center flex-wrap">
+                            <h2 className="text-2xl font-black text-gray-900">Tus Productos Publicados</h2>
+                            {selectedIds.size > 0 && (
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-4 py-2 rounded-lg font-bold text-sm transition-colors border border-red-200 shadow-sm"
+                                >
+                                    🗑️ Eliminar seleccionados ({selectedIds.size})
+                                </button>
+                            )}
+                        </div>
                         
                         {/* Filtro por Categoría */}
                         <div className="w-full sm:w-auto">
@@ -482,6 +571,14 @@ export default function AdminPage() {
                                     <table className="w-full text-left font-sm">
                                         <thead className="bg-gray-50 text-gray-500 font-bold text-xs uppercase tracking-wider">
                                             <tr>
+                                                <th className="p-4 w-12 text-center">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        className="w-4 h-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
+                                                        checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length}
+                                                        onChange={toggleAllSelection}
+                                                    />
+                                                </th>
                                                 <th className="p-4 w-16 text-center">Foto</th>
                                                 <th className="p-4">Info</th>
                                                 <th className="p-4 hidden sm:table-cell">Precio</th>
@@ -492,6 +589,14 @@ export default function AdminPage() {
                                         <tbody className="divide-y divide-gray-100">
                                             {paginatedProducts.map((p) => (
                                                 <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                                    <td className="p-4 text-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="w-4 h-4 text-pink-600 rounded border-gray-300 focus:ring-pink-500 cursor-pointer"
+                                                            checked={selectedIds.has(p.id)}
+                                                            onChange={() => toggleSelection(p.id)}
+                                                        />
+                                                    </td>
                                                     <td className="p-4 text-center">
                                                         <img src={p.image_url} alt={p.name} className="w-12 h-16 object-cover rounded-md mx-auto shadow-sm" />
                                                     </td>

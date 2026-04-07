@@ -11,6 +11,7 @@ export type Product = {
     size?: string;
     color?: string;
     quantity?: number;
+    wholesalePrice?: number;
 };
 
 // Configuración de credenciales esperada desde variables de entorno
@@ -39,10 +40,10 @@ async function getGoogleSheetsClient() {
 export async function getProductsFromSheet(): Promise<Product[]> {
     try {
         const { sheets, sheetId } = await getGoogleSheetsClient();
-        // Se asume que los datos están en la primera pestaña y en el rango A2:F
+        // Se asume que los datos están en la primera pestaña y en el rango A2:J
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: 'A2:I',
+            range: 'A2:J',
         });
 
         const rows = response.data.values;
@@ -76,6 +77,7 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 size: row[6] || '',
                 color: row[7] || '',
                 quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
+                wholesalePrice: row[9] ? parseFloat(row[9]) : undefined,
             });
         });
 
@@ -94,7 +96,7 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
     
     await sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,
-        range: 'A2:I',
+        range: 'A2:J',
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -107,7 +109,8 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
                     product.stock ? 'SI' : 'NO',
                     product.size || '',
                     product.color || '',
-                    product.quantity || 0
+                    product.quantity || 0,
+                    product.wholesalePrice || ''
                 ]
             ],
         },
@@ -150,7 +153,7 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     
     await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `A${rowNumber}:I${rowNumber}`,
+        range: `A${rowNumber}:J${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
@@ -163,7 +166,8 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
                     product.stock ? 'SI' : 'NO',
                     product.size || '',
                     product.color || '',
-                    product.quantity || 0
+                    product.quantity || 0,
+                    product.wholesalePrice || ''
                 ]
             ],
         },
@@ -207,11 +211,11 @@ export async function deleteProductFromSheet(id: number, name?: string) {
     // Usar 'update' con strings en blanco funciona de manera mucho más confiable que 'clear' en algunas versiones de googleapis
     await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
-        range: `A${rowNumber}:I${rowNumber}`,
+        range: `A${rowNumber}:J${rowNumber}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
             values: [
-                ['', '', '', '', '', '', '', '', '']
+                ['', '', '', '', '', '', '', '', '', '']
             ]
         }
     });

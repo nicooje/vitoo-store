@@ -21,6 +21,8 @@ export default function CheckoutPage() {
 
     if (!mounted) return null;
 
+    const totalItems = cart.reduce((total, item) => total + item.cantidad, 0);
+
     const handlePago = async () => {
         if (!nombre.trim() || !whatsapp.trim()) {
             alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
@@ -74,29 +76,46 @@ export default function CheckoutPage() {
                     <h2 className="text-xl font-bold text-slate-900 mb-6">Resumen de Compra ({cart.length} {cart.length === 1 ? 'producto' : 'productos'})</h2>
 
                     <div className="flex flex-col gap-6">
-                        {cart.map((item) => (
-                            <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                                <div className="w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                                    <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
+                        {cart.map((item) => {
+                            const activePrice = (totalItems >= 3 && item.precioMayorista) ? item.precioMayorista : item.precio;
+                            const isDiscounted = (totalItems >= 3 && item.precioMayorista && item.precioMayorista < item.precio);
+                            
+                            return (
+                                <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                    <div className="w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                        <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex flex-col flex-1">
+                                        <h4 className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2">{item.nombre}</h4>
+                                        <p className="text-sm text-slate-500 mt-1">Cantidad: <span className="font-medium text-slate-700">{item.cantidad}</span></p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-2 text-right">
+                                        <p className="text-base md:text-lg font-bold text-slate-900 pr-2">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                        {isDiscounted && (
+                                            <p className="text-[10px] sm:text-xs font-semibold text-pink-600 bg-pink-50 px-2 py-0.5 rounded mr-2">
+                                                Precio Mayorista
+                                            </p>
+                                        )}
+                                        <button 
+                                            onClick={() => removeFromCart(item.id)} 
+                                            className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-2 py-1"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col flex-1">
-                                    <h4 className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2">{item.nombre}</h4>
-                                    <p className="text-sm text-slate-500 mt-1">Cantidad: <span className="font-medium text-slate-700">{item.cantidad}</span></p>
-                                </div>
-                                <div className="flex flex-col items-end gap-2">
-                                    <p className="text-base md:text-lg font-bold text-slate-900 pr-2">${(item.precio * item.cantidad).toLocaleString('es-AR')}</p>
-                                    <button 
-                                        onClick={() => removeFromCart(item.id)} 
-                                        className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-2 py-1"
-                                    >
-                                        Eliminar
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
-                    <div className="mt-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
+                    {totalItems >= 3 && cart.some(item => item.precioMayorista) && (
+                        <div className="mt-6 p-4 bg-pink-50 border border-pink-100 rounded-xl text-sm font-bold text-pink-700 flex items-center gap-3">
+                            <span className="text-xl">✨</span>
+                            ¡Estás accediendo a precios por mayor (Llevando 3+ prendas)!
+                        </div>
+                    )}
+
+                    <div className="mt-6 p-6 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                         <span className="text-lg font-bold text-slate-700">Total a Pagar:</span>
                         <span className="text-2xl md:text-3xl font-black text-pink-600">${getTotal().toLocaleString('es-AR')}</span>
                     </div>
