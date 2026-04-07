@@ -3,7 +3,6 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import CatalogoSection from '@/components/CatalogoSection';
 import MayoristaSection from '@/components/MayoristaSection';
-import SocialProofSection from '@/components/SocialProofSection';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import Footer from '@/components/Footer';
 import CategoryFilter from '@/components/CategoryFilter';
@@ -16,6 +15,7 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
   const products = await getProductsFromSheet();
   const searchParams = await Promise.resolve(props.searchParams);
   const activeCategory = (searchParams?.category as string) || 'Todos';
+  const activeSort = (searchParams?.sort as string) || '';
   const searchQuery = (searchParams?.search as string) || '';
 
   const cleanedProducts = products.map((p) => {
@@ -40,6 +40,12 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
       );
   }
 
+  if (activeSort === 'asc') {
+      filteredProducts.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (activeSort === 'desc') {
+      filteredProducts.sort((a, b) => Number(b.price) - Number(a.price));
+  }
+
     return (
         <main className="bg-white font-sans text-gray-900 min-h-screen">
             <Header />
@@ -60,7 +66,6 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
             </section>
 
       <MayoristaSection />
-      <SocialProofSection />
       <Footer />
       <FloatingCart />
       <FloatingWhatsApp />

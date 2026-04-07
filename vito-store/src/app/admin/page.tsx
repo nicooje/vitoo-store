@@ -36,7 +36,7 @@ export default function AdminPage() {
     const [price6, setPrice6] = useState('');
     const [price9, setPrice9] = useState('');
     const [price12, setPrice12] = useState('');
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
     const [existingImageUrl, setExistingImageUrl] = useState('');
     const [hasStock, setHasStock] = useState(true);
     
@@ -82,7 +82,7 @@ export default function AdminPage() {
         setTalle(p.size || '');
         setColorItem(p.color || '');
         setCantidad(p.quantity ?? 1);
-        setFile(null); // Resetear archivo nuevo
+        setFiles([]); // Resetear archivo nuevo
         setMensaje(`Editando producto: ${p.name}`);
         window.scrollTo({ top: 0, behavior: 'smooth' }); // Subir al formulario
     };
@@ -101,7 +101,7 @@ export default function AdminPage() {
         setTalle('');
         setColorItem('');
         setCantidad(1);
-        setFile(null);
+        setFiles([]);
         setMensaje('');
         const fileInput = document.getElementById('fileInput') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
@@ -113,29 +113,34 @@ export default function AdminPage() {
         setMensaje('Subiendo foto... ⏳');
 
         try {
-            let imageUrl = existingImageUrl;
+            let finalImageUrls = existingImageUrl ? existingImageUrl.split(',').filter(Boolean) : [];
 
-            // 1. Subir foto a Cloudinary si se seleccionó una nueva
-            if (file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', UPLOAD_PRESET);
+            // 1. Subir foto a Cloudinary si se seleccionaron nuevas
+            if (files.length > 0) {
+                finalImageUrls = []; // Si sube nuevas, pisamos las viejas por simplicidad
+                setMensaje(`Subiendo ${files.length} foto/s a Cloudinary... ⏳`);
 
-                const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
+                for (const currentFile of files) {
+                    const formData = new FormData();
+                    formData.append('file', currentFile);
+                    formData.append('upload_preset', UPLOAD_PRESET);
 
-                const cloudinaryData = await cloudinaryRes.json();
-                if (cloudinaryData.secure_url) {
-                    imageUrl = cloudinaryData.secure_url;
-                } else {
-                    throw new Error('No se pudo subir la foto a Cloudinary');
+                    const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const cloudinaryData = await cloudinaryRes.json();
+                    if (cloudinaryData.secure_url) {
+                        finalImageUrls.push(cloudinaryData.secure_url);
+                    } else {
+                        throw new Error('No se pudo subir la foto a Cloudinary');
+                    }
                 }
             }
 
             // Si es producto nuevo y no hay foto
-            if (!imageUrl && !file) {
+            if (finalImageUrls.length === 0) {
                 throw new Error("Agrega una foto obligatoriamente");
             }
 
@@ -146,7 +151,7 @@ export default function AdminPage() {
                 name: nombre,
                 category: categoria,
                 price: parseFloat(precio),
-                image_url: imageUrl,
+                image_url: finalImageUrls.join(','),
                 stock: hasStock,
                 size: talle,
                 color: colorItem,
@@ -510,22 +515,27 @@ export default function AdminPage() {
 
                                 {/* Tarjeta: Multimedia */}
                                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">Foto del producto</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Foto/s del producto</label>
                                     <div className="flex flex-col gap-3">
                                         {existingImageUrl && (
-                                            <div className="mb-2 relative rounded-lg overflow-hidden border border-gray-200 aspect-[3/4] w-24">
-                                                <img src={existingImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                                            <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
+                                                {existingImageUrl.split(',').filter(Boolean).map((url, idx) => (
+                                                    <div key={idx} className="relative rounded-lg overflow-hidden border border-gray-200 aspect-[3/4] w-24 shrink-0">
+                                                        <img src={url} alt={`Preview ${idx+1}`} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                         <input
                                             id="fileInput"
                                             type="file"
+                                            multiple
                                             accept="image/*"
                                             required={!existingImageUrl}
-                                            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+                                            onChange={(e) => setFiles(e.target.files ? Array.from(e.target.files) : [])}
                                             className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100 file:transition-colors file:cursor-pointer cursor-pointer border border-gray-200 rounded-full py-1.5 focus:outline-none"
                                         />
-                                        <p className="text-xs text-gray-500 ml-2">PNG, JPG. {existingImageUrl && "Sube otra para cambiar."}</p>
+                                        <p className="text-xs text-gray-500 ml-2">PNG, JPG. Puedes seleccionar múltiples fotos. {existingImageUrl && "Si subes nuevas, reemplazarán a las anteriores."}</p>
                                     </div>
                                 </div>
 

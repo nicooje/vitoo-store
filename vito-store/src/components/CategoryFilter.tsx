@@ -10,6 +10,7 @@ export default function CategoryFilter({ categories }: Props) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const activeCategory = searchParams.get('category') || 'Todos';
+    const activeSort = searchParams.get('sort') || '';
 
     const handleFilter = (cat: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -21,9 +22,19 @@ export default function CategoryFilter({ categories }: Props) {
         router.replace(`/?${params.toString()}`, { scroll: false });
     };
 
+    const handleSort = (sortVal: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (!sortVal) {
+            params.delete('sort');
+        } else {
+            params.set('sort', sortVal);
+        }
+        router.replace(`/?${params.toString()}`, { scroll: false });
+    };
+
     return (
-        <div className="w-full flex justify-center pb-8 mb-8">
-            <div className="flex flex-wrap gap-3 px-4 justify-center max-w-2xl mx-auto">
+        <div className="w-full flex flex-col sm:flex-row items-center justify-between pb-8 mb-8 gap-4 px-4 max-w-[1400px] mx-auto border-b border-gray-100">
+            <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
                 {categories.map((cat) => {
                     const isActive = activeCategory === cat;
                     return (
@@ -40,6 +51,19 @@ export default function CategoryFilter({ categories }: Props) {
                         </button>
                     );
                 })}
+            </div>
+            
+            <div className="flex items-center gap-3 shrink-0">
+                <span className="text-sm font-medium text-gray-500">Ordenar por:</span>
+                <select 
+                    value={activeSort}
+                    onChange={(e) => handleSort(e.target.value)}
+                    className="bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl focus:ring-pink-500 focus:border-pink-500 block px-4 py-2 cursor-pointer outline-none shadow-sm transition-all hover:border-gray-300"
+                >
+                    <option value="">Relevancia</option>
+                    <option value="asc">Menor a mayor precio</option>
+                    <option value="desc">Mayor a menor precio</option>
+                </select>
             </div>
         </div>
     );

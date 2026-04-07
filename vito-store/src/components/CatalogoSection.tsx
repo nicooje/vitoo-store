@@ -2,6 +2,7 @@
 
 import { Product } from '@/lib/googleSheets';
 import { useCartStore } from '@/store/cartStore';
+import HoverSlideshow from './HoverSlideshow';
 
 export default function CatalogoSection({ products }: { products: Product[] }) {
     const addToCart = useCartStore((state) => state.addToCart);
@@ -42,11 +43,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     <div key={product.id} className="group flex flex-col relative w-full">
                         {/* Imagen con Badges y Quick Buy - Aspecto 3:4 */}
                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm">
-                            <img 
-                                src={product.image_url} 
-                                alt={product.name} 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                            />
+                            <HoverSlideshow imageUrls={product.image_url} productName={product.name} />
                             
                             {/* Badge flotante Arriba a la Izquierda */}
                             {!hasStock && (

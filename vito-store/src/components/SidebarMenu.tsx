@@ -46,9 +46,6 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                         <Link href="#mayorista" onClick={onClose} className="text-lg font-semibold text-gray-800 hover:text-pink-600 transition-colors">
                             Revendedoras (Mayorista)
                         </Link>
-                        <Link href="#team" onClick={onClose} className="text-lg font-semibold text-gray-800 hover:text-pink-600 transition-colors">
-                            Team Vitö
-                        </Link>
                     </nav>
 
                     <div className="my-2 border-t border-gray-100" />

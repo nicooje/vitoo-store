@@ -13,6 +13,7 @@ export default function CheckoutPage() {
     const [nombre, setNombre] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
     const [metodoEntrega, setMetodoEntrega] = useState('retiro');
+    const [metodoPago, setMetodoPago] = useState('transferencia');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -54,6 +55,32 @@ export default function CheckoutPage() {
             alert("❌ Error de conexión. Revisá tu internet y volvé a intentar.");
             setLoading(false);
         }
+    };
+
+    const handleWhatsAppOrder = () => {
+        if (!nombre.trim() || !whatsapp.trim()) {
+            alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
+            return;
+        }
+
+        const PHONE_NUMBER = "5493794088240";
+        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *Transferencia / Billetera Virtual*:\n\n`;
+
+        cart.forEach(item => {
+            message += `- ${item.cantidad}x ${item.nombre}\n`;
+        });
+
+        message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
+        message += `\n*TOTAL A PAGAR:* $${getTotal().toLocaleString('es-AR')}\n\n`;
+        message += `Mi número de contacto es: ${whatsapp}\n\n`;
+        message += `*DATOS PARA TRANSFERIR:*\n`;
+        message += `Alias: vito.store\n`;
+        message += `Banco: Naranja X\n`;
+        message += `A nombre de: Bianca Irina Toledo\n\n`;
+        message += `*(Te adjuntaré el comprobante por acá apenas realice el pago. ¡Gracias!)*`;
+
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
     };
 
     if (cart.length === 0) {
@@ -175,16 +202,44 @@ export default function CheckoutPage() {
                                 </select>
                             </div>
 
-                            <button
-                                type="button"
-                                onClick={handlePago}
-                                disabled={loading}
-                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
-                                    ${loading ? 'bg-pink-300 cursor-not-allowed shadow-none' : 'bg-pink-600 hover:bg-pink-700 hover:-translate-y-1 hover:shadow-pink-600/30'}
-                                `}
-                            >
-                                {loading ? 'Procesando pago... ⏳' : 'Continuar a Pagos 💳'}
-                            </button>
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Método de Pago</label>
+                                <select 
+                                    value={metodoPago} 
+                                    onChange={(e) => setMetodoPago(e.target.value)} 
+                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 bg-slate-50/50 cursor-pointer appearance-none"
+                                    style={{
+                                        backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'right 16px top 50%',
+                                        backgroundSize: '12px auto',
+                                    }}
+                                >
+                                    <option value="transferencia">Transferencia (Ualá, Naranja X, MODO, Banco)</option>
+                                    <option value="mercadopago">Mercado Pago (Tarjetas, Dinero en cuenta)</option>
+                                </select>
+                            </div>
+
+                            {metodoPago === 'mercadopago' ? (
+                                <button
+                                    type="button"
+                                    onClick={handlePago}
+                                    disabled={loading}
+                                    className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
+                                        ${loading ? 'bg-pink-300 cursor-not-allowed shadow-none' : 'bg-pink-600 hover:bg-pink-700 hover:-translate-y-1 hover:shadow-pink-600/30'}
+                                    `}
+                                >
+                                    {loading ? 'Procesando pago... ⏳' : 'Continuar a Mercado Pago 💳'}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleWhatsAppOrder}
+                                    className="w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl bg-green-500 hover:bg-green-600 hover:-translate-y-1 hover:shadow-green-500/30"
+                                >
+                                    Generar Pedido por WhatsApp 📲
+                                </button>
+                            )}
                             
                             <Link href="/#catalogo" className="text-center text-slate-500 text-sm font-medium mt-4 hover:text-pink-600 transition-colors block">
                                 ← Volver al catálogo
