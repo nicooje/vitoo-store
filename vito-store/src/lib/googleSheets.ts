@@ -17,6 +17,17 @@ export type Product = {
     price12?: number;
 };
 
+export type Order = {
+    id: string;
+    date: string;
+    clientName: string;
+    whatsapp: string;
+    deliveryMethod: string;
+    paymentMethod: string;
+    total: number;
+    items: string; // JSON guardado en string
+};
+
 // Configuración de credenciales esperada desde variables de entorno
 // Google Sheets configurado por el usuario (o simulado)
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -237,4 +248,66 @@ export async function deleteProductFromSheet(id: number, name?: string) {
     });
 
     return { success: true };
+}
+
+// --- LOGICA DE PEDIDOS (PESTAÑA 'Pedidos') ---
+
+export async function getOrdersFromSheet(): Promise<Order[]> {
+    try {
+        const { sheets, sheetId } = await getGoogleSheetsClient();
+        
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: 'Pedidos!A2:H',
+        });
+
+        const rows = response.data.values;
+        if (!rows || rows.length === 0) return [];
+
+        return rows.map((row) => ({
+            id: row[0] || '',
+            date: row[1] || '',
+            clientName: row[2] || '',
+            whatsapp: row[3] || '',
+            deliveryMethod: row[4] || '',
+            paymentMethod: row[5] || '',
+            total: parseFloat(row[6]) || 0,
+            items: row[7] || '[]'
+        })).filter(o => o.id); // filtar vacías
+    } catch (error) {
+        console.error('Error al obtener ventas de Google Sheets:', error);
+        return [];
+    }
+}
+
+export async function appendOrderToSheet(order: Order) {
+    try {
+        const { sheets, sheetId } = await getGoogleSheetsClient();
+
+        // Calcular fila usando append (está bien para Pedidos porque es histórica y solo crece)
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: sheetId,
+            range: 'Pedidos!A:H',
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [
+                    [
+                        order.id,
+                        order.date,
+                        order.clientName,
+                        order.whatsapp,
+                        order.deliveryMethod,
+                        order.paymentMethod,
+                        order.total.toString(),
+                        order.items
+                    ]
+                ]
+            }
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error guardando la venta en Google Sheets:', error);
+        throw error;
+    }
 }

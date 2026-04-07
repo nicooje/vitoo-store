@@ -33,6 +33,19 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
+            // Guardar primero en DB de Pedidos
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cart: cart,
+                    cliente: { nombre, whatsapp, metodoEntrega },
+                    paymentMethod: 'mercadopago',
+                    total: getTotal()
+                })
+            });
+
+            // Luego generar preferencia de Mercadopago
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -57,13 +70,28 @@ export default function CheckoutPage() {
         }
     };
 
-    const handleWhatsAppOrder = () => {
+    const handleWhatsAppOrder = async () => {
         if (!nombre.trim() || !whatsapp.trim()) {
             alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
             return;
         }
 
-        const PHONE_NUMBER = "5493794088240";
+        setLoading(true);
+
+        try {
+            // Guardar primero en DB de Pedidos
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cart: cart,
+                    cliente: { nombre, whatsapp, metodoEntrega },
+                    paymentMethod: 'transferencia',
+                    total: getTotal()
+                })
+            });
+
+            const PHONE_NUMBER = "5493794088240";
         let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *Transferencia / Billetera Virtual*:\n\n`;
 
         cart.forEach(item => {
@@ -81,6 +109,13 @@ export default function CheckoutPage() {
 
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
+        
+        setLoading(false);
+        } catch (error) {
+            console.error("Error saving WhatsApp order", error);
+            alert("❌ Hubo un error al guardar tu pedido. Revisá la conexión.");
+            setLoading(false);
+        }
     };
 
     if (cart.length === 0) {
