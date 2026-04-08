@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 // Tipado del producto que vendrá de la API
 export type Product = {
@@ -29,6 +30,7 @@ export type Order = {
     paymentMethod: string;
     total: number;
     items: string;
+    status?: string;
 };
 
 export default function AdminPage() {
@@ -73,7 +75,7 @@ export default function AdminPage() {
     }, [mensaje]);
 
     // Estados de las Pestañas y Pedidos
-    const [activeTab, setActiveTab] = useState<'catalogo' | 'ventas'>('catalogo');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'catalogo' | 'ventas'>('dashboard');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -324,6 +326,28 @@ export default function AdminPage() {
         }
     };
 
+    const handleChangeOrderStatus = async (orderId: string, newStatus: string) => {
+        setLoading(true);
+        setMensaje(`Actualizando estado a ${newStatus}... ⏳`);
+        try {
+            const res = await fetch('/api/admin/orders', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: orderId, status: newStatus })
+            });
+
+            if (!res.ok) throw new Error("No se pudo actualizar");
+
+            setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+            setMensaje('¡Estado del pedido actualizado! ✅');
+        } catch (error: any) {
+            console.error(error);
+            setMensaje(`❌ Error al actualizar estado. ${error.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Lógica Derivada para Paginación y Filtros
     const uniqueCategories = ['Todas', ...Array.from(new Set(products.map(p => p.category)))];
     const filteredProducts = products.filter(p => filterCategory === 'Todas' || p.category === filterCategory);
@@ -333,6 +357,20 @@ export default function AdminPage() {
     
     const startIndex = (safeCurrentPage - 1) * ITEMS_PER_PAGE;
     const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    // KPIs Dashboard
+    const totalRevenue = orders.reduce((acc, order) => acc + (Number(order.total) || 0), 0);
+    const avgTicket = orders.length > 0 ? (totalRevenue / orders.length) : 0;
+    
+    // Gráfico de ventas
+    const salesByDate = orders.reduce((acc: any, order) => {
+        const dateString = order.date ? order.date.split(',')[0] : 'Desconocida';
+        if (!acc[dateString]) acc[dateString] = { date: dateString, amount: 0, orders: 0 };
+        acc[dateString].amount += Number(order.total);
+        acc[dateString].orders += 1;
+        return acc;
+    }, {});
+    const chartData = Object.values(salesByDate).slice(-7); // ultimos 7 turnos/días de venta
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900 pb-32 font-sans">
@@ -350,10 +388,17 @@ export default function AdminPage() {
                 <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
                     
                     {/* Botones de Pestañas */}
-                    <div className="mb-8 flex gap-6 border-b border-gray-200">
+                    <div className="mb-8 flex gap-6 border-b border-gray-200 overflow-x-auto no-scrollbar">
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
+                            className={`pb-4 px-2 text-[15px] font-bold transition-all whitespace-nowrap relative ${activeTab === 'dashboard' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            📊 Dashboard
+                            {activeTab === 'dashboard' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-600 rounded-t-full" />}
+                        </button>
                         <button
                             onClick={() => setActiveTab('catalogo')}
-                            className={`pb-4 px-2 text-[15px] font-bold transition-all relative ${activeTab === 'catalogo' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`pb-4 px-2 text-[15px] font-bold transition-all whitespace-nowrap relative ${activeTab === 'catalogo' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             📦 Catálogo
                             {activeTab === 'catalogo' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-600 rounded-t-full" />}
@@ -366,6 +411,55 @@ export default function AdminPage() {
                             {activeTab === 'ventas' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-600 rounded-t-full" />}
                         </button>
                     </div>
+
+                    {activeTab === 'dashboard' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+                            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Dashboard</h1>
+                            
+                            {/* KPI Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                                    <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Pedidos Totales</span>
+                                    <span className="text-4xl font-black text-gray-900">{orders.length}</span>
+                                </div>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                                    <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Ingresos (Histórico)</span>
+                                    <span className="text-4xl font-black text-emerald-600">${totalRevenue.toLocaleString('es-AR')}</span>
+                                </div>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                                    <span className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Ticket Promedio</span>
+                                    <span className="text-4xl font-black text-pink-600">${Math.round(avgTicket).toLocaleString('es-AR')}</span>
+                                </div>
+                            </div>
+
+                            {/* Chart */}
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mt-8 h-[400px]">
+                                <h3 className="text-lg font-bold text-gray-900 mb-6">Evolución de Ventas (Últimos 7 días)</h3>
+                                {chartData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#db2777" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#db2777" stopOpacity={0}/>
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `$${value/1000}k`} dx={-10} />
+                                            <Tooltip 
+                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                                formatter={(value: any) => [`$${Number(value).toLocaleString('es-AR')}`, 'Ingresos']}
+                                            />
+                                            <Area type="monotone" dataKey="amount" stroke="#db2777" strokeWidth={3} fillOpacity={1} fill="url(#colorAmount)" activeDot={{ r: 6, strokeWidth: 0, fill: '#db2777' }} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="h-full flex items-center justify-center text-gray-400">Aún no hay suficientes datos para el gráfico.</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {activeTab === 'ventas' && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -403,19 +497,38 @@ export default function AdminPage() {
                                                     className="p-5 flex flex-col md:flex-row md:items-center justify-between cursor-pointer group"
                                                     onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                                                 >
-                                                    <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm text-gray-500 font-medium">{order.date.split(',')[0]}</span>
-                                                            <span className="text-xs text-gray-400">{order.date.split(',')[1]}</span>
-                                                        </div>
-                                                        <div className="hidden md:block w-px h-10 bg-gray-200 mx-2" />
-                                                        <div className="flex flex-col">
-                                                            <span className="text-gray-900 font-bold">{order.clientName}</span>
-                                                            <span className="text-sm text-gray-500 flex items-center gap-1">
-                                                                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                                                                {order.whatsapp}
-                                                            </span>
-                                                        </div>
+                                                        <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+                                                            <div className="flex flex-col shrink-0 min-w-[70px]">
+                                                                <span className="text-sm text-gray-500 font-medium">{order.date.split(',')[0]}</span>
+                                                                <span className="text-xs text-gray-400">{order.date.split(',')[1]}</span>
+                                                            </div>
+                                                            <div className="hidden md:block w-px h-10 bg-gray-200 mx-2" />
+                                                            <div className="flex flex-col min-w-[150px]">
+                                                                <span className="text-gray-900 font-bold">{order.clientName}</span>
+                                                                <span className="text-sm text-gray-500 flex items-center gap-1">
+                                                                    <svg className="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                                                                    {order.whatsapp}
+                                                                </span>
+                                                            </div>
+                                                            <div className="hidden lg:block w-px h-10 bg-gray-200 mx-2" />
+                                                            <div className="flex flex-col shrink-0 min-w-[130px] z-10" onClick={(e) => e.stopPropagation()}>
+                                                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Estado</span>
+                                                                <select 
+                                                                    value={order.status || 'Pendiente'} 
+                                                                    onChange={(e) => {
+                                                                        handleChangeOrderStatus(order.id, e.target.value);
+                                                                    }}
+                                                                    className={`text-xs font-bold rounded px-2 py-1 outline-none border cursor-pointer ${
+                                                                        order.status === 'Enviado' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                                                                        order.status === 'Pagado' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
+                                                                        'bg-amber-50 text-amber-700 border-amber-200'
+                                                                    }`}
+                                                                >
+                                                                    <option value="Pendiente">PENDIENTE</option>
+                                                                    <option value="Pagado">PAGADO</option>
+                                                                    <option value="Enviado">ENVIADO / ENTREGADO</option>
+                                                                </select>
+                                                            </div>
                                                         <div className="hidden lg:block w-px h-10 bg-gray-200 mx-2" />
                                                         <div className="flex flex-col lg:flex-row flex-1 justify-between items-start lg:items-center gap-2 lg:gap-4 md:ml-4 mt-2 md:mt-0">
                                                             <div className="flex flex-col">

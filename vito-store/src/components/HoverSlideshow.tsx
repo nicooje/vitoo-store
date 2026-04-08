@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface Props {
     imageUrls: string;
@@ -41,10 +42,12 @@ export default function HoverSlideshow({ imageUrls, productName }: Props) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <img 
+            <Image 
                 src={images[currentIndex]} 
                 alt={productName} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105" 
             />
             {images.length > 1 && (
                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">

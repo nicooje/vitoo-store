@@ -3,9 +3,11 @@
 import { Product } from '@/lib/googleSheets';
 import { useCartStore } from '@/store/cartStore';
 import HoverSlideshow from './HoverSlideshow';
+import { useState } from 'react';
 
 export default function CatalogoSection({ products }: { products: Product[] }) {
     const addToCart = useCartStore((state) => state.addToCart);
+    const [visibleCount, setVisibleCount] = useState(12);
 
     const handleAddToCart = (product: Product) => {
         // Le ponemos un ID seguro (si el Excel no tiene ID, usa el nombre del producto)
@@ -34,8 +36,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     }
 
     return (
+        <>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-12 md:gap-x-4 max-w-7xl mx-auto w-full">
-            {products.map((product) => {
+            {products.slice(0, visibleCount).map((product) => {
                 const stockAtexto = String(product.stock).toUpperCase();
                 const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
 
@@ -128,5 +131,17 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                 );
             })}
         </div>
+        
+        {visibleCount < products.length && (
+            <div className="mt-12 flex justify-center w-full col-span-full">
+                <button 
+                    onClick={() => setVisibleCount(prev => prev + 12)}
+                    className="bg-white border-2 border-pink-100 text-pink-600 font-bold px-8 py-3 rounded-full hover:bg-pink-50 hover:border-pink-200 transition-all active:scale-95 shadow-sm"
+                >
+                    Cargar más productos
+                </button>
+            </div>
+        )}
+        </>
     );
 }

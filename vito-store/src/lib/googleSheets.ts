@@ -26,6 +26,7 @@ export type Order = {
     paymentMethod: string;
     total: number;
     items: string; // JSON guardado en string
+    status?: string; // Pendiente, Pagado, Enviado
 };
 
 // Configuración de credenciales esperada desde variables de entorno
@@ -258,7 +259,7 @@ export async function getOrdersFromSheet(): Promise<Order[]> {
         
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
-            range: 'Pedidos!A2:H',
+            range: 'Pedidos!A2:I',
         });
 
         const rows = response.data.values;
@@ -272,7 +273,8 @@ export async function getOrdersFromSheet(): Promise<Order[]> {
             deliveryMethod: row[4] || '',
             paymentMethod: row[5] || '',
             total: parseFloat(row[6]) || 0,
-            items: row[7] || '[]'
+            items: row[7] || '[]',
+            status: row[8] || 'Pendiente'
         })).filter(o => o.id); // filtar vacías
     } catch (error) {
         console.error('Error al obtener ventas de Google Sheets:', error);
@@ -287,7 +289,7 @@ export async function appendOrderToSheet(order: Order) {
         // Calcular fila usando append (está bien para Pedidos porque es histórica y solo crece)
         await sheets.spreadsheets.values.append({
             spreadsheetId: sheetId,
-            range: 'Pedidos!A:H',
+            range: 'Pedidos!A:I',
             valueInputOption: 'USER_ENTERED',
             requestBody: {
                 values: [
@@ -299,7 +301,8 @@ export async function appendOrderToSheet(order: Order) {
                         order.deliveryMethod,
                         order.paymentMethod,
                         order.total.toString(),
-                        order.items
+                        order.items,
+                        order.status || 'Pendiente'
                     ]
                 ]
             }
@@ -308,6 +311,40 @@ export async function appendOrderToSheet(order: Order) {
         return true;
     } catch (error) {
         console.error('Error guardando la venta en Google Sheets:', error);
+        throw error;
+    }
+}
+
+export async function updateOrderStatusInSheet(orderId: string, newStatus: string) {
+    try {
+        const { sheets, sheetId } = await getGoogleSheetsClient();
+        
+        // Buscamos la fila del pedido
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: sheetId,
+            range: 'Pedidos!A2:A',
+        });
+
+        const rows = response.data.values;
+        if (!rows) throw new Error('No hay pedidos');
+
+        const rowIndex = rows.findIndex(row => row[0] === orderId);
+        if (rowIndex === -1) throw new Error('Pedido no encontrado');
+
+        const actualRowNumber = rowIndex + 2;
+
+        await sheets.spreadsheets.values.update({
+            spreadsheetId: sheetId,
+            range: `Pedidos!I${actualRowNumber}`,
+            valueInputOption: 'USER_ENTERED',
+            requestBody: {
+                values: [[newStatus]]
+            }
+        });
+
+        return true;
+    } catch (error) {
+        console.error('Error actualizando estado del pedido:', error);
         throw error;
     }
 }
