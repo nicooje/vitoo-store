@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 export default function CheckoutPage() {
     const [mounted, setMounted] = useState(false);
@@ -26,7 +27,7 @@ export default function CheckoutPage() {
 
     const handlePago = async () => {
         if (!nombre.trim() || !whatsapp.trim()) {
-            alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
+            toast.error("Por favor, completá tu Nombre y WhatsApp antes de pagar.");
             return;
         }
 
@@ -60,19 +61,19 @@ export default function CheckoutPage() {
             if (data.init_point) {
                 window.location.href = data.init_point;
             } else {
-                alert("❌ Hubo un error al conectar con Mercado Pago. Intentá de nuevo.");
+                toast.error("Hubo un error al conectar con Mercado Pago. Intentá de nuevo.");
                 setLoading(false);
             }
         } catch (error) {
             console.error(error);
-            alert("❌ Error de conexión. Revisá tu internet y volvé a intentar.");
+            toast.error("Error de conexión. Revisá tu internet y volvé a intentar.");
             setLoading(false);
         }
     };
 
     const handleWhatsAppOrder = async () => {
         if (!nombre.trim() || !whatsapp.trim()) {
-            alert("⚠️ Por favor, completá tu Nombre y WhatsApp antes de pagar.");
+            toast.error("Por favor, completá tu Nombre y WhatsApp antes de pagar.");
             return;
         }
 

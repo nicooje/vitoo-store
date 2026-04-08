@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 // Tipado del producto que vendrá de la API
 export type Product = {
@@ -58,6 +59,18 @@ export default function AdminPage() {
 
     const [loading, setLoading] = useState(false);
     const [mensaje, setMensaje] = useState('');
+
+    useEffect(() => {
+        if (mensaje) {
+            if (mensaje.includes('error') || mensaje.includes('❌')) {
+                toast.error(mensaje, { id: 'admin-toast' });
+            } else if (mensaje.includes('⏳')) {
+                toast.loading(mensaje, { id: 'admin-toast' });
+            } else {
+                toast.success(mensaje, { id: 'admin-toast' });
+            }
+        }
+    }, [mensaje]);
 
     // Estados de las Pestañas y Pedidos
     const [activeTab, setActiveTab] = useState<'catalogo' | 'ventas'>('catalogo');
@@ -709,17 +722,7 @@ export default function AdminPage() {
                                     <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
                                         
                                         <div className="text-sm flex-1">
-                                            {mensaje ? (
-                                                <span className={`inline-flex items-center px-4 py-2 rounded-lg font-medium border ${
-                                                    mensaje.includes('error') || mensaje.includes('❌') ? 'bg-red-50 text-red-700 border-red-200' :
-                                                    mensaje.includes('éxito') || mensaje.includes('🎉') ? 'bg-green-50 text-green-700 border-green-200' :
-                                                    'bg-blue-50 text-blue-700 border-blue-200'
-                                                }`}>
-                                                    {mensaje}
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-500">Completa los datos para subir o editar.</span>
-                                            )}
+                                            <span className="text-gray-500 font-medium">✨ Modificá y guardá tus productos desde aquí.</span>
                                         </div>
 
                                         <button

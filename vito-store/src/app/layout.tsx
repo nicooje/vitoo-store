@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 const outfit = Outfit({ subsets: ['latin'] });
@@ -16,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className={outfit.className}>{children}</body>
+      <body className={outfit.className}>
+        <Toaster position="bottom-center" />
+        {children}
+      </body>
     </html>
   );
 }
