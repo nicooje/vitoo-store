@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Outfit } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Script from 'next/script';
+import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import './globals.css';
 
 const outfit = Outfit({ subsets: ['latin'] });
@@ -9,6 +10,27 @@ const outfit = Outfit({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Vito Store | Lencería que te abraza',
   description: 'Descubrí lo mejor en lencería, trajes de baño y pijamas. Envíos a todo el país y venta mayorista en Corrientes.',
+  openGraph: {
+    title: 'Vito Store | Lencería',
+    description: 'Descubrí lo mejor en lencería y pijamas. Diseños exclusivos y venta mayorista.',
+    url: 'https://vito.store', // Placeholder, ideal to use actual URL
+    siteName: 'Vito Store',
+    images: [
+      {
+        url: 'https://res.cloudinary.com/dzhz0gz5i/image/upload/v1700000000/vitoo_store/og-image.jpg', // You must upload an og-image to Cloudinary or public folder
+        width: 1200,
+        height: 630,
+        alt: 'Vito Store Lencería',
+      },
+    ],
+    locale: 'es_AR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Vito Store',
+    description: 'Lencería, pijamas y trajes de baño únicos.',
+  },
 };
 
 export default function RootLayout({
@@ -52,6 +74,7 @@ export default function RootLayout({
       <body className={outfit.className}>
         <Toaster position="bottom-center" />
         {children}
+        <FloatingWhatsApp />
       </body>
     </html>
   );
