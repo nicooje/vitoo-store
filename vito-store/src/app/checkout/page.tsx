@@ -10,6 +10,7 @@ export default function CheckoutPage() {
     const cart = useCartStore((state) => state.cart);
     const getTotal = useCartStore((state) => state.getTotal);
     const removeFromCart = useCartStore((state) => state.removeFromCart);
+    const clearCart = useCartStore((state) => state.clearCart);
 
     const [nombre, setNombre] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
@@ -96,7 +97,10 @@ export default function CheckoutPage() {
         let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *Transferencia / Billetera Virtual*:\n\n`;
 
         cart.forEach(item => {
-            message += `- ${item.cantidad}x ${item.nombre}\n`;
+            let variantText = '';
+            if (item.selectedSize) variantText += ` (Talle: ${item.selectedSize})`;
+            if (item.selectedColor) variantText += ` (Color: ${item.selectedColor})`;
+            message += `- ${item.cantidad}x ${item.nombre}${variantText}\n`;
         });
 
         message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
@@ -111,10 +115,11 @@ export default function CheckoutPage() {
         const encodedMessage = encodeURIComponent(message);
         window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
         
+        clearCart();
         setLoading(false);
         } catch (error) {
             console.error("Error saving WhatsApp order", error);
-            alert("❌ Hubo un error al guardar tu pedido. Revisá la conexión.");
+            toast.error("Hubo un error al guardar tu pedido. Revisá la conexión.");
             setLoading(false);
         }
     };
@@ -221,39 +226,59 @@ export default function CheckoutPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Método de Entrega</label>
-                                <select 
-                                    value={metodoEntrega} 
-                                    onChange={(e) => setMetodoEntrega(e.target.value)} 
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 bg-slate-50/50 cursor-pointer appearance-none"
-                                    style={{
-                                        backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'right 16px top 50%',
-                                        backgroundSize: '12px auto',
-                                    }}
-                                >
-                                    <option value="retiro">Retirar en el Local (Gratis)</option>
-                                    <option value="envio">Envío a Domicilio (Costo a coordinar)</option>
-                                </select>
+                                <label className="block text-sm font-bold text-slate-700 mb-3">Método de Entrega</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setMetodoEntrega('retiro')}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all ${metodoEntrega === 'retiro' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                    >
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="font-bold text-slate-900">Retirar Local 🛍️</span>
+                                            {metodoEntrega === 'retiro' && <div className="w-4 h-4 rounded-full bg-pink-500 border-4 border-pink-100"></div>}
+                                        </div>
+                                        <p className="text-sm text-slate-500">Sin costo adicional</p>
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setMetodoEntrega('envio')}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all ${metodoEntrega === 'envio' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                    >
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="font-bold text-slate-900">Envío Domicilio 🛵</span>
+                                            {metodoEntrega === 'envio' && <div className="w-4 h-4 rounded-full bg-pink-500 border-4 border-pink-100"></div>}
+                                        </div>
+                                        <p className="text-sm text-slate-500">Costo a coordinar</p>
+                                    </button>
+                                </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Método de Pago</label>
-                                <select 
-                                    value={metodoPago} 
-                                    onChange={(e) => setMetodoPago(e.target.value)} 
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 bg-slate-50/50 cursor-pointer appearance-none"
-                                    style={{
-                                        backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
-                                        backgroundRepeat: 'no-repeat',
-                                        backgroundPosition: 'right 16px top 50%',
-                                        backgroundSize: '12px auto',
-                                    }}
-                                >
-                                    <option value="transferencia">Transferencia (Ualá, Naranja X, MODO, Banco)</option>
-                                    <option value="mercadopago">Mercado Pago (Tarjetas, Dinero en cuenta)</option>
-                                </select>
+                                <label className="block text-sm font-bold text-slate-700 mb-3">Método de Pago</label>
+                                <div className="flex flex-col gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setMetodoPago('transferencia')}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'transferencia' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                    >
+                                        <div className="flex flex-col text-left">
+                                            <span className="font-bold text-slate-900">Transferencia Bancaria 🏦</span>
+                                            <span className="text-sm text-slate-500 mt-0.5">Naranja X, Ualá, MODO, Banco</span>
+                                        </div>
+                                        {metodoPago === 'transferencia' ? <div className="w-5 h-5 rounded-full bg-pink-500 border-4 border-white shadow-sm ring-1 ring-pink-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setMetodoPago('mercadopago')}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'mercadopago' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 hover:border-blue-300'}`}
+                                    >
+                                        <div className="flex flex-col text-left">
+                                            <span className="font-bold text-slate-900 text-blue-800">Mercado Pago 💳</span>
+                                            <span className="text-sm text-slate-500 mt-0.5">Tarjetas, Dinero en cuenta, RapiPago</span>
+                                        </div>
+                                        {metodoPago === 'mercadopago' ? <div className="w-5 h-5 rounded-full bg-blue-500 border-4 border-white shadow-sm ring-1 ring-blue-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                    </button>
+                                </div>
                             </div>
 
                             {metodoPago === 'mercadopago' ? (
