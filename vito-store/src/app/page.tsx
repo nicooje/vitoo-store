@@ -48,7 +48,7 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
     return (
         <main className="bg-white font-sans text-gray-900 min-h-screen">
             <Header />
-            <HeroSection />
+            <HeroSection products={cleanedProducts.filter(p => p.image_url).slice(0, 5)} />
 
             <section id="catalogo" className="pt-16 pb-24 px-4 md:px-8 bg-white">
                 <div className="max-w-[1400px] mx-auto w-full">

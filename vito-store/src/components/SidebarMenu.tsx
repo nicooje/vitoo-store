@@ -32,7 +32,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                 </div>
 
                 {/* Enlaces Principales */}
-                <div className="flex-1 overflow-y-auto py-6 px-6 flex flex-col gap-6">
+                <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-6 px-6 flex flex-col gap-6">
                     <nav className="flex flex-col gap-4">
                         <Link href="/" onClick={onClose} className="text-lg font-semibold text-gray-800 hover:text-pink-600 transition-colors">
                             Inicio
