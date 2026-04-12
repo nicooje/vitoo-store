@@ -37,15 +37,14 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     };
 
     const openOptionsModal = (product: Product) => {
+        const requiresSize = Boolean(product.size && product.size.trim() !== '');
         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-        const sizesList = parseVariants(product.size);
         const colorsList = parseVariants(product.color);
-        const hasSizes = sizesList.length > 0;
         const hasColors = colorsList.length > 0;
 
-        if (hasSizes || hasColors) {
+        if (requiresSize || hasColors) {
             setActiveProduct(product);
-            setSelectedSize(hasSizes ? '' : (product.size || ''));
+            setSelectedSize('');
             setSelectedColor(hasColors ? '' : (product.color || ''));
         } else {
             handleAddToCart(product, product.size, product.color);
@@ -186,58 +185,45 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     <p className="text-pink-600 font-bold text-lg mb-6">${Number(activeProduct.price).toLocaleString('es-AR')}</p>
 
                     {(() => {
+                        const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
                         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-                        const activeSizesList = parseVariants(activeProduct.size);
                         const activeColorsList = parseVariants(activeProduct.color);
                         
                         return (
                             <div className="flex flex-col gap-5">
-                                {activeSizesList.length > 0 && (
+                                {requiresSize && (
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-gray-700">Seleccioná un Talle:</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {activeSizesList.map((s) => (
-                                                <button 
-                                                    key={s}
-                                                    onClick={() => setSelectedSize(s)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                                                        selectedSize === s 
-                                                        ? 'border-pink-500 bg-pink-50 text-pink-700' 
-                                                        : 'border-gray-200 text-gray-700 hover:border-pink-300'
-                                                    }`}
-                                                >
-                                                    {s}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <label className="text-sm font-bold text-gray-700">Talle de Preferencia:</label>
+                                        <input 
+                                            type="text" 
+                                            value={selectedSize}
+                                            onChange={(e) => setSelectedSize(e.target.value)}
+                                            placeholder="Escribí tu talle (ej: M, 38...)"
+                                            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all placeholder-slate-400 bg-slate-50 text-slate-800"
+                                        />
                                     </div>
                                 )}
 
                                 {activeColorsList.length > 0 && (
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-gray-700">Seleccioná el Color:</label>
-                                        <div className="flex flex-wrap gap-2">
+                                        <label className="text-sm font-bold text-gray-700">Seleccioná un Color:</label>
+                                        <select 
+                                            value={selectedColor}
+                                            onChange={(e) => setSelectedColor(e.target.value)}
+                                            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all cursor-pointer bg-slate-50 font-medium text-slate-700"
+                                        >
+                                            <option value="" disabled>Elegir color...</option>
                                             {activeColorsList.map((c) => (
-                                                <button 
-                                                    key={c}
-                                                    onClick={() => setSelectedColor(c)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                                                        selectedColor === c
-                                                        ? 'border-pink-500 bg-pink-50 text-pink-700' 
-                                                        : 'border-gray-200 text-gray-700 hover:border-pink-300'
-                                                    }`}
-                                                >
-                                                    {c}
-                                                </button>
+                                                <option key={c} value={c}>{c}</option>
                                             ))}
-                                        </div>
+                                        </select>
                                     </div>
                                 )}
 
                                 <button 
                                     onClick={() => handleAddToCart(activeProduct, selectedSize, selectedColor)}
                                     disabled={
-                                        (activeSizesList.length > 0 && !selectedSize) || 
+                                        (requiresSize && !selectedSize.trim()) || 
                                         (activeColorsList.length > 0 && !selectedColor)
                                     }
                                     className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"

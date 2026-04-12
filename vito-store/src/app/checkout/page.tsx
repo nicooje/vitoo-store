@@ -35,8 +35,8 @@ export default function CheckoutPage() {
         }
 
         const itemsIncompletos = cart.some(item => 
-            (item.size?.includes(',') && !item.selectedSize) || 
-            (item.color?.includes(',') && !item.selectedColor)
+            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
+            (Boolean(item.color && item.color.trim() !== '') && !item.selectedColor?.trim())
         );
 
         if (itemsIncompletos) {
@@ -91,8 +91,8 @@ export default function CheckoutPage() {
         }
 
         const itemsIncompletos = cart.some(item => 
-            (item.size?.includes(',') && !item.selectedSize) || 
-            (item.color?.includes(',') && !item.selectedColor)
+            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
+            (Boolean(item.color && item.color.trim() !== '') && !item.selectedColor?.trim())
         );
 
         if (itemsIncompletos) {
@@ -183,9 +183,8 @@ export default function CheckoutPage() {
                             else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
                             
                             const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-                            const sizesList = parseVariants(item.size);
                             const colorsList = parseVariants(item.color);
-                            const hasSizes = sizesList.length > 0;
+                            const hasSizes = Boolean(item.size && item.size.trim() !== '');
                             const hasColors = colorsList.length > 0;
 
                             return (
@@ -209,18 +208,19 @@ export default function CheckoutPage() {
                                         <div className="flex flex-wrap gap-3 mt-1">
                                             {/* Selector Talle */}
                                             {hasSizes && (
-                                                <div className="flex flex-col gap-1">
+                                                <div className="flex flex-col gap-1 w-20 sm:w-24">
                                                     <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Talle</span>
-                                                    <select 
-                                                        value={item.selectedSize || ''}
-                                                        onChange={(e) => updateCartItemVariant(item.id, e.target.value, item.selectedColor)}
-                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
-                                                    >
-                                                        <option value="" disabled>Elegir</option>
-                                                        {sizesList.map(s => (
-                                                            <option key={s} value={s}>{s}</option>
-                                                        ))}
-                                                    </select>
+                                                    <input 
+                                                        type="text"
+                                                        defaultValue={item.selectedSize || ''}
+                                                        onBlur={(e) => {
+                                                            if (e.target.value.trim() !== item.selectedSize) {
+                                                                updateCartItemVariant(item.id, e.target.value.trim(), item.selectedColor);
+                                                            }
+                                                        }}
+                                                        placeholder="Ej: M..."
+                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-[5px] focus:ring-2 focus:ring-pink-500 outline-none font-medium text-center w-full min-h-[30px]"
+                                                    />
                                                 </div>
                                             )}
 
