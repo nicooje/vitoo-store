@@ -19,7 +19,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
             />
 
             {/* Panel lateral deslizante */}
-            <div className={`fixed top-0 left-0 h-full w-80 bg-white z-[70] shadow-2xl flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`fixed top-0 left-0 h-[100dvh] w-80 bg-white z-[70] shadow-2xl flex flex-col transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 
                 {/* Cabecera del Panel */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
