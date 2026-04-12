@@ -182,8 +182,11 @@ export default function CheckoutPage() {
                             else if (totalItems >= 6 && item.price6 && item.price6 > 0) { activePrice = item.price6; isDiscounted = true; comboText = 'Combo 6+'; }
                             else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
                             
-                            const hasSizes = item.size && item.size.includes(',');
-                            const hasColors = item.color && item.color.includes(',');
+                            const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
+                            const sizesList = parseVariants(item.size);
+                            const colorsList = parseVariants(item.color);
+                            const hasSizes = sizesList.length > 0;
+                            const hasColors = colorsList.length > 0;
 
                             return (
                                 <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -214,8 +217,8 @@ export default function CheckoutPage() {
                                                         className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
                                                     >
                                                         <option value="" disabled>Elegir</option>
-                                                        {item.size!.split(',').map(s => (
-                                                            <option key={s.trim()} value={s.trim()}>{s.trim()}</option>
+                                                        {sizesList.map(s => (
+                                                            <option key={s} value={s}>{s}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -231,8 +234,8 @@ export default function CheckoutPage() {
                                                         className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
                                                     >
                                                         <option value="" disabled>Elegir</option>
-                                                        {item.color!.split(',').map(c => (
-                                                            <option key={c.trim()} value={c.trim()}>{c.trim()}</option>
+                                                        {colorsList.map(c => (
+                                                            <option key={c} value={c}>{c}</option>
                                                         ))}
                                                     </select>
                                                 </div>

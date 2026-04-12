@@ -37,8 +37,11 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     };
 
     const openOptionsModal = (product: Product) => {
-        const hasSizes = product.size?.includes(',');
-        const hasColors = product.color?.includes(',');
+        const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
+        const sizesList = parseVariants(product.size);
+        const colorsList = parseVariants(product.color);
+        const hasSizes = sizesList.length > 0;
+        const hasColors = colorsList.length > 0;
 
         if (hasSizes || hasColors) {
             setActiveProduct(product);
@@ -182,60 +185,68 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     <h3 className="text-xl font-bold text-gray-900 mb-1 pr-6">{activeProduct.name}</h3>
                     <p className="text-pink-600 font-bold text-lg mb-6">${Number(activeProduct.price).toLocaleString('es-AR')}</p>
 
-                    <div className="flex flex-col gap-5">
-                        {activeProduct.size && activeProduct.size.includes(',') && (
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Seleccioná un Talle:</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {activeProduct.size.split(',').map((s) => (
-                                        <button 
-                                            key={s.trim()}
-                                            onClick={() => setSelectedSize(s.trim())}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                                                selectedSize === s.trim() 
-                                                ? 'border-pink-500 bg-pink-50 text-pink-700' 
-                                                : 'border-gray-200 text-gray-700 hover:border-pink-300'
-                                            }`}
-                                        >
-                                            {s.trim()}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                    {(() => {
+                        const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
+                        const activeSizesList = parseVariants(activeProduct.size);
+                        const activeColorsList = parseVariants(activeProduct.color);
+                        
+                        return (
+                            <div className="flex flex-col gap-5">
+                                {activeSizesList.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-bold text-gray-700">Seleccioná un Talle:</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {activeSizesList.map((s) => (
+                                                <button 
+                                                    key={s}
+                                                    onClick={() => setSelectedSize(s)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                                                        selectedSize === s 
+                                                        ? 'border-pink-500 bg-pink-50 text-pink-700' 
+                                                        : 'border-gray-200 text-gray-700 hover:border-pink-300'
+                                                    }`}
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
-                        {activeProduct.color && activeProduct.color.includes(',') && (
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Seleccioná el Color:</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {activeProduct.color.split(',').map((c) => (
-                                        <button 
-                                            key={c.trim()}
-                                            onClick={() => setSelectedColor(c.trim())}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                                                selectedColor === c.trim() 
-                                                ? 'border-pink-500 bg-pink-50 text-pink-700' 
-                                                : 'border-gray-200 text-gray-700 hover:border-pink-300'
-                                            }`}
-                                        >
-                                            {c.trim()}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                                {activeColorsList.length > 0 && (
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-bold text-gray-700">Seleccioná el Color:</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {activeColorsList.map((c) => (
+                                                <button 
+                                                    key={c}
+                                                    onClick={() => setSelectedColor(c)}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                                                        selectedColor === c
+                                                        ? 'border-pink-500 bg-pink-50 text-pink-700' 
+                                                        : 'border-gray-200 text-gray-700 hover:border-pink-300'
+                                                    }`}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
-                        <button 
-                            onClick={() => handleAddToCart(activeProduct, selectedSize, selectedColor)}
-                            disabled={
-                                (activeProduct.size?.includes(',') && !selectedSize) || 
-                                (activeProduct.color?.includes(',') && !selectedColor)
-                            }
-                            className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"
-                        >
-                            Agregar al carrito
-                        </button>
-                    </div>
+                                <button 
+                                    onClick={() => handleAddToCart(activeProduct, selectedSize, selectedColor)}
+                                    disabled={
+                                        (activeSizesList.length > 0 && !selectedSize) || 
+                                        (activeColorsList.length > 0 && !selectedColor)
+                                    }
+                                    className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"
+                                >
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
         )}
