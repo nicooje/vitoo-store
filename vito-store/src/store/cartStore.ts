@@ -95,7 +95,8 @@ export const useCartStore = create<CartState>()(
                 const itemToUpdate = currentCart[itemIndex];
                 
                 // Generar nuevo ID único con las nuevas variantes
-                let newUniqueId = itemToUpdate.baseId;
+                const originalBaseId = itemToUpdate.baseId || itemToUpdate.id.toString().split('-')[0];
+                let newUniqueId = originalBaseId;
                 if (newSize) newUniqueId += `-${newSize}`;
                 if (newColor) newUniqueId += `-${newColor}`;
 
@@ -118,6 +119,7 @@ export const useCartStore = create<CartState>()(
                     updatedCart[itemIndex] = {
                         ...itemToUpdate,
                         id: newUniqueId,
+                        baseId: originalBaseId,
                         selectedSize: newSize,
                         selectedColor: newColor
                     };
@@ -157,7 +159,7 @@ export const useCartStore = create<CartState>()(
             }
         }),
         {
-            name: 'vito-cart-storage', // Nombre de clave en el LocalStorage
+            name: 'vito-cart-storage-v2', // Bumped version to clear broken schema from old storage
         }
     )
 );

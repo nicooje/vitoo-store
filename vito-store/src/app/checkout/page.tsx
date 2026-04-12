@@ -34,6 +34,16 @@ export default function CheckoutPage() {
             return;
         }
 
+        const itemsIncompletos = cart.some(item => 
+            (item.size?.includes(',') && !item.selectedSize) || 
+            (item.color?.includes(',') && !item.selectedColor)
+        );
+
+        if (itemsIncompletos) {
+            toast.error("⚠️ Por favor, seleccioná el Talle y Color de todos los productos en tu carrito antes de continuar.");
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -77,6 +87,16 @@ export default function CheckoutPage() {
     const handleWhatsAppOrder = async () => {
         if (!nombre.trim() || !whatsapp.trim()) {
             toast.error("Por favor, completá tu Nombre y WhatsApp antes de pagar.");
+            return;
+        }
+
+        const itemsIncompletos = cart.some(item => 
+            (item.size?.includes(',') && !item.selectedSize) || 
+            (item.color?.includes(',') && !item.selectedColor)
+        );
+
+        if (itemsIncompletos) {
+            toast.error("⚠️ Por favor, seleccioná el Talle y Color de todos los productos en tu carrito antes de continuar.");
             return;
         }
 
@@ -232,12 +252,23 @@ export default function CheckoutPage() {
 
                                     {/* Desktop details side */}
                                     <div className="hidden sm:flex flex-col items-end justify-between h-28 py-1 text-right min-w-[90px]">
-                                        <div>
+                                        <div className="flex flex-col items-end">
                                             <p className="text-xl font-black text-slate-900 tracking-tight">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
-                                            {isDiscounted && (
-                                                <p className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-1 rounded inline-block mt-1 border border-pink-100">
-                                                    {comboText}
-                                                </p>
+                                            {isDiscounted ? (
+                                                <div className="flex flex-col items-end gap-1 mt-1.5">
+                                                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-0.5 rounded border border-pink-100">
+                                                        {comboText}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                        ${activePrice.toLocaleString('es-AR')} c/u
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                item.cantidad > 1 && (
+                                                    <span className="text-[10px] font-bold text-slate-400 mt-1">
+                                                        ${activePrice.toLocaleString('es-AR')} c/u
+                                                    </span>
+                                                )
                                             )}
                                         </div>
                                         <button 
