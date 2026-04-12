@@ -11,6 +11,8 @@ export default function CheckoutPage() {
     const getTotal = useCartStore((state) => state.getTotal);
     const removeFromCart = useCartStore((state) => state.removeFromCart);
     const clearCart = useCartStore((state) => state.clearCart);
+    const updateCartItemQuantity = useCartStore((state) => state.updateCartItemQuantity);
+    const updateCartItemVariant = useCartStore((state) => state.updateCartItemVariant);
 
     const [nombre, setNombre] = useState('');
     const [whatsapp, setWhatsapp] = useState('');
@@ -140,10 +142,16 @@ export default function CheckoutPage() {
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                 {/* Columna Izquierda: Resumen */}
-                <div className="lg:col-span-7 bg-transparent">
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Resumen de Compra ({cart.length} {cart.length === 1 ? 'producto' : 'productos'})</h2>
+                <div className="lg:col-span-7 bg-transparent flex flex-col pt-0 lg:pt-8">
+                    <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
+                        <span className="bg-pink-100 text-pink-600 w-10 h-10 flex items-center justify-center rounded-full text-lg">🛒</span> 
+                        Resumen de Compra 
+                        <span className="text-base font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+                            {cart.length} {cart.length === 1 ? 'ítem' : 'ítems'}
+                        </span>
+                    </h2>
 
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-5">
                         {cart.map((item) => {
                             let activePrice = item.precio;
                             let isDiscounted = false;
@@ -154,28 +162,108 @@ export default function CheckoutPage() {
                             else if (totalItems >= 6 && item.price6 && item.price6 > 0) { activePrice = item.price6; isDiscounted = true; comboText = 'Combo 6+'; }
                             else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
                             
+                            const hasSizes = item.size && item.size.includes(',');
+                            const hasColors = item.color && item.color.includes(',');
+
                             return (
-                                <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                                    <div className="w-20 h-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                                        <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
+                                <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                    <div className="flex gap-4 w-full sm:w-auto">
+                                        <div className="w-24 h-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100 border border-slate-50">
+                                            <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex flex-col flex-1 sm:hidden">
+                                            <h4 className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
+                                            <p className="text-lg font-bold text-slate-900 mt-1">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col flex-1">
-                                        <h4 className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2">{item.nombre}</h4>
-                                        <p className="text-sm text-slate-500 mt-1">Cantidad: <span className="font-medium text-slate-700">{item.cantidad}</span></p>
+                                    
+                                    <div className="flex flex-col flex-1 justify-center gap-3">
+                                        <div className="hidden sm:block">
+                                            <h4 className="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
+                                        </div>
+                                        
+                                        {/* Modificadores de Variante */}
+                                        <div className="flex flex-wrap gap-3 mt-1">
+                                            {/* Selector Talle */}
+                                            {hasSizes && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Talle</span>
+                                                    <select 
+                                                        value={item.selectedSize || ''}
+                                                        onChange={(e) => updateCartItemVariant(item.id, e.target.value, item.selectedColor)}
+                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>Elegir</option>
+                                                        {item.size!.split(',').map(s => (
+                                                            <option key={s.trim()} value={s.trim()}>{s.trim()}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {/* Selector Color */}
+                                            {hasColors && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Color</span>
+                                                    <select 
+                                                        value={item.selectedColor || ''}
+                                                        onChange={(e) => updateCartItemVariant(item.id, item.selectedSize, e.target.value)}
+                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
+                                                    >
+                                                        <option value="" disabled>Elegir</option>
+                                                        {item.color!.split(',').map(c => (
+                                                            <option key={c.trim()} value={c.trim()}>{c.trim()}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {/* Modificador Cantidad */}
+                                            <div className="flex flex-col gap-1 ml-auto sm:ml-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Cant</span>
+                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-[30px] overflow-hidden">
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad - 1)} className="w-8 h-full flex items-center justify-center text-slate-500 hover:bg-pink-100 hover:text-pink-700 transition-colors font-black">-</button>
+                                                    <span className="w-8 text-center text-xs font-bold text-slate-700">{item.cantidad}</span>
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad + 1)} className="w-8 h-full flex items-center justify-center text-slate-500 hover:bg-pink-100 hover:text-pink-700 transition-colors font-black">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-2 text-right">
-                                        <p className="text-base md:text-lg font-bold text-slate-900 pr-2">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
-                                        {isDiscounted && (
-                                            <p className="text-[10px] sm:text-xs font-semibold text-pink-600 bg-pink-50 px-2 py-0.5 rounded mr-2">
-                                                Precio {comboText}
-                                            </p>
-                                        )}
+
+                                    {/* Desktop details side */}
+                                    <div className="hidden sm:flex flex-col items-end justify-between h-28 py-1 text-right min-w-[90px]">
+                                        <div>
+                                            <p className="text-xl font-black text-slate-900 tracking-tight">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                            {isDiscounted && (
+                                                <p className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-1 rounded inline-block mt-1 border border-pink-100">
+                                                    {comboText}
+                                                </p>
+                                            )}
+                                        </div>
                                         <button 
                                             onClick={() => removeFromCart(item.id)} 
-                                            className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors px-2 py-1"
+                                            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 group"
                                         >
-                                            Eliminar
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:scale-110 transition-transform">
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                            </svg>
+                                            Quitar
                                         </button>
+                                    </div>
+                                    
+                                    {/* Mobile details footer */}
+                                    <div className="flex sm:hidden items-center justify-between mt-2 pt-3 border-t border-slate-100">
+                                            {isDiscounted ? (
+                                                <p className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-1 rounded inline-block border border-pink-100">
+                                                    {comboText}
+                                                </p>
+                                            ) : <div></div>}
+                                            <button 
+                                                onClick={() => removeFromCart(item.id)} 
+                                                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+                                            >
+                                                Quitar producto
+                                            </button>
                                     </div>
                                 </div>
                             );

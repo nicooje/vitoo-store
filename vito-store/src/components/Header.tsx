@@ -27,7 +27,7 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-100 px-4 md:px-8 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+        <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/30 px-4 md:px-8 py-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300">
             <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
                 
                 {/* Lado izquierdo - Menú hamburguesa y Búsqueda */}
@@ -70,8 +70,11 @@ export default function Header() {
                 {/* Centro - Logo ancla */}
                 <div className="flex justify-center">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <Image src="/vito-logo.png" alt="Vito Store Logo" width={44} height={44} className="rounded-full shadow-sm group-hover:scale-105 transition-transform" />
-                        <span className="hidden md:block text-2xl font-black text-slate-900 tracking-tight">Vitö</span>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-pink-400 rounded-full blur-sm opacity-0 group-hover:opacity-40 transition-opacity duration-300"></div>
+                            <Image src="/vito-logo.png" alt="Vito Store Logo" width={44} height={44} className="relative rounded-full shadow-md group-hover:scale-[1.05] group-hover:shadow-lg transition-all duration-300" />
+                        </div>
+                        <span className="hidden md:block text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight group-hover:from-pink-600 group-hover:to-purple-600 transition-all duration-500">Vitö</span>
                     </Link>
                 </div>
 
@@ -92,7 +95,7 @@ export default function Header() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
                         </svg>
                         {totalItems > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-pink-600 border-2 border-white text-[10px] font-bold text-white group-hover:scale-110 transition-transform">
+                            <span className="absolute -top-1.5 -right-1.5 flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-pink-600 border-2 border-white text-[11px] font-extrabold text-white shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 transition-all duration-300 px-1">
                                 {totalItems}
                             </span>
                         )}

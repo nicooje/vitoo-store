@@ -25,7 +25,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
             price9: product.price9 ? Number(product.price9) : undefined,
             price12: product.price12 ? Number(product.price12) : undefined,
             imagenUrl: String(product.image_url),
-            categoria: String(product.category)
+            categoria: String(product.category),
+            size: product.size,
+            color: product.color
         }, size, color);
 
         toast.success(`🛒 ${product.name} sumado a tu cesta.`);
@@ -63,9 +65,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                 const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
 
                 return (
-                    <div key={product.id} className="group flex flex-col relative w-full">
+                    <div key={product.id} className="group flex flex-col relative w-full hover:-translate-y-1.5 transition-transform duration-300">
                         {/* Imagen con Badges y Quick Buy - Aspecto 3:4 */}
-                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-gray-50 rounded-sm">
+                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-50/50 rounded-2xl border border-slate-100 shadow-sm group-hover:shadow-xl group-hover:shadow-pink-900/5 transition-all duration-300">
                             <HoverSlideshow imageUrls={product.image_url} productName={product.name} />
                             
                             {/* Badge flotante Arriba a la Izquierda */}
@@ -79,7 +81,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                             {hasStock && (
                                 <button
                                     onClick={(e) => { e.preventDefault(); openOptionsModal(product); }}
-                                    className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 backdrop-blur border border-pink-100 hover:bg-pink-600 hover:text-white hover:border-pink-600 text-pink-600 rounded-full w-12 h-12 shadow-lg items-center justify-center z-20"
+                                    className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-white/90 backdrop-blur-md border border-pink-100 hover:bg-gradient-to-r hover:from-pink-600 hover:to-pink-500 hover:text-white hover:border-transparent text-pink-600 rounded-full w-12 h-12 shadow-[0_8px_30px_rgb(0,0,0,0.12)] items-center justify-center z-20 hover:scale-110 active:scale-95"
                                     title="Agregar al carrito"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -90,9 +92,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                         </div>
 
                         {/* Bloque Inferior - Minimalista */}
-                        <div className="flex flex-col mt-4 px-1">
+                        <div className="flex flex-col mt-4 px-2">
                             {/* Título en texto negro puro */}
-                            <h3 className="text-sm md:text-[15px] text-gray-900 font-normal leading-tight group-hover:underline decoration-pink-300 underline-offset-4">
+                            <h3 className="text-sm md:text-[15px] text-slate-800 font-medium leading-tight group-hover:text-pink-600 transition-colors duration-200">
                                 {product.name}
                             </h3>
                             
@@ -113,8 +115,8 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                             )}
                             
                             {/* Precio fuerte */}
-                            <div className="mt-1 flex flex-col">
-                                <span className="text-[17px] font-bold text-gray-900">
+                            <div className="mt-1.5 flex flex-col">
+                                <span className="text-[17px] font-extrabold text-slate-900 tracking-tight">
                                     ${Number(product.price).toLocaleString('es-AR')}
                                 </span>
                                 {product.price3 && (
@@ -165,9 +167,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
 
         {/* Modal Selección de Talles y Colores */}
         {activeProduct && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setActiveProduct(null)}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md" onClick={() => setActiveProduct(null)}>
                 <div 
-                    className="bg-white rounded-2xl p-6 w-full max-w-sm relative shadow-2xl animate-in fade-in zoom-in duration-200"
+                    className="bg-white rounded-3xl p-8 w-full max-w-sm relative shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-slate-100 animate-in fade-in zoom-in duration-300"
                     onClick={(e) => e.stopPropagation()}
                 >
                     <button 
@@ -229,7 +231,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                 (activeProduct.size?.includes(',') && !selectedSize) || 
                                 (activeProduct.color?.includes(',') && !selectedColor)
                             }
-                            className="w-full mt-4 py-3.5 bg-pink-600 hover:bg-pink-700 disabled:bg-gray-300 text-white font-bold rounded-xl shadow-md transition-all disabled:shadow-none"
+                            className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"
                         >
                             Agregar al carrito
                         </button>

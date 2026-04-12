@@ -12,11 +12,14 @@ export interface Product {
     price12?: number;
     imagenUrl: string;
     categoria: string;
+    size?: string;
+    color?: string;
 }
 
 // 2. Definimos cómo es un Producto adentro del carrito (tiene cantidad)
 export interface CartItem extends Product {
     cantidad: number;
+    baseId: string;
     selectedSize?: string;
     selectedColor?: string;
 }
@@ -27,6 +30,8 @@ interface CartState {
     addToCart: (product: Product, selectedSize?: string, selectedColor?: string) => void;
     removeFromCart: (productId: string) => void;
     clearCart: () => void;
+    updateCartItemQuantity: (id: string, newQuantity: number) => void;
+    updateCartItemVariant: (id: string, newSize?: string, newColor?: string) => void;
     getTotal: () => number;
     getTotalItems: () => number;
 }
@@ -61,12 +66,64 @@ export const useCartStore = create<CartState>()(
                         cart: [...currentCart, { 
                             ...product, 
                             id: uniqueCartId, // Piso el ID para tener un ID único para la variante
+                            baseId: product.id, // Guardo el original
                             cantidad: 1,
                             selectedSize,
                             selectedColor
                         }] 
                     });
                 }
+            },
+
+            updateCartItemQuantity: (id, newQuantity) => {
+                if (newQuantity <= 0) {
+                    get().removeFromCart(id);
+                    return;
+                }
+                set({
+                    cart: get().cart.map((item) =>
+                        item.id === id ? { ...item, cantidad: newQuantity } : item
+                    ),
+                });
+            },
+
+            updateCartItemVariant: (id, newSize, newColor) => {
+                const currentCart = get().cart;
+                const itemIndex = currentCart.findIndex((item) => item.id === id);
+                if (itemIndex === -1) return;
+
+                const itemToUpdate = currentCart[itemIndex];
+                
+                // Generar nuevo ID único con las nuevas variantes
+                let newUniqueId = itemToUpdate.baseId;
+                if (newSize) newUniqueId += `-${newSize}`;
+                if (newColor) newUniqueId += `-${newColor}`;
+
+                if (newUniqueId === id) {
+                    // No cambió nada
+                    return;
+                }
+
+                // Verificar si YA existe un item en el carrito con esta nueva combinación
+                const existingSameVariantIndex = currentCart.findIndex(item => item.id === newUniqueId);
+
+                let updatedCart = [...currentCart];
+
+                if (existingSameVariantIndex !== -1 && existingSameVariantIndex !== itemIndex) {
+                    // Si ya existe la otra variante, sumarle la cantidad actual y borrar el viejo
+                    updatedCart[existingSameVariantIndex].cantidad += itemToUpdate.cantidad;
+                    updatedCart = updatedCart.filter(item => item.id !== id);
+                } else {
+                    // Si no existe, simplemente actualizamos las propiedades
+                    updatedCart[itemIndex] = {
+                        ...itemToUpdate,
+                        id: newUniqueId,
+                        selectedSize: newSize,
+                        selectedColor: newColor
+                    };
+                }
+
+                set({ cart: updatedCart });
             },
 
             // Función para borrar un producto del carrito
