@@ -36,7 +36,7 @@ export default function CheckoutPage() {
 
         const itemsIncompletos = cart.some(item => 
             (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
-            (Boolean(item.color && item.color.trim() !== '') && !item.selectedColor?.trim())
+            (!item.selectedColor?.trim())
         );
 
         if (itemsIncompletos) {
@@ -92,7 +92,7 @@ export default function CheckoutPage() {
 
         const itemsIncompletos = cart.some(item => 
             (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
-            (Boolean(item.color && item.color.trim() !== '') && !item.selectedColor?.trim())
+            (!item.selectedColor?.trim())
         );
 
         if (itemsIncompletos) {
@@ -183,9 +183,10 @@ export default function CheckoutPage() {
                             else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
                             
                             const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-                            const colorsList = parseVariants(item.color);
+                            const sheetColors = parseVariants(item.color);
+                            const colorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
                             const hasSizes = Boolean(item.size && item.size.trim() !== '');
-                            const hasColors = colorsList.length > 0;
+                            const hasColors = true;
 
                             return (
                                 <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">

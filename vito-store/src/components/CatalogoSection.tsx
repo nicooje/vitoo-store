@@ -39,8 +39,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     const openOptionsModal = (product: Product) => {
         const requiresSize = Boolean(product.size && product.size.trim() !== '');
         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-        const colorsList = parseVariants(product.color);
-        const hasColors = colorsList.length > 0;
+        const sheetColors = parseVariants(product.color);
+        const colorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
+        const hasColors = true;
 
         if (requiresSize || hasColors) {
             setActiveProduct(product);
@@ -187,7 +188,8 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     {(() => {
                         const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
                         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-                        const activeColorsList = parseVariants(activeProduct.color);
+                        const sheetColors = parseVariants(activeProduct.color);
+                        const activeColorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
                         
                         return (
                             <div className="flex flex-col gap-5">
@@ -224,7 +226,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                     onClick={() => handleAddToCart(activeProduct, selectedSize, selectedColor)}
                                     disabled={
                                         (requiresSize && !selectedSize.trim()) || 
-                                        (activeColorsList.length > 0 && !selectedColor)
+                                        (!selectedColor)
                                     }
                                     className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"
                                 >
