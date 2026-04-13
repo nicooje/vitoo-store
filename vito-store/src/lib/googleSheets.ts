@@ -71,7 +71,7 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         type StringRow = string[];
         
         
-        const parsePrice = (value) => {
+        const parsePrice = (value: any) => {
             if (!value) return 0;
             if (typeof value === 'number') return value;
             const str = value.toString().replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.-]/g, '');
