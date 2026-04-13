@@ -159,7 +159,7 @@ export const useCartStore = create<CartState>()(
             }
         }),
         {
-            name: 'vito-cart-storage-v2', // Bumped version to clear broken schema from old storage
+            name: 'vito-cart-storage-v4', // Bumped version to clear broken schema from old storage
         }
     )
 );

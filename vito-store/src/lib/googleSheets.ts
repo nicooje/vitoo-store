@@ -59,7 +59,6 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: sheetId,
             range: 'A2:N',
-            valueRenderOption: 'UNFORMATTED_VALUE',
         });
 
         const rows = response.data.values;
@@ -197,7 +196,6 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
         range: 'A2:N',
-            valueRenderOption: 'UNFORMATTED_VALUE',
     });
 
     const rows = response.data.values;
@@ -258,7 +256,6 @@ export async function deleteProductFromSheet(id: number, name?: string) {
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
         range: 'A2:N',
-            valueRenderOption: 'UNFORMATTED_VALUE',
     });
 
     const rows = response.data.values;
