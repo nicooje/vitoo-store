@@ -71,46 +71,53 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         type StringRow = string[];
         
         
-                const parsePrice = (value: any) => {
+                        const parsePrice = (value: any) => {
             if (value === null || value === undefined || value === '') return 0;
-            if (typeof value === 'number') return value;
             
-            // Convert to string and clean spaces/currency
-            let str = String(value).trim().replace(/[^0-9.,-]/g, '');
-            
-            // Let's count commas and dots
-            const hasComma = str.includes(',');
-            const hasDot = str.includes('.');
-            
-            // If it has ONLY ONE comma and TWO digits after it, assume it is decimal (ES-AR)
-            if (hasComma && !hasDot) {
-                const parts = str.split(',');
-                if (parts.length === 2 && parts[1].length <= 2) {
-                    str = str.replace(',', '.'); // replace decimal comma to dot
-                } else {
-                     str = str.replace(/,/g, ''); // must be thousands
+            let val = 0;
+            if (typeof value === 'number') {
+                val = value;
+            } else {
+                // Convert to string and clean spaces/currency
+                let str = String(value).trim().replace(/[^0-9.,-]/g, '');
+                
+                const hasComma = str.includes(',');
+                const hasDot = str.includes('.');
+                
+                if (hasComma && !hasDot) {
+                    const parts = str.split(',');
+                    if (parts.length === 2 && parts[1].length <= 2) {
+                        str = str.replace(',', '.'); 
+                    } else {
+                        str = str.replace(/,/g, ''); 
+                    }
+                } else if (hasComma && hasDot) {
+                    if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
+                        str = str.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (hasDot && !hasComma) {
+                    const parts = str.split('.');
+                    if (parts.length === 2 && parts[1].length !== 2 && parts[1].length === 3) {
+                        str = str.replace(/\./g, '');
+                    }
                 }
-            } else if (hasComma && hasDot) {
-                // Determine which is decimal
-                if (str.lastIndexOf(',') > str.lastIndexOf('.')) {
-                    // comma is decimal
-                    str = str.replace(/\./g, '').replace(',', '.');
-                } else {
-                    // dot is decimal
-                    str = str.replace(/,/g, '');
-                }
-            } else if (hasDot && !hasComma) {
-                 // ONLY ONE dot
-                 const parts = str.split('.');
-                 if (parts.length === 2 && parts[1].length !== 2 && parts[1].length === 3) {
-                     // likely thousand
-                     str = str.replace(/\./g, '');
-                 }
-                 // if 2 digits, keep the dot (decimal)
+                
+                val = Number(str) || 0;
+            }
+
+            // AUTO-CORRECCIÓN PARA ARGENTINA:
+            // Si el valor numérico extraído es menor a 500, asumimos que se abreviaron los miles (ej: 25,5 = 25500)
+            // o que Google Sheets convirtió 25.500 a 25.5 por locale.
+            if (val > 0 && val <= 500) {
+                val = val * 1000;
             }
             
-            return Number(str) || 0;
+            return val;
         };
+
+
 
 
 
