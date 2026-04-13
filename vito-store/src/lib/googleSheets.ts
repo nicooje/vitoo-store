@@ -134,20 +134,31 @@ export async function getProductsFromSheet(): Promise<Product[]> {
             const stockValue = row[5]?.toString().toLowerCase().trim();
             const hasStock = stockValue === 'true' || stockValue === 'v' || stockValue === 'si' || stockValue === '1';
 
+            const basePrice = parsePrice(row[3]);
+            let p3 = row[9] ? parsePrice(row[9]) : undefined;
+            let p6 = row[10] ? parsePrice(row[10]) : undefined;
+            let p9 = row[11] ? parsePrice(row[11]) : undefined;
+            let p12 = row[12] ? parsePrice(row[12]) : undefined;
+
+            if (p3 !== undefined && p3 > basePrice) p3 = p3 / 3;
+            if (p6 !== undefined && p6 > basePrice) p6 = p6 / 6;
+            if (p9 !== undefined && p9 > basePrice) p9 = p9 / 9;
+            if (p12 !== undefined && p12 > basePrice) p12 = p12 / 12;
+
             products.push({
                 id: parseInt(row[0]) || physicalRowNumber, // El ID fallback es igual al nro de fila exacto
                 name: row[1] || 'Producto sin nombre',
                 category: row[2] || 'General',
-                price: parsePrice(row[3]),
+                price: basePrice,
                 image_url: row[4] || '',
                 stock: hasStock,
                 size: row[6] || '',
                 color: row[7] || '',
                 quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
-                price3: row[9] ? parsePrice(row[9]) : undefined,
-                price6: row[10] ? parsePrice(row[10]) : undefined,
-                price9: row[11] ? parsePrice(row[11]) : undefined,
-                price12: row[12] ? parsePrice(row[12]) : undefined,
+                price3: p3,
+                price6: p6,
+                price9: p9,
+                price12: p12,
             });
         });
 
