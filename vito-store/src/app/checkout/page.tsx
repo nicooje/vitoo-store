@@ -116,7 +116,7 @@ export default function CheckoutPage() {
             });
 
             const PHONE_NUMBER = "5493794088240";
-        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *Transferencia / Billetera Virtual*:\n\n`;
+        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *${metodoPago === 'efectivo' ? 'Pago en Efectivo' : 'Transferencia / Billetera Virtual'}*:\n\n`;
 
         cart.forEach(item => {
             let variantText = '';
@@ -128,10 +128,6 @@ export default function CheckoutPage() {
         message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
         message += `\n*TOTAL A PAGAR:* $${getTotal().toLocaleString('es-AR')}\n\n`;
         message += `Mi número de contacto es: ${whatsapp}\n\n`;
-        message += `*DATOS PARA TRANSFERIR:*\n`;
-        message += `Alias: vito.store\n`;
-        message += `Banco: Naranja X\n`;
-        message += `A nombre de: Bianca Irina Toledo\n\n`;
         message += `*(Te adjuntaré el comprobante por acá apenas realice el pago. ¡Gracias!)*`;
 
         const encodedMessage = encodeURIComponent(message);
@@ -389,6 +385,28 @@ export default function CheckoutPage() {
                                             <span className="text-sm text-slate-500 mt-0.5">Naranja X, Ualá, MODO, Banco</span>
                                         </div>
                                         {metodoPago === 'transferencia' ? <div className="w-5 h-5 rounded-full bg-pink-500 border-4 border-white shadow-sm ring-1 ring-pink-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                    </button>
+                                    
+                                    {metodoPago === 'transferencia' && (
+                                        <div className="p-4 bg-pink-50/50 border border-pink-100/50 rounded-xl text-sm text-slate-700">
+                                            <p className="font-bold mb-2 text-pink-800">DATOS PARA TRANSFERIR:</p>
+                                            <p>Alias: <b>vito.store</b></p>
+                                            <p>Banco: <b>Naranja X</b></p>
+                                            <p>A nombre de: <b>Bianca Irina Toledo</b></p>
+                                            <p className="mt-2 text-xs text-slate-500">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        type="button"
+                                        onClick={() => setMetodoPago('efectivo')}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'efectivo' ? 'border-green-500 bg-green-50 ring-1 ring-green-500' : 'border-slate-200 hover:border-green-300'}`}
+                                    >
+                                        <div className="flex flex-col text-left">
+                                            <span className="font-bold text-slate-900 text-green-800">Pago en Efectivo 💵</span>
+                                            <span className="text-sm text-slate-500 mt-0.5">Abonás al recibir o retirar</span>
+                                        </div>
+                                        {metodoPago === 'efectivo' ? <div className="w-5 h-5 rounded-full bg-green-500 border-4 border-white shadow-sm ring-1 ring-green-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
                                     </button>
                                     <button 
                                         type="button"

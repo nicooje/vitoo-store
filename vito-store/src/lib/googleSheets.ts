@@ -70,7 +70,16 @@ export async function getProductsFromSheet(): Promise<Product[]> {
 
         type StringRow = string[];
         
+        
+        const parsePrice = (value) => {
+            if (!value) return 0;
+            if (typeof value === 'number') return value;
+            const str = value.toString().replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(str) || 0;
+        };
+
         const products: Product[] = [];
+
         
         rows.forEach((row: string[], index: number) => {
             // Filtramos internamente las filas vacías pero mantenemos el índice real
@@ -86,16 +95,16 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 id: parseInt(row[0]) || physicalRowNumber, // El ID fallback es igual al nro de fila exacto
                 name: row[1] || 'Producto sin nombre',
                 category: row[2] || 'General',
-                price: parseFloat(row[3]) || 0,
+                price: parsePrice(row[3]),
                 image_url: row[4] || '',
                 stock: hasStock,
                 size: row[6] || '',
                 color: row[7] || '',
                 quantity: row[8] ? parseInt(row[8]) : (hasStock ? 1 : 0),
-                price3: row[9] ? parseFloat(row[9]) : undefined,
-                price6: row[10] ? parseFloat(row[10]) : undefined,
-                price9: row[11] ? parseFloat(row[11]) : undefined,
-                price12: row[12] ? parseFloat(row[12]) : undefined,
+                price3: row[9] ? parsePrice(row[9]) : undefined,
+                price6: row[10] ? parsePrice(row[10]) : undefined,
+                price9: row[11] ? parsePrice(row[11]) : undefined,
+                price12: row[12] ? parsePrice(row[12]) : undefined,
             });
         });
 

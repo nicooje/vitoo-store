@@ -39,16 +39,17 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
     const openOptionsModal = (product: Product) => {
         const requiresSize = Boolean(product.size && product.size.trim() !== '');
         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
+        const isBombacha = product.name.toLowerCase().includes('bombi') || product.category.toLowerCase().includes('bombi');
         const sheetColors = parseVariants(product.color);
         const colorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
-        const hasColors = true;
+        const hasColors = !isBombacha;
 
         if (requiresSize || hasColors) {
             setActiveProduct(product);
             setSelectedSize('');
-            setSelectedColor(hasColors ? '' : (product.color || ''));
+            setSelectedColor(hasColors ? '' : 'Surtido');
         } else {
-            handleAddToCart(product, product.size, product.color);
+            handleAddToCart(product, product.size, 'Surtido');
         }
     };
 
@@ -188,11 +189,17 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     {(() => {
                         const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
                         const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
+                        const isBombacha = activeProduct.name.toLowerCase().includes('bombi') || activeProduct.category.toLowerCase().includes('bombi');
                         const sheetColors = parseVariants(activeProduct.color);
-                        const activeColorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
+                        const activeColorsList = isBombacha ? [] : (sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único']);
                         
                         return (
                             <div className="flex flex-col gap-5">
+                                {isBombacha && (
+                                    <div className="bg-pink-50 p-3 rounded-xl text-sm text-pink-700 font-medium border border-pink-100">
+                                        ✨ Los colores son surtidos según stock disponible.
+                                    </div>
+                                )}
                                 {requiresSize && (
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-bold text-gray-700">Talle de Preferencia:</label>
