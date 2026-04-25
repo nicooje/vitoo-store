@@ -188,18 +188,13 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
 
                     {(() => {
                         const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
-                        const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
-                        const isBombacha = activeProduct.name.toLowerCase().includes('bombi') || activeProduct.category.toLowerCase().includes('bombi');
-                        const sheetColors = parseVariants(activeProduct.color);
-                        const activeColorsList = isBombacha ? [] : (sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único']);
-                        
+
                         return (
                             <div className="flex flex-col gap-5">
-                                {isBombacha && (
-                                    <div className="bg-pink-50 p-3 rounded-xl text-sm text-pink-700 font-medium border border-pink-100">
-                                        ✨ Los colores son surtidos según stock disponible.
-                                    </div>
-                                )}
+                                <div className="bg-pink-50 p-3 rounded-xl text-sm text-pink-700 font-medium border border-pink-100 leading-snug">
+                                    ✨ <b>Colores Surtidos:</b> Al enviar tu pedido al carrito vas a poder especificar mediante WhatsApp el color que deseás para revisar su disponibilidad.
+                                </div>
+                                
                                 {requiresSize && (
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-bold text-gray-700">Talle de Preferencia:</label>
@@ -213,28 +208,9 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                                     </div>
                                 )}
 
-                                {activeColorsList.length > 0 && (
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-gray-700">Seleccioná un Color:</label>
-                                        <select 
-                                            value={selectedColor}
-                                            onChange={(e) => setSelectedColor(e.target.value)}
-                                            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 outline-none transition-all cursor-pointer bg-slate-50 font-medium text-slate-700"
-                                        >
-                                            <option value="" disabled>Elegir color...</option>
-                                            {activeColorsList.map((c) => (
-                                                <option key={c} value={c}>{c}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-
                                 <button 
-                                    onClick={() => handleAddToCart(activeProduct, selectedSize, selectedColor)}
-                                    disabled={
-                                        (requiresSize && !selectedSize.trim()) || 
-                                        (!selectedColor)
-                                    }
+                                    onClick={() => handleAddToCart(activeProduct, selectedSize, "Surtidos")}
+                                    disabled={(requiresSize && !selectedSize.trim())}
                                     className="w-full mt-6 py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-700 hover:to-pink-600 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-200 text-white font-extrabold rounded-2xl shadow-xl hover:shadow-pink-500/25 transition-all duration-300 disabled:shadow-none disabled:text-slate-400 disabled:cursor-not-allowed"
                                 >
                                     Agregar al carrito

@@ -35,12 +35,11 @@ export default function CheckoutPage() {
         }
 
         const itemsIncompletos = cart.some(item => 
-            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
-            (!item.selectedColor?.trim())
+            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim())
         );
 
         if (itemsIncompletos) {
-            toast.error("⚠️ Por favor, seleccioná el Talle y Color de todos los productos en tu carrito antes de continuar.");
+            toast.error("⚠️ Por favor, seleccioná el Talle de todos los productos en tu carrito antes de continuar.");
             return;
         }
 
@@ -91,12 +90,11 @@ export default function CheckoutPage() {
         }
 
         const itemsIncompletos = cart.some(item => 
-            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim()) || 
-            (!item.selectedColor?.trim())
+            (Boolean(item.size && item.size.trim() !== '') && !item.selectedSize?.trim())
         );
 
         if (itemsIncompletos) {
-            toast.error("⚠️ Por favor, seleccioná el Talle y Color de todos los productos en tu carrito antes de continuar.");
+            toast.error("⚠️ Por favor, seleccioná el Talle de todos los productos en tu carrito antes de continuar.");
             return;
         }
 
@@ -121,9 +119,11 @@ export default function CheckoutPage() {
         cart.forEach(item => {
             let variantText = '';
             if (item.selectedSize) variantText += ` (Talle: ${item.selectedSize})`;
-            if (item.selectedColor) variantText += ` (Color: ${item.selectedColor})`;
+            variantText += ` (Color: Surtidos)`;
             message += `- ${item.cantidad}x ${item.nombre}${variantText}\n`;
         });
+
+        message += `\n*Nota sobre colores:* Me gustaría consultar disponibilidad en el color: [Escribí tu color ingresando acá]\n`;
 
         message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
         message += `\n*TOTAL A PAGAR:* $${getTotal().toLocaleString('es-AR')}\n\n`;
