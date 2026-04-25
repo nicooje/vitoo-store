@@ -14,6 +14,7 @@ export interface Product {
     categoria: string;
     size?: string;
     color?: string;
+    description?: string;
 }
 
 // 2. Definimos cómo es un Producto adentro del carrito (tiene cantidad)

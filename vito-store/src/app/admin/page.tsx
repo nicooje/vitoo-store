@@ -19,6 +19,7 @@ export type Product = {
     price6?: number;
     price9?: number;
     price12?: number;
+    description?: string;
 };
 
 export type Order = {
@@ -44,6 +45,7 @@ export default function AdminPage() {
     // Estados del Formulario
     const [editingProductId, setEditingProductId] = useState<number | null>(null);
     const [nombre, setNombre] = useState('');
+    const [descripcion, setDescripcion] = useState('');
     const [categoria, setCategoria] = useState('Conjuntos');
     const [precio, setPrecio] = useState('');
     const [price3, setPrice3] = useState('');
@@ -119,6 +121,7 @@ export default function AdminPage() {
     const handleEditProduct = (p: Product) => {
         setEditingProductId(p.id);
         setNombre(p.name);
+        setDescripcion(p.description || '');
         setCategoria(p.category);
         setPrecio(p.price.toString());
         setPrice3(p.price3 ? p.price3.toString() : '');
@@ -138,6 +141,7 @@ export default function AdminPage() {
     const handleCancelEdit = () => {
         setEditingProductId(null);
         setNombre('');
+        setDescripcion('');
         setCategoria('Conjuntos');
         setPrecio('');
         setPrice3('');
@@ -207,7 +211,8 @@ export default function AdminPage() {
                 price3: price3 ? parseFloat(price3) : undefined,
                 price6: price6 ? parseFloat(price6) : undefined,
                 price9: price9 ? parseFloat(price9) : undefined,
-                price12: price12 ? parseFloat(price12) : undefined
+                price12: price12 ? parseFloat(price12) : undefined,
+                description: descripcion.trim() || undefined
             };
 
             // 3. Mandar a la API según si es Edición o Creación
@@ -643,6 +648,18 @@ export default function AdminPage() {
                                                             <option key={cat} value={cat} />
                                                         ))}
                                                     </datalist>
+                                                </div>
+
+                                                {/* Descripción */}
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Descripción o Detalles (Opcional)</label>
+                                                    <textarea
+                                                        value={descripcion}
+                                                        onChange={(e) => setDescripcion(e.target.value)}
+                                                        placeholder="Ej: Material de algodón. Envío gratis."
+                                                        rows={3}
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/20 transition-all placeholder-gray-400 resize-y"
+                                                    />
                                                 </div>
 
                                                 {/* Variantes y Stock Exacto */}

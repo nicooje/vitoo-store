@@ -15,6 +15,7 @@ export type Product = {
     price6?: number;
     price9?: number;
     price12?: number;
+    description?: string;
 };
 
 export type Order = {
@@ -78,8 +79,9 @@ export async function getProductsFromSheet(): Promise<Product[]> {
             if (typeof value === 'number') {
                 val = value;
             } else {
-                // Convert to string and clean spaces/currency
-                let str = String(value).trim().replace(/[^0-9.,-]/g, '');
+                let strVal = String(value).trim().toLowerCase();
+                strVal = strVal.replace(/(combo)?\s*\d+\s*x\s*|x\s*\d+\s*/g, ''); 
+                let str = strVal.replace(/[^0-9.,-]/g, '');
                 
                 const hasComma = str.includes(',');
                 const hasDot = str.includes('.');
@@ -159,6 +161,7 @@ export async function getProductsFromSheet(): Promise<Product[]> {
                 price6: p6,
                 price9: p9,
                 price12: p12,
+                description: row[13] || ''
             });
         });
 
@@ -198,7 +201,8 @@ export async function appendProductToSheet(product: Omit<Product, 'id'>) {
                     product.price3 || '',
                     product.price6 || '',
                     product.price9 || '',
-                    product.price12 || ''
+                    product.price12 || '',
+                    product.description || ''
                 ]
             ],
         },
@@ -258,7 +262,8 @@ export async function updateProductInSheet(id: number, product: Omit<Product, 'i
                     product.price3 || '',
                     product.price6 || '',
                     product.price9 || '',
-                    product.price12 || ''
+                    product.price12 || '',
+                    product.description || ''
                 ]
             ],
         },

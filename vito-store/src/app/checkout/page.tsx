@@ -192,13 +192,15 @@ export default function CheckoutPage() {
                                         </div>
                                         <div className="flex flex-col flex-1 sm:hidden">
                                             <h4 className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
-                                            <p className="text-lg font-bold text-slate-900 mt-1">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                            {item.description && <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-tight">{item.description}</p>}
+                                            <p className="text-lg font-bold text-slate-900 mt-1.5">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="flex flex-col flex-1 justify-center gap-3">
                                         <div className="hidden sm:block">
                                             <h4 className="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
+                                            {item.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-snug">{item.description}</p>}
                                         </div>
                                         
                                         {/* Modificadores de Variante */}

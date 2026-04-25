@@ -184,7 +184,13 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                     </button>
                     
                     <h3 className="text-xl font-bold text-gray-900 mb-1 pr-6">{activeProduct.name}</h3>
-                    <p className="text-pink-600 font-bold text-lg mb-6">${Number(activeProduct.price).toLocaleString('es-AR')}</p>
+                    <p className="text-pink-600 font-bold text-lg mb-4">${Number(activeProduct.price).toLocaleString('es-AR')}</p>
+                    
+                    {activeProduct.description && (
+                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-6">
+                            <p className="text-xs text-slate-600 font-medium whitespace-pre-wrap">{activeProduct.description}</p>
+                        </div>
+                    )}
 
                     {(() => {
                         const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
