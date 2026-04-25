@@ -8,10 +8,10 @@ import './globals.css';
 const outfit = Outfit({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Vito Store | Lencería que te abraza',
+  title: 'Vito Store',
   description: 'Descubrí lo mejor en lencería, trajes de baño y pijamas. Envíos a todo el país y venta mayorista en Corrientes.',
   openGraph: {
-    title: 'Vito Store | Lencería',
+    title: 'Vito Store',
     description: 'Descubrí lo mejor en lencería y pijamas. Diseños exclusivos y venta mayorista.',
     url: 'https://vito.store', // Placeholder, ideal to use actual URL
     siteName: 'Vito Store',
