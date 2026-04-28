@@ -425,12 +425,32 @@ export default function CheckoutPage() {
                             </div>
 
                             {metodoPago === 'mercadopago' && (
-                                <div className="p-4 bg-blue-50/50 border border-blue-100/50 rounded-xl text-sm text-slate-700">
-                                    <p className="font-bold mb-2 text-blue-800">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
-                                    <p>Alias: <b>VITO.STORE</b></p>
-                                    <p>CVU: <b>4530000800010843180599</b></p>
-                                    <p>A nombre de: <b>Bianca Irina Toledo</b></p>
-                                    <p className="mt-2 text-xs text-slate-500">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
+                                <div className="p-4 bg-blue-50/50 border border-blue-100/50 rounded-xl text-sm text-slate-700 shadow-inner">
+                                    <p className="font-bold mb-3 text-blue-800">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
+                                    <div className="bg-white/80 p-3 rounded-lg border border-blue-200/60 mb-3 space-y-1">
+                                        <p className="flex justify-between"><span>Alias:</span> <b className="text-blue-900">VITO.STORE</b></p>
+                                        <p className="flex justify-between"><span>CVU:</span> <b className="text-blue-900">4530000800010843180599</b></p>
+                                        <p className="flex justify-between"><span>A nombre de:</span> <b className="text-blue-900 text-right">Bianca Irina Toledo</b></p>
+                                    </div>
+                                    
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText('4530000800010843180599');
+                                            toast.success('¡CVU copiado! Abriendo Mercado Pago...', { icon: '📋' });
+                                            setTimeout(() => {
+                                                // Intentar abrir la app en móvil o web en PC
+                                                window.open('https://www.mercadopago.com.ar/transferencias', '_blank');
+                                            }, 1200);
+                                        }}
+                                        className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm text-sm"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                                        </svg>
+                                        Copiar CVU y Abrir App
+                                    </button>
+                                    <p className="mt-3 text-xs text-slate-500 text-center">Una vez que transfieras, apretá el botón verde de abajo para enviarnos el comprobante elegiendo tus talles y colores.</p>
                                 </div>
                             )}
 
