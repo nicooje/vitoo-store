@@ -108,13 +108,13 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     cart: cart,
                     cliente: { nombre, whatsapp, metodoEntrega },
-                    paymentMethod: 'transferencia',
+                    paymentMethod: metodoPago,
                     total: getTotal()
                 })
             });
 
-            const PHONE_NUMBER = "5493794088240";
-        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *${metodoPago === 'efectivo' ? 'Pago en Efectivo' : 'Transferencia / Billetera Virtual'}*:\n\n`;
+        const PHONE_NUMBER = "5493794088240";
+        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *${metodoPago === 'efectivo' ? 'Pago en Efectivo' : metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia / Billetera Virtual'}*:\n\n`;
 
         cart.forEach(item => {
             let variantText = '';
@@ -424,26 +424,26 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            {metodoPago === 'mercadopago' ? (
-                                <button
-                                    type="button"
-                                    onClick={handlePago}
-                                    disabled={loading}
-                                    className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
-                                        ${loading ? 'bg-pink-300 cursor-not-allowed shadow-none' : 'bg-pink-600 hover:bg-pink-700 hover:-translate-y-1 hover:shadow-pink-600/30'}
-                                    `}
-                                >
-                                    {loading ? 'Procesando pago... ⏳' : 'Continuar a Mercado Pago 💳'}
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleWhatsAppOrder}
-                                    className="w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl bg-green-500 hover:bg-green-600 hover:-translate-y-1 hover:shadow-green-500/30"
-                                >
-                                    Generar Pedido por WhatsApp 📲
-                                </button>
+                            {metodoPago === 'mercadopago' && (
+                                <div className="p-4 bg-blue-50/50 border border-blue-100/50 rounded-xl text-sm text-slate-700">
+                                    <p className="font-bold mb-2 text-blue-800">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
+                                    <p>Alias: <b>VITO.STORE</b></p>
+                                    <p>CVU: <b>4530000800010843180599</b></p>
+                                    <p>A nombre de: <b>Bianca Irina Toledo</b></p>
+                                    <p className="mt-2 text-xs text-slate-500">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
+                                </div>
                             )}
+
+                            <button
+                                type="button"
+                                onClick={handleWhatsAppOrder}
+                                disabled={loading}
+                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
+                                    ${loading ? 'bg-green-400 cursor-not-allowed shadow-none' : 'bg-green-500 hover:bg-green-600 hover:-translate-y-1 hover:shadow-green-500/30'}
+                                `}
+                            >
+                                {loading ? 'Procesando pedido... ⏳' : 'Generar Pedido por WhatsApp 📲'}
+                            </button>
                             
                             <Link href="/#catalogo" className="text-center text-slate-500 text-sm font-medium mt-4 hover:text-pink-600 transition-colors block">
                                 ← Volver al catálogo
