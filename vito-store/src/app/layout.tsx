@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { Outfit } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Script from 'next/script';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import './globals.css';
 
-const outfit = Outfit({ subsets: ['latin'] });
+const poppins = Poppins({ 
+  subsets: ['latin'], 
+  weight: ['300', '400', '500', '600', '700', '900'] 
+});
 
 export const metadata: Metadata = {
   title: 'Vito Store',
@@ -71,7 +74,7 @@ export default function RootLayout({
             `}
         </Script>
       </head>
-      <body className={outfit.className}>
+      <body className={poppins.className}>
         <Toaster position="bottom-center" />
         {children}
         <FloatingWhatsApp />

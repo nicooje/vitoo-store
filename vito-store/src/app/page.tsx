@@ -46,13 +46,13 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
   }
 
     return (
-        <main className="bg-white font-sans text-gray-900 min-h-screen">
+        <main className="bg-bg-light min-h-screen">
             <Header />
             <HeroSection products={cleanedProducts.filter(p => p.image_url).slice(0, 5)} />
 
-            <section id="catalogo" className="pt-16 pb-24 px-4 md:px-8 bg-white">
+            <section id="catalogo" className="pt-24 pb-32 px-4 md:px-8 bg-bg-light">
                 <div className="max-w-[1400px] mx-auto w-full">
-                    <h2 className="text-center text-2xl lg:text-3xl font-normal text-gray-900 tracking-tight mb-8">
+                    <h2 className="text-center text-3xl lg:text-4xl font-bold text-primary-dark tracking-tight mb-12 uppercase">
                         Nuestro Catálogo
                     </h2>
 

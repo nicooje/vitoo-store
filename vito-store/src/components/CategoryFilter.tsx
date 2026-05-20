@@ -58,33 +58,33 @@ export default function CategoryFilter({ categories }: Props) {
     };
 
     return (
-        <div className="w-full flex flex-col gap-6 pb-8 mb-8 px-4 max-w-[1400px] mx-auto border-b border-gray-100">
+        <div className="w-full flex flex-col gap-6 pb-8 mb-8 px-4 max-w-[1400px] mx-auto border-b border-slate-100">
             {/* Buscador Superior */}
             <div className="w-full max-w-xl mx-auto relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400 group-focus-within:text-pink-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400 group-focus-within:text-accent premium-transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <input 
                     type="text" 
                     placeholder="Buscá conjuntos, bodies, babydolls..." 
                     value={searchTerm}
                     onChange={onSearchChange}
-                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 text-gray-900 rounded-2xl outline-none shadow-sm transition-all focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 block hover:border-gray-300"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 text-slate-900 rounded-2xl outline-none shadow-sm transition-all focus:ring-2 focus:ring-accent/20 focus:border-accent block hover:border-slate-300 min-h-[48px] premium-transition"
                 />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="flex flex-wrap gap-3 justify-center sm:justify-start w-full sm:w-auto">
                     {categories.map((cat) => {
                         const isActive = activeCategory === cat;
                         return (
                             <button
                                 key={cat}
                                 onClick={() => handleFilter(cat)}
-                                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                                className={`px-6 py-3 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 min-h-[48px] flex items-center justify-center premium-transition ${
                                     isActive 
-                                    ? 'bg-pink-50 border-2 border-pink-500 text-pink-700' 
-                                    : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-400 hover:text-gray-900 shadow-sm'
+                                    ? 'bg-accent text-white shadow-md shadow-accent/20 border-2 border-transparent' 
+                                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900 shadow-sm active:scale-95'
                                 }`}
                             >
                                 {cat}
@@ -93,12 +93,12 @@ export default function CategoryFilter({ categories }: Props) {
                     })}
                 </div>
                 
-                <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm font-medium text-gray-500">Ordenar por:</span>
+                <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto justify-end">
+                    <span className="text-sm font-medium text-slate-500">Ordenar por:</span>
                     <select 
                         value={activeSort}
                         onChange={(e) => handleSort(e.target.value)}
-                        className="bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl focus:ring-pink-500 focus:border-pink-500 block px-4 py-2 cursor-pointer outline-none shadow-sm transition-all hover:border-gray-300"
+                        className="bg-white border border-slate-200 text-slate-700 text-xs md:text-sm font-semibold rounded-2xl focus:ring-2 focus:ring-accent/20 focus:border-accent block px-5 py-3 min-h-[48px] cursor-pointer outline-none shadow-sm transition-all hover:border-slate-300 premium-transition"
                     >
                         <option value="">Relevancia</option>
                         <option value="asc">Menor a mayor precio</option>

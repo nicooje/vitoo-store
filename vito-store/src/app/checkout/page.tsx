@@ -46,7 +46,6 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            // Guardar primero en DB de Pedidos
             await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -58,7 +57,6 @@ export default function CheckoutPage() {
                 })
             });
 
-            // Luego generar preferencia de Mercadopago
             const res = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -101,7 +99,6 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            // Guardar primero en DB de Pedidos
             await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -113,28 +110,27 @@ export default function CheckoutPage() {
                 })
             });
 
-        const PHONE_NUMBER = "5493794088240";
-        let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *${metodoPago === 'efectivo' ? 'Pago en Efectivo' : metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia / Billetera Virtual'}*:\n\n`;
+            const PHONE_NUMBER = "5493794088240";
+            let message = `Hola Vitö Store, soy ${nombre}.\n\nQuiero hacer el siguiente pedido mediante *${metodoPago === 'efectivo' ? 'Pago en Efectivo' : metodoPago === 'mercadopago' ? 'Mercado Pago' : 'Transferencia / Billetera Virtual'}*:\n\n`;
 
-        cart.forEach(item => {
-            let variantText = '';
-            if (item.selectedSize) variantText += ` (Talle: ${item.selectedSize})`;
-            variantText += ` (Color: Surtidos)`;
-            message += `- ${item.cantidad}x ${item.nombre}${variantText}\n`;
-        });
+            cart.forEach(item => {
+                let variantText = '';
+                if (item.selectedSize) variantText += ` (Talle: ${item.selectedSize})`;
+                variantText += ` (Color: Surtidos)`;
+                message += `- ${item.cantidad}x ${item.nombre}${variantText}\n`;
+            });
 
-        message += `\n*Nota sobre colores:* Me gustaría consultar disponibilidad en el color: [Escribí tu color ingresando acá]\n`;
+            message += `\n*Nota sobre colores:* Me gustaría consultar disponibilidad en el color: [Escribí tu color ingresando acá]\n`;
+            message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
+            message += `\n*TOTAL A PAGAR:* $${getTotal().toLocaleString('es-AR')}\n\n`;
+            message += `Mi número de contacto es: ${whatsapp}\n\n`;
+            message += `*(Te adjuntaré el comprobante por acá apenas realice el pago. ¡Gracias!)*`;
 
-        message += `\n*Entrega:* ${metodoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a Domicilio'}`;
-        message += `\n*TOTAL A PAGAR:* $${getTotal().toLocaleString('es-AR')}\n\n`;
-        message += `Mi número de contacto es: ${whatsapp}\n\n`;
-        message += `*(Te adjuntaré el comprobante por acá apenas realice el pago. ¡Gracias!)*`;
-
-        const encodedMessage = encodeURIComponent(message);
-        window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
-        
-        clearCart();
-        setLoading(false);
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
+            
+            clearCart();
+            setLoading(false);
         } catch (error) {
             console.error("Error saving WhatsApp order", error);
             toast.error("Hubo un error al guardar tu pedido. Revisá la conexión.");
@@ -144,30 +140,34 @@ export default function CheckoutPage() {
 
     if (cart.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-6">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">Tu carrito está vacío 🛒</h2>
-                <Link href="/" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-md">
-                    Volver a la tienda
-                </Link>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-bg-light px-6 py-12">
+                <div className="bg-white p-10 rounded-xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] max-w-sm w-full text-center">
+                    <span className="text-5xl block mb-6">🛒</span>
+                    <h2 className="text-xl font-bold text-slate-900 mb-6">Tu carrito está vacío</h2>
+                    <Link href="/" className="w-full inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-bold transition-all min-h-[48px] premium-transition shadow-lg shadow-accent/20">
+                        Volver a la tienda
+                    </Link>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-slate-50 min-h-screen py-12 px-5 lg:px-8">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="bg-bg-light min-h-screen py-16 px-4 md:px-8 font-sans">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-                {/* Columna Izquierda: Resumen */}
-                <div className="lg:col-span-7 bg-transparent flex flex-col pt-0 lg:pt-8">
-                    <h2 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
-                        <span className="bg-pink-100 text-pink-600 w-10 h-10 flex items-center justify-center rounded-full text-lg">🛒</span> 
+                {/* Columna Izquierda: Resumen de Compra */}
+                <div className="lg:col-span-7 bg-transparent flex flex-col pt-0">
+                    
+                    <h2 className="text-2xl font-bold text-primary-dark mb-8 flex items-center gap-3">
+                        <span className="bg-primary-light text-primary w-11 h-11 flex items-center justify-center rounded-xl text-lg shadow-sm">🛒</span> 
                         Resumen de Compra 
-                        <span className="text-base font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+                        <span className="text-xs font-semibold text-slate-400 bg-white border border-slate-100 px-3 py-1 rounded-full shadow-sm ml-auto sm:ml-2">
                             {cart.length} {cart.length === 1 ? 'ítem' : 'ítems'}
                         </span>
                     </h2>
 
-                    <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-4">
                         {cart.map((item) => {
                             let activePrice = item.precio;
                             let isDiscounted = false;
@@ -185,30 +185,32 @@ export default function CheckoutPage() {
                             const hasColors = true;
 
                             return (
-                                <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_18px_rgba(92,36,179,0.03)] transition-all duration-300">
+                                    
+                                    {/* Imagen thumbnail con aspecto estricto 3:4 */}
                                     <div className="flex gap-4 w-full sm:w-auto">
-                                        <div className="w-24 h-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100 border border-slate-50">
+                                        <div className="w-24 h-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 relative">
                                             <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
                                         </div>
-                                        <div className="flex flex-col flex-1 sm:hidden">
-                                            <h4 className="text-sm font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
-                                            {item.description && <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 leading-tight">{item.description}</p>}
-                                            <p className="text-lg font-bold text-slate-900 mt-1.5">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                        <div className="flex flex-col flex-1 sm:hidden justify-center">
+                                            <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-tight">{item.nombre}</h4>
+                                            {item.description && <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-tight">{item.description}</p>}
+                                            <p className="text-base font-bold text-primary mt-2">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
                                         </div>
                                     </div>
                                     
                                     <div className="flex flex-col flex-1 justify-center gap-3">
                                         <div className="hidden sm:block">
-                                            <h4 className="text-base font-bold text-slate-900 line-clamp-2 leading-tight">{item.nombre}</h4>
-                                            {item.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-snug">{item.description}</p>}
+                                            <h4 className="text-sm md:text-base font-bold text-slate-800 line-clamp-2 leading-tight">{item.nombre}</h4>
+                                            {item.description && <p className="text-xs text-slate-500 mt-1 line-clamp-1 leading-snug">{item.description}</p>}
                                         </div>
                                         
-                                        {/* Modificadores de Variante */}
-                                        <div className="flex flex-wrap gap-3 mt-1">
+                                        {/* Modificadores de Variante con Touch Targets de 48px */}
+                                        <div className="flex flex-wrap gap-4 mt-1 items-end">
                                             {/* Selector Talle */}
                                             {hasSizes && (
                                                 <div className="flex flex-col gap-1 w-20 sm:w-24">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Talle</span>
+                                                    <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Talle</span>
                                                     <input 
                                                         type="text"
                                                         defaultValue={item.selectedSize || ''}
@@ -218,7 +220,7 @@ export default function CheckoutPage() {
                                                             }
                                                         }}
                                                         placeholder="Ej: M..."
-                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-[5px] focus:ring-2 focus:ring-pink-500 outline-none font-medium text-center w-full min-h-[30px]"
+                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-3.5 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none font-bold text-center w-full min-h-[48px] premium-transition"
                                                     />
                                                 </div>
                                             )}
@@ -226,11 +228,11 @@ export default function CheckoutPage() {
                                             {/* Selector Color */}
                                             {hasColors && (
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Color</span>
+                                                    <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Color</span>
                                                     <select 
                                                         value={item.selectedColor || ''}
                                                         onChange={(e) => updateCartItemVariant(item.id, item.selectedSize, e.target.value)}
-                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-pink-500 outline-none font-medium cursor-pointer"
+                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none font-bold cursor-pointer min-h-[48px] premium-transition"
                                                     >
                                                         <option value="" disabled>Elegir</option>
                                                         {colorsList.map(c => (
@@ -240,34 +242,34 @@ export default function CheckoutPage() {
                                                 </div>
                                             )}
 
-                                            {/* Modificador Cantidad */}
+                                            {/* Modificador Cantidad con Botones de 48px de click */}
                                             <div className="flex flex-col gap-1 ml-auto sm:ml-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Cant</span>
-                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-[30px] overflow-hidden">
-                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad - 1)} className="w-8 h-full flex items-center justify-center text-slate-500 hover:bg-pink-100 hover:text-pink-700 transition-colors font-black">-</button>
+                                                <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Cant</span>
+                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl h-[48px] overflow-hidden">
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad - 1)} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-accent-light hover:text-accent transition-colors font-black">-</button>
                                                     <span className="w-8 text-center text-xs font-bold text-slate-700">{item.cantidad}</span>
-                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad + 1)} className="w-8 h-full flex items-center justify-center text-slate-500 hover:bg-pink-100 hover:text-pink-700 transition-colors font-black">+</button>
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad + 1)} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-accent-light hover:text-accent transition-colors font-black">+</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Desktop details side */}
-                                    <div className="hidden sm:flex flex-col items-end justify-between h-28 py-1 text-right min-w-[90px]">
+                                    <div className="hidden sm:flex flex-col items-end justify-between h-32 py-1 text-right min-w-[100px]">
                                         <div className="flex flex-col items-end">
-                                            <p className="text-xl font-black text-slate-900 tracking-tight">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
+                                            <p className="text-lg font-bold text-primary tracking-tight">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
                                             {isDiscounted ? (
                                                 <div className="flex flex-col items-end gap-1 mt-1.5">
-                                                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-0.5 rounded border border-pink-100">
+                                                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-accent bg-accent-light px-2 py-0.5 rounded border border-accent/15">
                                                         {comboText}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                    <span className="text-[10px] font-semibold text-slate-400">
                                                         ${activePrice.toLocaleString('es-AR')} c/u
                                                     </span>
                                                 </div>
                                             ) : (
                                                 item.cantidad > 1 && (
-                                                    <span className="text-[10px] font-bold text-slate-400 mt-1">
+                                                    <span className="text-[10px] font-semibold text-slate-400 mt-1">
                                                         ${activePrice.toLocaleString('es-AR')} c/u
                                                     </span>
                                                 )
@@ -275,9 +277,9 @@ export default function CheckoutPage() {
                                         </div>
                                         <button 
                                             onClick={() => removeFromCart(item.id)} 
-                                            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 group"
+                                            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 group py-2"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:scale-110 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:scale-115 transition-transform duration-300">
                                               <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                                             </svg>
                                             Quitar
@@ -287,13 +289,13 @@ export default function CheckoutPage() {
                                     {/* Mobile details footer */}
                                     <div className="flex sm:hidden items-center justify-between mt-2 pt-3 border-t border-slate-100">
                                             {isDiscounted ? (
-                                                <p className="text-[10px] uppercase tracking-wider font-extrabold text-pink-600 bg-pink-100/50 px-2 py-1 rounded inline-block border border-pink-100">
+                                                <p className="text-[9px] uppercase tracking-wider font-extrabold text-accent bg-accent-light px-2.5 py-1 rounded-md border border-accent/15">
                                                     {comboText}
                                                 </p>
                                             ) : <div></div>}
                                             <button 
                                                 onClick={() => removeFromCart(item.id)} 
-                                                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+                                                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors py-2"
                                             >
                                                 Quitar producto
                                             </button>
@@ -304,133 +306,137 @@ export default function CheckoutPage() {
                     </div>
 
                     {totalItems >= 3 && cart.some(item => item.price3 || item.price6 || item.price9 || item.price12) && (
-                        <div className="mt-6 p-4 bg-pink-50 border border-pink-100 rounded-xl text-sm font-bold text-pink-700 flex items-center gap-3">
+                        <div className="mt-6 p-4.5 bg-accent-light border border-accent/20 rounded-xl text-xs md:text-sm font-semibold text-accent flex items-center gap-3">
                             <span className="text-xl">✨</span>
                             ¡Estás accediendo a precios de combo por cantidad!
                         </div>
                     )}
 
-                    <div className="mt-6 p-6 bg-white rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
-                        <span className="text-lg font-bold text-slate-700">Total a Pagar:</span>
-                        <span className="text-2xl md:text-3xl font-black text-pink-600">${getTotal().toLocaleString('es-AR')}</span>
+                    <div className="mt-6 p-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
+                        <span className="text-base md:text-lg font-bold text-slate-700">Total a Pagar:</span>
+                        <span className="text-2xl md:text-3xl font-bold text-primary">${getTotal().toLocaleString('es-AR')}</span>
                     </div>
                 </div>
 
                 {/* Columna Derecha: Formulario de Datos */}
                 <div className="lg:col-span-5 relative">
-                    <div className="bg-white p-6 md:p-8 rounded-3xl shadow-lg border border-slate-100 sticky top-24">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6">Tus Datos</h2>
+                    <div className="bg-white p-6 md:p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-100 sticky top-28">
+                        <h2 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-3">Tus Datos</h2>
 
                         <form className="flex flex-col gap-5">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Nombre y Apellido</label>
+                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nombre y Apellido</label>
                                 <input 
                                     type="text" 
                                     required 
                                     value={nombre} 
                                     onChange={(e) => setNombre(e.target.value)} 
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50" 
+                                    className="w-full px-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/25 focus:border-accent outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50 min-h-[48px] premium-transition" 
                                     placeholder="Ej: María Gómez" 
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">WhatsApp</label>
+                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">WhatsApp</label>
                                 <input 
                                     type="tel" 
                                     required 
                                     value={whatsapp} 
                                     onChange={(e) => setWhatsapp(e.target.value)} 
-                                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50" 
+                                    className="w-full px-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/25 focus:border-accent outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50 min-h-[48px] premium-transition" 
                                     placeholder="Ej: 3794123456" 
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-3">Método de Entrega</label>
+                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Método de Entrega</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <button 
                                         type="button"
                                         onClick={() => setMetodoEntrega('retiro')}
-                                        className={`p-4 border-2 rounded-xl text-left transition-all ${metodoEntrega === 'retiro' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all duration-300 min-h-[48px] premium-transition flex flex-col justify-center ${metodoEntrega === 'retiro' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="font-bold text-slate-900">Retirar Local 🛍️</span>
-                                            {metodoEntrega === 'retiro' && <div className="w-4 h-4 rounded-full bg-pink-500 border-4 border-pink-100"></div>}
+                                        <div className="flex items-center justify-between mb-1 w-full">
+                                            <span className="font-bold text-slate-800 text-sm">Retirar Local 🛍️</span>
+                                            {metodoEntrega === 'retiro' && <div className="w-4 h-4 rounded-full bg-accent border-4 border-accent-light shadow-sm"></div>}
                                         </div>
-                                        <p className="text-sm text-slate-500">Sin costo adicional</p>
+                                        <p className="text-[11px] text-slate-500 font-semibold">Sin costo adicional</p>
                                     </button>
+                                    
                                     <button 
                                         type="button"
                                         onClick={() => setMetodoEntrega('envio')}
-                                        className={`p-4 border-2 rounded-xl text-left transition-all ${metodoEntrega === 'envio' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                        className={`p-4 border-2 rounded-xl text-left transition-all duration-300 min-h-[48px] premium-transition flex flex-col justify-center ${metodoEntrega === 'envio' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="font-bold text-slate-900">Envío Domicilio 🛵</span>
-                                            {metodoEntrega === 'envio' && <div className="w-4 h-4 rounded-full bg-pink-500 border-4 border-pink-100"></div>}
+                                        <div className="flex items-center justify-between mb-1 w-full">
+                                            <span className="font-bold text-slate-800 text-sm">Envío Domicilio 🛵</span>
+                                            {metodoEntrega === 'envio' && <div className="w-4 h-4 rounded-full bg-accent border-4 border-accent-light shadow-sm"></div>}
                                         </div>
-                                        <p className="text-sm text-slate-500">Costo a coordinar</p>
+                                        <p className="text-[11px] text-slate-500 font-semibold">Costo a coordinar</p>
                                     </button>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-3">Método de Pago</label>
+                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Método de Pago</label>
                                 <div className="flex flex-col gap-3">
                                     <button 
                                         type="button"
                                         onClick={() => setMetodoPago('transferencia')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'transferencia' ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-500' : 'border-slate-200 hover:border-pink-300'}`}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'transferencia' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
                                         <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-900">Transferencia Bancaria 🏦</span>
-                                            <span className="text-sm text-slate-500 mt-0.5">Naranja X, Ualá, MODO, Banco</span>
+                                            <span className="font-bold text-slate-800 text-sm">Transferencia Bancaria 🏦</span>
+                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Naranja X, Ualá, MODO, Banco</span>
                                         </div>
-                                        {metodoPago === 'transferencia' ? <div className="w-5 h-5 rounded-full bg-pink-500 border-4 border-white shadow-sm ring-1 ring-pink-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                        {metodoPago === 'transferencia' ? <div className="w-5 h-5 rounded-full bg-accent border-4 border-white shadow-sm ring-1 ring-accent"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
                                     </button>
                                     
                                     {metodoPago === 'transferencia' && (
-                                        <div className="p-4 bg-pink-50/50 border border-pink-100/50 rounded-xl text-sm text-slate-700">
-                                            <p className="font-bold mb-2 text-pink-800">DATOS PARA TRANSFERIR:</p>
-                                            <p>Alias: <b>vito.store</b></p>
-                                            <p>Banco: <b>Naranja X</b></p>
-                                            <p>A nombre de: <b>Bianca Irina Toledo</b></p>
-                                            <p className="mt-2 text-xs text-slate-500">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
+                                        <div className="p-4 bg-accent-light/50 border border-accent/20 rounded-xl text-xs md:text-sm text-slate-700 animate-in fade-in duration-300">
+                                            <p className="font-black mb-2 text-accent-hover tracking-wide uppercase text-[11px]">DATOS PARA TRANSFERIR:</p>
+                                            <div className="space-y-1 text-slate-600">
+                                                <p className="flex justify-between"><span>Alias:</span> <b className="text-slate-800">vito.store</b></p>
+                                                <p className="flex justify-between"><span>Banco:</span> <b className="text-slate-800">Naranja X</b></p>
+                                                <p className="flex justify-between"><span>A nombre de:</span> <b className="text-slate-800">Bianca Irina Toledo</b></p>
+                                            </div>
+                                            <p className="mt-3 text-[10px] text-slate-400 font-semibold italic text-center">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
                                         </div>
                                     )}
 
                                     <button 
                                         type="button"
                                         onClick={() => setMetodoPago('efectivo')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'efectivo' ? 'border-green-500 bg-green-50 ring-1 ring-green-500' : 'border-slate-200 hover:border-green-300'}`}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'efectivo' ? 'border-[#25D366] bg-[#25D366]/10 ring-1 ring-[#25D366]' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
                                         <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-900 text-green-800">Pago en Efectivo 💵</span>
-                                            <span className="text-sm text-slate-500 mt-0.5">Abonás al recibir o retirar</span>
+                                            <span className="font-bold text-slate-800 text-sm">Pago en Efectivo 💵</span>
+                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Abonás al recibir o retirar</span>
                                         </div>
-                                        {metodoPago === 'efectivo' ? <div className="w-5 h-5 rounded-full bg-green-500 border-4 border-white shadow-sm ring-1 ring-green-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                        {metodoPago === 'efectivo' ? <div className="w-5 h-5 rounded-full bg-[#25D366] border-4 border-white shadow-sm ring-1 ring-[#25D366]"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
                                     </button>
+                                    
                                     <button 
                                         type="button"
                                         onClick={() => setMetodoPago('mercadopago')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all ${metodoPago === 'mercadopago' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-slate-200 hover:border-blue-300'}`}
+                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'mercadopago' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
                                     >
                                         <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-900 text-blue-800">Mercado Pago 💳</span>
-                                            <span className="text-sm text-slate-500 mt-0.5">Tarjetas, Dinero en cuenta, RapiPago</span>
+                                            <span className="font-bold text-slate-800 text-sm">Mercado Pago 💳</span>
+                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Tarjetas, Dinero en cuenta, RapiPago</span>
                                         </div>
-                                        {metodoPago === 'mercadopago' ? <div className="w-5 h-5 rounded-full bg-blue-500 border-4 border-white shadow-sm ring-1 ring-blue-500"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                        {metodoPago === 'mercadopago' ? <div className="w-5 h-5 rounded-full bg-accent border-4 border-white shadow-sm ring-1 ring-accent"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
                                     </button>
                                 </div>
                             </div>
 
                             {metodoPago === 'mercadopago' && (
-                                <div className="p-4 bg-blue-50/50 border border-blue-100/50 rounded-xl text-sm text-slate-700 shadow-inner">
-                                    <p className="font-bold mb-3 text-blue-800">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
-                                    <div className="bg-white/80 p-3 rounded-lg border border-blue-200/60 mb-3 space-y-1">
-                                        <p className="flex justify-between"><span>Alias:</span> <b className="text-blue-900">VITO.STORE</b></p>
-                                        <p className="flex justify-between"><span>CVU:</span> <b className="text-blue-900">4530000800010843180599</b></p>
-                                        <p className="flex justify-between"><span>A nombre de:</span> <b className="text-blue-900 text-right">Bianca Irina Toledo</b></p>
+                                <div className="p-4 bg-accent-light/50 border border-accent/20 rounded-xl text-xs md:text-sm text-slate-700 animate-in fade-in duration-300 space-y-3">
+                                    <p className="font-black text-accent-hover tracking-wide uppercase text-[11px]">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
+                                    <div className="bg-white/80 p-3.5 rounded-lg border border-accent/20 space-y-1.5 text-xs">
+                                        <p className="flex justify-between"><span>Alias:</span> <b className="text-slate-800">VITO.STORE</b></p>
+                                        <p className="flex justify-between"><span>CVU:</span> <b className="text-slate-800">4530000800010843180599</b></p>
+                                        <p className="flex justify-between"><span>Nombre:</span> <b className="text-slate-800 text-right">Bianca Irina Toledo</b></p>
                                     </div>
                                     
                                     <button 
@@ -439,18 +445,17 @@ export default function CheckoutPage() {
                                             navigator.clipboard.writeText('4530000800010843180599');
                                             toast.success('¡CVU copiado! Abriendo Mercado Pago...', { icon: '📋' });
                                             setTimeout(() => {
-                                                // Intentar abrir la app en móvil o web en PC
                                                 window.open('https://www.mercadopago.com.ar/transferencias', '_blank');
                                             }, 1200);
                                         }}
-                                        className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 shadow-sm text-sm"
+                                        className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-accent/20 min-h-[48px] premium-transition"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
                                         </svg>
                                         Copiar CVU y Abrir App
                                     </button>
-                                    <p className="mt-3 text-xs text-slate-500 text-center">Una vez que transfieras, apretá el botón verde de abajo para enviarnos el comprobante elegiendo tus talles y colores.</p>
+                                    <p className="text-[10px] text-slate-400 text-center font-semibold italic">Una vez transferido, usá el botón de WhatsApp abajo para enviarnos tu talle, color y comprobante.</p>
                                 </div>
                             )}
 
@@ -458,14 +463,14 @@ export default function CheckoutPage() {
                                 type="button"
                                 onClick={handleWhatsAppOrder}
                                 disabled={loading}
-                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-extrabold text-base transition-all duration-300 shadow-xl
-                                    ${loading ? 'bg-green-400 cursor-not-allowed shadow-none' : 'bg-green-500 hover:bg-green-600 hover:-translate-y-1 hover:shadow-green-500/30'}
+                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-bold text-base transition-all duration-300 shadow-lg min-h-[48px] flex items-center justify-center premium-transition
+                                    ${loading ? 'bg-slate-400 cursor-not-allowed shadow-none' : 'bg-[#25D366] hover:bg-[#20bd5a] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,211,102,0.25)]'}
                                 `}
                             >
                                 {loading ? 'Procesando pedido... ⏳' : 'Generar Pedido por WhatsApp 📲'}
                             </button>
                             
-                            <Link href="/#catalogo" className="text-center text-slate-500 text-sm font-medium mt-4 hover:text-pink-600 transition-colors block">
+                            <Link href="/#catalogo" className="text-center text-slate-500 hover:text-primary text-sm font-semibold mt-5 transition-all duration-300 py-2 hover:underline block">
                                 ← Volver al catálogo
                             </Link>
                         </form>

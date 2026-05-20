@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #1c1c1e;
+@theme {
+  --color-primary: #5c24b3;
+  --color-primary-dark: #2a0c5c;
+  --color-primary-light: #f3e8ff;
+  --color-accent: #0066cc;
+  --color-accent-hover: #0052a3;
+  --color-accent-light: #e6f0fa;
+  --color-bg-light: #f8f9fa;
+  --color-bg-card: #ffffff;
+}
 
-  --primary: #8a2be2;
-  /* Purple/Violet */
-  --primary-light: #fadadd;
-  /* Pastel Pink */
-  --accent: #d90429;
-  /* Intense Red */
+:root {
+  --background: #f8f9fa;
+  --foreground: #1e1b4b; /* Deep indigo for high legibility and contrast */
 }
 
 html,
@@ -36,4 +40,23 @@ button {
   cursor: pointer;
   border: none;
   font-family: inherit;
+}
+
+/* Premium utility classes for transitions and elevations */
+.premium-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.premium-shadow-hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-shadow-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(92, 36, 179, 0.06);
 }

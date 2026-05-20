@@ -65,13 +65,13 @@ export default function HeroSection({ products = [] }: HeroSectionProps) {
                     
                     {/* Información del Producto Actual */}
                     <div className="transition-all duration-500 transform translate-y-0 opacity-100">
-                        <span className="inline-block px-3 py-1 mb-4 rounded-full bg-pink-600/20 text-pink-300 text-xs font-bold tracking-widest uppercase border border-pink-500/30 backdrop-blur-md">
+                        <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-accent/20 text-accent-light text-[11px] font-bold tracking-widest uppercase border border-accent/30 backdrop-blur-md">
                             Tendencia
                         </span>
                         <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2 text-shadow-sm drop-shadow-md">
                             {products[currentIndex]?.name}
                         </h2>
-                        <p className="text-xl md:text-2xl text-pink-400 font-bold mb-8 drop-shadow-md">
+                        <p className="text-xl md:text-2xl text-primary-light font-semibold mb-8 drop-shadow-md">
                             ${Number(products[currentIndex]?.price).toLocaleString('es-AR')}
                         </p>
                     </div>
@@ -79,7 +79,7 @@ export default function HeroSection({ products = [] }: HeroSectionProps) {
                     {/* CTA */}
                     <a 
                         href="#catalogo" 
-                        className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-pink-600 hover:bg-pink-500 rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-pink-600/30"
+                        className="inline-flex items-center justify-center px-8 py-4.5 text-base font-bold text-white bg-accent hover:bg-accent-hover rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-accent/30 min-h-[48px] premium-transition"
                     >
                         Ver Catálogo Completo
                     </a>
@@ -90,7 +90,7 @@ export default function HeroSection({ products = [] }: HeroSectionProps) {
                             <button
                                 key={idx}
                                 onClick={() => setCurrentIndex(idx)}
-                                className={`h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-8 bg-pink-500' : 'w-2 bg-white/40 hover:bg-white/60'}`}
+                                className={`h-2 rounded-full transition-all duration-300 premium-transition ${idx === currentIndex ? 'w-8 bg-accent' : 'w-2 bg-white/40 hover:bg-white/60'}`}
                                 aria-label={`Ir a la diapositiva ${idx + 1}`}
                             />
                         ))}
