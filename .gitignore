@@ -1,0 +1,7 @@
+# export privado del chat de WhatsApp (datos personales)
+.wa-chat-temp/
+Chat de WhatsApp*.zip
+
+# artefactos generados por los scripts de importacion
+vito-store/sheet-backup.json
+vito-store/import-plan.json
