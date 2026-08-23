@@ -82,9 +82,9 @@ export default function CategoryFilter({ categories }: Props) {
                                 key={cat}
                                 onClick={() => handleFilter(cat)}
                                 className={`px-6 py-3 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 min-h-[48px] flex items-center justify-center premium-transition ${
-                                    isActive 
-                                    ? 'bg-accent text-white shadow-md shadow-accent/20 border-2 border-transparent' 
-                                    : 'bg-white border border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-900 shadow-sm active:scale-95'
+                                    isActive
+                                    ? 'bg-primary text-white shadow-md shadow-primary/25 border-2 border-transparent'
+                                    : 'bg-white border border-slate-200/80 text-slate-600 hover:border-primary/40 hover:text-primary shadow-sm active:scale-95'
                                 }`}
                             >
                                 {cat}

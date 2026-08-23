@@ -1,41 +1,38 @@
-'use client';
-
 export default function Footer() {
     return (
-        <footer className="bg-primary-dark text-slate-100 py-20 px-6 font-sans border-t border-white/5 relative overflow-hidden">
-            
-            {/* Elemento de diseño de fondo sutil */}
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
-            
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 text-center md:text-left relative z-10">
-                
-                {/* Brand / Info principal */}
-                <div className="flex flex-col items-center md:items-start">
-                    <h3 className="text-2xl font-black text-white tracking-widest uppercase mb-4">
-                        Vitö Store
-                    </h3>
-                    <p className="text-sm text-slate-300 mb-8 max-w-xs leading-relaxed">
-                        Lencería, bombachitas, bikinis, enterizas y pijamas exclusivos con la calidez y el diseño premium que te merecés.
+        <footer className="bg-primary-dark text-slate-100 pt-20 pb-10 px-6 border-t border-white/5 relative overflow-hidden">
+
+            {/* Brillo decorativo */}
+            <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
+            <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-14 relative z-10">
+
+                {/* Marca */}
+                <div className="md:col-span-5 flex flex-col items-center md:items-start">
+                    <p className="font-display italic text-4xl text-white mb-1">Vitö</p>
+                    <p className="text-[11px] font-bold tracking-[0.3em] uppercase text-accent-light/80 mb-6">Store · Lencería</p>
+                    <p className="text-sm text-slate-300/90 max-w-xs leading-relaxed mb-8">
+                        Lencería, bombachas, tops y pijamas exclusivos con la calidez y el diseño que te merecés.
                     </p>
-                    
-                    {/* Botones de Redes Sociales con micro-animaciones */}
+
                     <div className="flex items-center gap-4">
-                        <a 
-                            href="https://instagram.com/vitoo.store" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-slate-100 hover:text-primary-dark hover:bg-white bg-white/10 rounded-xl p-3 shadow-md hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
+                        <a
+                            href="https://instagram.com/vitoo.store"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-100 hover:text-primary-dark hover:bg-white bg-white/10 rounded-full p-3 hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
                             aria-label="Instagram"
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                             </svg>
                         </a>
-                        <a 
-                            href="https://wa.me/5493794088240" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-slate-100 hover:text-white hover:bg-[#25D366] bg-white/10 rounded-xl p-3 shadow-md hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
+                        <a
+                            href="https://wa.me/5493794088240"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-100 hover:text-white hover:bg-[#25D366] bg-white/10 rounded-full p-3 hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
                             aria-label="WhatsApp"
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -45,61 +42,40 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Info Text */}
-                <div className="flex flex-col items-center md:items-start text-sm space-y-4">
-                    <h4 className="text-white font-bold uppercase tracking-widest text-xs border-b border-white/10 pb-2 w-full md:w-max">
-                        Información
-                    </h4>
-                    <ul className="space-y-3.5 text-slate-300">
+                {/* Info */}
+                <div className="md:col-span-4 flex flex-col items-center md:items-start text-sm">
+                    <h4 className="text-white font-bold uppercase tracking-[0.2em] text-[11px] mb-6">Visitanos</h4>
+                    <ul className="space-y-4 text-slate-300/90">
                         <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light text-base">✨</span> Venta minorista y mayorista.
+                            <span className="text-accent-light">📍</span> Av. Cangallo 136 · Corrientes Capital
                         </li>
                         <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light text-base">📍</span> Corrientes Capital, Argentina.
-                        </li>
-                        <li className="flex items-start gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light text-base">📌</span> B° Quintana, Av. Cangallo 136.
+                            <span className="text-accent-light">🇦🇷</span> Envíos a todo el país
                         </li>
                         <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light text-base">🇦🇷</span> Envíos a todo el país.
+                            <span className="text-accent-light">💬</span> Atención por WhatsApp
                         </li>
                     </ul>
                 </div>
 
-                {/* Links Adicionales */}
-                <div className="flex flex-col items-center md:items-start text-sm space-y-4">
-                    <h4 className="text-white font-bold uppercase tracking-widest text-xs border-b border-white/10 pb-2 w-full md:w-max">
-                        Enlaces Rápidos
-                    </h4>
-                    <nav className="flex flex-col gap-3 text-slate-300">
-                        <a 
-                            href="/?category=Conjuntos" 
-                            className="hover:text-white hover:underline transition-all duration-300 py-1 min-h-[30px]"
-                        >
-                            Ver Conjuntos
-                        </a>
-                        <a 
-                            href="#mayorista" 
-                            className="hover:text-white hover:underline transition-all duration-300 py-1 min-h-[30px]"
-                        >
-                            Quiero ser Revendedora
-                        </a>
-                        <a 
-                            href="https://maps.app.goo.gl/MQrF2XJRg23bXV2q7" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="hover:text-white hover:underline transition-all duration-300 py-1 min-h-[30px]"
-                        >
-                            Ubicación en Google Maps
-                        </a>
+                {/* Links */}
+                <div className="md:col-span-3 flex flex-col items-center md:items-start text-sm">
+                    <h4 className="text-white font-bold uppercase tracking-[0.2em] text-[11px] mb-6">Colecciones</h4>
+                    <nav className="flex flex-col gap-3.5 text-slate-300/90">
+                        <a href="/?category=Conjuntos" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Conjuntos</a>
+                        <a href="/?category=Corpiños-Tops" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Corpiños y Tops</a>
+                        <a href="/?category=Bombachas" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Bombachas</a>
+                        <a href="/?category=Invierno" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Invierno</a>
+                        <a href="https://maps.app.goo.gl/MQrF2XJRg23bXV2q7" target="_blank" rel="noopener noreferrer" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Cómo llegar</a>
                     </nav>
                 </div>
 
             </div>
 
             {/* Copyright */}
-            <div className="mt-20 pt-8 border-t border-white/5 text-center text-[11px] tracking-wide text-slate-400">
-                © {new Date().getFullYear()} Vitö Store. Todos los derechos reservados. Rediseñado con elegancia premium.
+            <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] tracking-wide text-slate-400 relative z-10">
+                <span>© {new Date().getFullYear()} Vitö Store. Todos los derechos reservados.</span>
+                <span className="font-display italic text-slate-500">Hecho con amor en Corrientes 💜</span>
             </div>
         </footer>
     );

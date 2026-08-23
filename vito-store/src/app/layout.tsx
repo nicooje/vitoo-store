@@ -1,21 +1,28 @@
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import { Poppins, Playfair_Display } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Script from 'next/script';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import './globals.css';
 
-const poppins = Poppins({ 
-  subsets: ['latin'], 
-  weight: ['300', '400', '500', '600', '700', '900'] 
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '900']
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-display',
 });
 
 export const metadata: Metadata = {
   title: 'Vito Store',
-  description: 'Descubrí lo mejor en lencería, trajes de baño y pijamas. Envíos a todo el país y venta mayorista en Corrientes.',
+  description: 'Descubrí lo mejor en lencería, trajes de baño y pijamas. Envíos a todo el país desde Corrientes.',
   openGraph: {
     title: 'Vito Store',
-    description: 'Descubrí lo mejor en lencería y pijamas. Diseños exclusivos y venta mayorista.',
+    description: 'Descubrí lo mejor en lencería y pijamas. Diseños exclusivos con envíos a todo el país.',
     url: 'https://vito.store', // Placeholder, ideal to use actual URL
     siteName: 'Vito Store',
     images: [
@@ -74,7 +81,7 @@ export default function RootLayout({
             `}
         </Script>
       </head>
-      <body className={poppins.className}>
+      <body className={`${poppins.className} ${playfair.variable}`}>
         <Toaster position="bottom-center" />
         {children}
         <FloatingWhatsApp />

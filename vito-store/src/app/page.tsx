@@ -1,10 +1,13 @@
 import { Suspense } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
+import MarqueeBand from '@/components/MarqueeBand';
+import CategoryShowcase from '@/components/CategoryShowcase';
 import CatalogoSection from '@/components/CatalogoSection';
-import MayoristaSection from '@/components/MayoristaSection';
+import BenefitsBar from '@/components/BenefitsBar';
 import Footer from '@/components/Footer';
 import CategoryFilter from '@/components/CategoryFilter';
+import Reveal from '@/components/Reveal';
 import { getProductsFromSheet } from '@/lib/googleSheets';
 import FloatingCart from '@/components/FloatingCart';
 
@@ -33,8 +36,8 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
     : cleanedProducts.filter((p) => p.category === activeCategory);
 
   if (searchQuery) {
-      filteredProducts = filteredProducts.filter((p) => 
-          p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      filteredProducts = filteredProducts.filter((p) =>
+          p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
   }
@@ -45,16 +48,27 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
       filteredProducts.sort((a, b) => Number(b.price) - Number(a.price));
   }
 
+  const isBrowsing = Boolean(activeCategory && activeCategory !== 'Todos') || Boolean(searchQuery);
+
     return (
         <main className="bg-bg-light min-h-screen">
             <Header />
             <HeroSection products={cleanedProducts.filter(p => p.image_url).slice(0, 5)} />
+            <MarqueeBand />
 
-            <section id="catalogo" className="pt-24 pb-32 px-4 md:px-8 bg-bg-light">
+            {/* Al navegar por categoria o busqueda, el catalogo es lo principal */}
+            {!isBrowsing && <CategoryShowcase products={cleanedProducts} />}
+
+            <section id="catalogo" className="pt-20 pb-28 px-4 md:px-8 bg-bg-light">
                 <div className="max-w-[1400px] mx-auto w-full">
-                    <h2 className="text-center text-3xl lg:text-4xl font-bold text-primary-dark tracking-tight mb-12 uppercase">
-                        Nuestro Catálogo
-                    </h2>
+                    <Reveal className="text-center mb-12">
+                        <p className="font-display italic text-primary text-lg mb-1">
+                            {searchQuery ? `Resultados para "${searchQuery}"` : 'Nuestro catálogo'}
+                        </p>
+                        <h2 className="font-display text-4xl lg:text-5xl text-primary-dark">
+                            {isBrowsing ? activeCategory : 'Lo más deseado'}
+                        </h2>
+                    </Reveal>
 
                     <Suspense fallback={<div className="text-center mb-8 font-medium text-slate-500 animate-pulse">Cargando filtros...</div>}>
                         <CategoryFilter categories={filterCategories} />
@@ -64,9 +78,9 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
                 </div>
             </section>
 
-      <MayoristaSection />
-      <Footer />
-      <FloatingCart />
-    </main>
-  );
+            <BenefitsBar />
+            <Footer />
+            <FloatingCart />
+        </main>
+    );
 }

@@ -55,24 +55,25 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
 
     if (!products || products.length === 0) {
         return (
-            <div className="text-center py-16 text-lg text-slate-500 font-medium col-span-full">
-                No hay productos en esta categoría por el momento.
+            <div className="text-center py-20 col-span-full">
+                <p className="font-display italic text-2xl text-primary mb-2">Ups, no encontramos nada acá</p>
+                <p className="text-sm text-slate-500 font-medium">Probá con otra categoría o buscá por otro nombre.</p>
             </div>
         );
     }
 
     return (
         <>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12 max-w-7xl mx-auto w-full px-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-14 max-w-[1400px] mx-auto w-full px-2">
             {products.slice(0, visibleCount).map((product) => {
                 const stockAtexto = String(product.stock).toUpperCase();
                 const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
 
                 return (
                     <div key={product.id} className="group flex flex-col relative w-full premium-transition">
-                        
+
                         {/* Imagen con Badges y Quick Buy - Aspecto Estricto 3:4 */}
-                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-white rounded-xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] group-hover:shadow-[0_12px_24px_rgba(92,36,179,0.06)] group-hover:-translate-y-1 transition-all duration-300 z-10">
+                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-white rounded-[1.2rem] border border-primary/5 shadow-[0_4px_16px_rgba(42,12,92,0.04)] group-hover:shadow-[0_20px_40px_rgba(42,12,92,0.12)] group-hover:-translate-y-1.5 transition-all duration-500 z-10">
                             <HoverSlideshow imageUrls={product.image_url} productName={product.name} />
                             
                             {/* Badge flotante Arriba a la Izquierda */}
@@ -99,8 +100,8 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
                         {/* Bloque Inferior - Minimalista */}
                         <div className="flex flex-col mt-4 px-1">
                             
-                            {/* Título en gris neutro suave (#374151) y regular */}
-                            <h3 className="text-xs md:text-sm text-[#374151] font-normal leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[38px] mb-1">
+                            {/* Título elegante */}
+                            <h3 className="text-xs md:text-[15px] text-primary-dark/80 font-medium leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[38px] mb-1">
                                 {product.name}
                             </h3>
                             
@@ -162,11 +163,14 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
         
         {visibleCount < products.length && (
             <div className="mt-16 flex justify-center w-full col-span-full">
-                <button 
+                <button
                     onClick={() => setVisibleCount(prev => prev + 12)}
-                    className="bg-white border-2 border-slate-200 hover:border-accent text-accent font-bold px-8 py-3.5 rounded-xl transition-all active:scale-95 shadow-sm min-h-[48px] premium-transition"
+                    className="group inline-flex items-center gap-2 bg-transparent border border-primary/30 hover:border-primary hover:bg-primary text-primary hover:text-white font-bold px-10 py-4 rounded-full transition-all active:scale-95 min-h-[48px] premium-transition"
                 >
-                    Cargar más productos
+                    Ver más productos
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 transition-transform group-hover:translate-y-0.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                    </svg>
                 </button>
             </div>
         )}

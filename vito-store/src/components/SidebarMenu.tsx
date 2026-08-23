@@ -53,18 +53,25 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
                             <span>👙</span> Conjuntos
                         </Link>
                         <Link 
-                            href="/?category=Bikinis" 
+                            href="/?category=Bombachas" 
                             onClick={onClose} 
                             className="text-base font-semibold text-slate-800 hover:text-primary hover:bg-slate-50 rounded-xl px-4 py-3 min-h-[48px] flex items-center transition-all duration-300 gap-2 border border-transparent hover:border-slate-100"
                         >
-                            <span>🌸</span> Bikinis
+                            <span>🌸</span> Bombachas
                         </Link>
                         <Link 
-                            href="#mayorista" 
+                            href="/?category=Corpiños-Tops" 
                             onClick={onClose} 
                             className="text-base font-semibold text-slate-800 hover:text-primary hover:bg-slate-50 rounded-xl px-4 py-3 min-h-[48px] flex items-center transition-all duration-300 gap-2 border border-transparent hover:border-slate-100"
                         >
-                            <span>🛍️</span> Revendedoras (Mayorista)
+                            <span>✨</span> Corpiños y Tops
+                        </Link>
+                        <Link 
+                            href="/?category=Invierno" 
+                            onClick={onClose} 
+                            className="text-base font-semibold text-slate-800 hover:text-primary hover:bg-slate-50 rounded-xl px-4 py-3 min-h-[48px] flex items-center transition-all duration-300 gap-2 border border-transparent hover:border-slate-100"
+                        >
+                            <span>❄️</span> Invierno
                         </Link>
                     </nav>
 
