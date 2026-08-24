@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://vito.store';
+  const baseUrl = 'https://vitoo-store.vercel.app';
 
   return [
     {

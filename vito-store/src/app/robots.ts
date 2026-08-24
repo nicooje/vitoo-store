@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/admin/', '/api/admin/'],
     },
-    sitemap: 'https://vito.store/sitemap.xml',
+    sitemap: 'https://vitoo-store.vercel.app/sitemap.xml',
   };
 }

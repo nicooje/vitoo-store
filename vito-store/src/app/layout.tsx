@@ -18,16 +18,17 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://vitoo-store.vercel.app'),
   title: 'Vito Store',
   description: 'Descubrí lo mejor en lencería, trajes de baño y pijamas. Envíos a todo el país desde Corrientes.',
   openGraph: {
     title: 'Vito Store',
     description: 'Descubrí lo mejor en lencería y pijamas. Diseños exclusivos con envíos a todo el país.',
-    url: 'https://vito.store', // Placeholder, ideal to use actual URL
+    url: 'https://vitoo-store.vercel.app',
     siteName: 'Vito Store',
     images: [
       {
-        url: 'https://res.cloudinary.com/dzhz0gz5i/image/upload/v1700000000/vitoo_store/og-image.jpg', // You must upload an og-image to Cloudinary or public folder
+        url: '/vito-logo.png',
         width: 1200,
         height: 630,
         alt: 'Vito Store Lencería',
