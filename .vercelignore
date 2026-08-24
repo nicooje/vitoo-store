@@ -1,0 +1,10 @@
+.wa-chat-temp
+node_modules
+*.zip
+*.tar.gz
+*.tgz
+vito-store/.next
+vito-store/node_modules
+vito-store/tsconfig.tsbuildinfo
+vito-store/sheet-backup.json
+vito-store/import-plan.json

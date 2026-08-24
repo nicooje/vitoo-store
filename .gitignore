@@ -5,3 +5,6 @@ Chat de WhatsApp*.zip
 # artefactos generados por los scripts de importacion
 vito-store/sheet-backup.json
 vito-store/import-plan.json
+
+.vercel
+.env*
