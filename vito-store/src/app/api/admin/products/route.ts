@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getProductsFromSheet, appendProductToSheet, updateProductInSheet, deleteProductFromSheet } from '@/lib/googleSheets';
+import { getProductsFromSheet, getRawSheetRows, appendProductToSheet, updateProductInSheet, deleteProductFromSheet } from '@/lib/googleSheets';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        if (searchParams.get('format') === 'raw') {
+            const rows = await getRawSheetRows();
+            return NextResponse.json({ rows });
+        }
         const products = await getProductsFromSheet();
         return NextResponse.json(products);
     } catch (error) {

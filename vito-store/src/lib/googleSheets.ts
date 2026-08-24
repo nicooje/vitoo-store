@@ -35,7 +35,7 @@ export type Order = {
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 // Helper internally to auth
-async function getGoogleSheetsClient() {
+export async function getGoogleSheetsClient() {
     const sheetId = process.env.SHEET_ID;
     const clientEmail = process.env.CLIENT_EMAIL;
     const privateKey = process.env.PRIVATE_KEY?.replace(/\\n/g, '\n');
@@ -170,6 +170,20 @@ export async function getProductsFromSheet(): Promise<Product[]> {
         console.error('❌ Error al obtener datos de Google Sheets. Usando json fallback:', error);
         return localProducts;
     }
+}
+
+// Fila cruda del sheet con su numero de fila fisico (para el importador)
+export async function getRawSheetRows(): Promise<{ rowNumber: number; cells: string[] }[]> {
+    const { sheets, sheetId } = await getGoogleSheetsClient();
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: sheetId,
+        range: 'A2:N',
+    });
+    const rows = response.data.values || [];
+    return rows.map((row, i) => ({
+        rowNumber: i + 2,
+        cells: row.map(c => String(c ?? '')),
+    }));
 }
 
 export async function appendProductToSheet(product: Omit<Product, 'id'>) {

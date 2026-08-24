@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import WhatsAppImporter from '@/components/admin/WhatsAppImporter';
 
 // Tipado del producto que vendrá de la API
 export type Product = {
@@ -77,7 +78,7 @@ export default function AdminPage() {
     }, [mensaje]);
 
     // Estados de las Pestañas y Pedidos
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'catalogo' | 'ventas'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'catalogo' | 'ventas' | 'importar'>('dashboard');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -280,6 +281,50 @@ export default function AdminPage() {
     };
 
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+    const [searchQuery, setSearchQuery] = useState('');
+    const [stockFilter, setStockFilter] = useState<'todos' | 'disponible' | 'agotado' | 'bajo'>('todos');
+    const [savingStockId, setSavingStockId] = useState<number | null>(null);
+
+    // Edicion rapida de stock desde la tabla (PUT reescribe la fila completa)
+    const handleQuickStock = async (product: Product, changes: { quantity?: number; stock?: boolean }) => {
+        const updated: Product = {
+            ...product,
+            quantity: changes.quantity !== undefined ? Math.max(0, changes.quantity) : product.quantity,
+            stock: changes.stock !== undefined ? changes.stock : product.stock,
+        };
+        setSavingStockId(product.id);
+        // actualizacion optimista
+        setProducts(prev => prev.map(p => p.id === product.id ? updated : p));
+        try {
+            const res = await fetch('/api/admin/products', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: updated.id,
+                    name: updated.name,
+                    category: updated.category,
+                    price: updated.price,
+                    image_url: updated.image_url,
+                    stock: updated.stock,
+                    size: updated.size || '',
+                    color: updated.color || '',
+                    quantity: updated.quantity ?? 0,
+                    price3: updated.price3 ?? '',
+                    price6: updated.price6 ?? '',
+                    price9: updated.price9 ?? '',
+                    price12: updated.price12 ?? '',
+                    description: updated.description || '',
+                }),
+            });
+            if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
+        } catch (error: any) {
+            console.error(error);
+            toast.error(`No se pudo actualizar el stock: ${error.message}`);
+            setProducts(prev => prev.map(p => p.id === product.id ? product : p)); // revertir
+        } finally {
+            setSavingStockId(null);
+        }
+    };
 
     const toggleSelection = (id: number) => {
         const newSet = new Set(selectedIds);
@@ -355,7 +400,26 @@ export default function AdminPage() {
 
     // Lógica Derivada para Paginación y Filtros
     const uniqueCategories = ['Todas', ...Array.from(new Set(products.map(p => p.category)))];
-    const filteredProducts = products.filter(p => filterCategory === 'Todas' || p.category === filterCategory);
+    const LOW_STOCK = 3;
+    const filteredProducts = products.filter(p => {
+        if (filterCategory !== 'Todas' && p.category !== filterCategory) return false;
+        if (searchQuery.trim()) {
+            const q = searchQuery.trim().toLowerCase();
+            if (!p.name.toLowerCase().includes(q) && !p.category.toLowerCase().includes(q)) return false;
+        }
+        if (stockFilter === 'disponible' && !p.stock) return false;
+        if (stockFilter === 'agotado' && p.stock) return false;
+        if (stockFilter === 'bajo' && !(p.stock && (p.quantity ?? 0) > 0 && (p.quantity ?? 0) <= LOW_STOCK)) return false;
+        return true;
+    });
+
+    // KPIs de stock del catálogo
+    const stockStats = {
+        total: products.length,
+        disponibles: products.filter(p => p.stock).length,
+        agotados: products.filter(p => !p.stock).length,
+        bajos: products.filter(p => p.stock && (p.quantity ?? 0) > 0 && (p.quantity ?? 0) <= LOW_STOCK).length,
+    };
     
     const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -410,10 +474,17 @@ export default function AdminPage() {
                         </button>
                         <button
                             onClick={() => setActiveTab('ventas')}
-                            className={`pb-4 px-2 text-[15px] font-bold transition-all relative ${activeTab === 'ventas' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`pb-4 px-2 text-[15px] font-bold transition-all whitespace-nowrap relative ${activeTab === 'ventas' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                            🧾 Registro de Ventas
+                            Ventas
                             {activeTab === 'ventas' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-600 rounded-t-full" />}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('importar')}
+                            className={`pb-4 px-2 text-[15px] font-bold transition-all whitespace-nowrap relative ${activeTab === 'importar' ? 'text-pink-600' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            📲 Importar WhatsApp
+                            {activeTab === 'importar' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-600 rounded-t-full" />}
                         </button>
                     </div>
 
@@ -589,6 +660,16 @@ export default function AdminPage() {
                                     })}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'importar' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-black text-gray-900">📲 Importar desde WhatsApp</h2>
+                                <p className="text-sm text-gray-600 mt-1">Subí el .zip del grupo de publicaciones: detectamos productos nuevos, cambios de precio, republicaciones y duplicados. Nada entra sin tu OK.</p>
+                            </div>
+                            <WhatsAppImporter onDone={fetchProducts} />
                         </div>
                     )}
 
@@ -880,6 +961,26 @@ export default function AdminPage() {
 
                             {/* ZONA 2: LISTADO DE PRODUCTOS */}
                             <section>
+                                {/* KPIs de stock */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                                    <button onClick={() => { setStockFilter('todos'); setCurrentPage(1); }} className={`rounded-xl border p-4 text-left transition-all ${stockFilter === 'todos' ? 'border-pink-300 bg-pink-50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                                        <div className="text-2xl font-black text-gray-900">{stockStats.total}</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Productos</div>
+                                    </button>
+                                    <button onClick={() => { setStockFilter('disponible'); setCurrentPage(1); }} className={`rounded-xl border p-4 text-left transition-all ${stockFilter === 'disponible' ? 'border-green-300 bg-green-50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                                        <div className="text-2xl font-black text-green-600">{stockStats.disponibles}</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Disponibles</div>
+                                    </button>
+                                    <button onClick={() => { setStockFilter('bajo'); setCurrentPage(1); }} className={`rounded-xl border p-4 text-left transition-all ${stockFilter === 'bajo' ? 'border-amber-300 bg-amber-50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                                        <div className="text-2xl font-black text-amber-500">{stockStats.bajos}</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Stock bajo (≤{LOW_STOCK})</div>
+                                    </button>
+                                    <button onClick={() => { setStockFilter('agotado'); setCurrentPage(1); }} className={`rounded-xl border p-4 text-left transition-all ${stockFilter === 'agotado' ? 'border-red-300 bg-red-50' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                                        <div className="text-2xl font-black text-red-500">{stockStats.agotados}</div>
+                                        <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Agotados</div>
+                                    </button>
+                                </div>
+
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                                     <div className="flex gap-4 items-center flex-wrap">
                                         <h2 className="text-2xl font-black text-gray-900">Tus Productos Publicados</h2>
@@ -892,9 +993,26 @@ export default function AdminPage() {
                                             </button>
                                         )}
                                     </div>
-                                    
-                                    {/* Filtro por Categoría */}
-                                    <div className="w-full sm:w-auto">
+
+                                    {/* Buscador + Filtros */}
+                                    <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+                                        <input
+                                            type="text"
+                                            value={searchQuery}
+                                            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                                            placeholder="🔍 Buscar producto..."
+                                            className="w-full sm:w-52 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20"
+                                        />
+                                        <select
+                                            value={stockFilter}
+                                            onChange={(e) => { setStockFilter(e.target.value as any); setCurrentPage(1); }}
+                                            className="w-full sm:w-36 px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/20 appearance-none cursor-pointer"
+                                        >
+                                            <option value="todos">Stock: todos</option>
+                                            <option value="disponible">Disponibles</option>
+                                            <option value="bajo">Stock bajo</option>
+                                            <option value="agotado">Agotados</option>
+                                        </select>
                                         <select
                                             value={filterCategory}
                                             onChange={(e) => {
@@ -922,7 +1040,7 @@ export default function AdminPage() {
                                     </div>
                                 ) : paginatedProducts.length === 0 ? (
                                     <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
-                                        No hay productos en esta categoría.
+                                        No hay productos que coincidan con la búsqueda o filtros.
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-4">
@@ -974,13 +1092,45 @@ export default function AdminPage() {
                                                                     ${p.price.toLocaleString('es-AR')}
                                                                 </td>
                                                                 <td className="p-4 text-center">
-                                                                    <div className="flex flex-col justify-center items-center gap-1">
-                                                                        {p.stock ? (
-                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">OK</span>
-                                                                        ) : (
-                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">AGOTADO</span>
+                                                                    <div className={`flex flex-col justify-center items-center gap-1.5 ${savingStockId === p.id ? 'opacity-50 pointer-events-none' : ''}`}>
+                                                                        {/* Toggle rapido SI/NO */}
+                                                                        <button
+                                                                            onClick={() => handleQuickStock(p, { stock: !p.stock })}
+                                                                            title={p.stock ? 'Marcar como agotado' : 'Marcar como disponible'}
+                                                                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors cursor-pointer ${
+                                                                                p.stock
+                                                                                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                                                                    : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                                                                            }`}
+                                                                        >
+                                                                            {p.stock ? '✓ OK' : '✕ AGOTADO'}
+                                                                        </button>
+                                                                        {(p.stock && (p.quantity ?? 0) > 0 && (p.quantity ?? 0) <= LOW_STOCK) && (
+                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">⚠ Bajo</span>
                                                                         )}
-                                                                        <span className="text-[11px] font-medium text-gray-500">{p.quantity ?? 0} unid.</span>
+                                                                        {/* Stepper de cantidad */}
+                                                                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white">
+                                                                            <button
+                                                                                onClick={() => handleQuickStock(p, { quantity: (p.quantity ?? 0) - 1 })}
+                                                                                className="px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-red-600 font-bold text-sm leading-none"
+                                                                                title="Restar 1"
+                                                                            >−</button>
+                                                                            <input
+                                                                                type="number"
+                                                                                min={0}
+                                                                                value={p.quantity ?? 0}
+                                                                                onChange={(e) => {
+                                                                                    const v = parseInt(e.target.value);
+                                                                                    if (!isNaN(v) && v >= 0) handleQuickStock(p, { quantity: v });
+                                                                                }}
+                                                                                className="w-10 py-1 text-center text-xs font-bold text-gray-900 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                            />
+                                                                            <button
+                                                                                onClick={() => handleQuickStock(p, { quantity: (p.quantity ?? 0) + 1 })}
+                                                                                className="px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-green-600 font-bold text-sm leading-none"
+                                                                                title="Sumar 1"
+                                                                            >+</button>
+                                                                        </div>
                                                                     </div>
                                                                 </td>
                                                                 <td className="p-4 text-right">

@@ -63,39 +63,25 @@ export default function HeroSection({ products = [] }: HeroSectionProps) {
                     </div>
                 ))}
 
-                {/* Contenido editorial */}
-                <div className="relative z-20 w-full max-w-[1400px] px-7 md:px-14 pb-14 md:pb-20 pt-24 flex flex-col items-start text-left">
-
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 mb-5 rounded-full bg-white/10 text-white/90 text-[11px] font-bold tracking-[0.22em] uppercase border border-white/20 backdrop-blur-md">
-                        <span className="h-1.5 w-1.5 rounded-full bg-accent-light animate-pulse" />
-                        Nueva colección
-                    </span>
+                {/* Contenido sobre el carrusel */}
+                <div className="relative z-20 w-full max-w-[1400px] px-7 md:px-14 pb-12 md:pb-16 pt-24 flex flex-col items-start text-left">
 
                     <p className="font-display italic text-xl md:text-2xl text-accent-light mb-2">
                         {current?.name}
                     </p>
-                    <h1 className="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] text-white mb-3 drop-shadow-lg max-w-3xl">
-                        Lencería que<br />te hace brillar
+                    <h1 className="font-display text-4xl md:text-6xl leading-tight text-white mb-6 drop-shadow-lg max-w-3xl">
+                        ${Number(current?.price).toLocaleString('es-AR')}
                     </h1>
-                    <p className="text-base md:text-lg text-white/80 font-light max-w-md mb-8">
-                        Diseños exclusivos, talles reales y precios por combo.
-                        Elegí lo tuyo y te lo llevamos a cualquier punto del país.
-                    </p>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <a
-                            href="#catalogo"
-                            className="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-primary-dark bg-white hover:bg-accent-light rounded-full transition-all hover:scale-[1.03] active:scale-95 shadow-xl min-h-[48px] premium-transition"
-                        >
-                            Ver catálogo
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                            </svg>
-                        </a>
-                        <span className="text-white/85 text-sm font-semibold tracking-wide">
-                            Desde ${Number(current?.price).toLocaleString('es-AR')}
-                        </span>
-                    </div>
+                    <a
+                        href="#catalogo"
+                        className="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-primary-dark bg-white hover:bg-accent-light rounded-full transition-all hover:scale-[1.03] active:scale-95 shadow-xl min-h-[48px] premium-transition"
+                    >
+                        Ver catálogo
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                    </a>
 
                     {/* Indicadores */}
                     <div className="flex gap-2 mt-10">
