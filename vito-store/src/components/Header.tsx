@@ -50,7 +50,7 @@ export default function Header() {
                     {ANNOUNCEMENTS.map((msg, i) => (
                         <p
                             key={msg}
-                            className={`absolute inset-0 flex items-center justify-center eyebrow text-[10px] md:text-[11px] text-white/90 transition-all duration-500 ${i === announce ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                            className={`absolute inset-0 flex items-center justify-center eyebrow text-[10px] md:text-[11px] text-white/90 transition-[opacity,transform] ${i === announce ? 'opacity-100 translate-y-0 duration-400 delay-200' : 'opacity-0 -translate-y-1 duration-200'}`}
                             aria-hidden={i !== announce}
                         >
                             {msg}
@@ -118,9 +118,9 @@ export default function Header() {
                     </div>
 
                     {/* Navegación por categorías (desktop) */}
-                    <nav className="hidden md:flex justify-center gap-9 pb-4" aria-label="Categorías">
+                    <nav className="hidden md:flex justify-center gap-5 lg:gap-9 pb-4 whitespace-nowrap" aria-label="Categorías">
                         {NAV_CATEGORIES.map((c) => (
-                            <Link key={c.cat} href={categoryHref(c.cat)} className="eyebrow text-[11.5px] text-ink/85 hover:text-primary link-underline transition-colors">
+                            <Link key={c.cat} href={categoryHref(c.cat)} className="eyebrow text-[10.5px] lg:text-[11.5px] tracking-[0.16em] lg:tracking-[0.22em] text-ink/85 hover:text-primary link-underline transition-colors">
                                 {c.label}
                             </Link>
                         ))}

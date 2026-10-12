@@ -51,13 +51,27 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
   const isBrowsing = Boolean(activeCategory && activeCategory !== 'Todos') || Boolean(searchQuery);
 
     const withImages = cleanedProducts.filter(p => p.image_url);
+    // vidriera: lo último cargado (al final del Sheet), con stock y sin repetir nombres,
+    // priorizando lencería y alternando categorías para que no salgan 5 iguales seguidos
+    const vistos = new Set<string>();
+    const disponibles = [...withImages].reverse().filter(p => {
+        const k = p.name.toLowerCase().replace(/[^a-z0-9áéíóúñ]+/g, ' ').trim();
+        const stock = String(p.stock).toUpperCase();
+        if (vistos.has(k) || !(p.stock === true || stock === 'SI' || stock === 'TRUE')) return false;
+        vistos.add(k); return true;
+    });
+    const colas = ['Conjuntos', 'Corpiños-Tops', 'Bombachas'].map(c => disponibles.filter(p => p.category === c));
+    const recientes: typeof disponibles = [];
+    for (let i = 0; recientes.length < 10 && colas.some(q => q[i]); i++)
+        for (const q of colas) if (q[i] && recientes.length < 10) recientes.push(q[i]);
+    for (const p of disponibles) { if (recientes.length >= 10) break; if (!recientes.includes(p)) recientes.push(p); }
     const promoImage = withImages[5]?.image_url.split(',')[0].trim() || withImages[0]?.image_url.split(',')[0].trim();
     const title = searchQuery ? `"${searchQuery}"` : isBrowsing ? activeCategory.replace('-', ' y ') : 'Lo más deseado';
 
     return (
         <main className="bg-bg-light min-h-screen">
             <Header />
-            {!isBrowsing && <HeroSection products={withImages.slice(0, 5)} />}
+            {!isBrowsing && <HeroSection products={recientes} />}
 
             {/* Al navegar por categoria o busqueda, el catalogo es lo principal */}
             {!isBrowsing && <CategoryShowcase products={cleanedProducts} />}
