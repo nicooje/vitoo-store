@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
+import { IconBag, IconCard, IconChevronLeft, IconMinus, IconPlus, IconStore, IconTag, IconTrash, IconTruck, IconWhatsApp } from '@/components/icons';
+import { formatPrice } from '@/lib/site';
 
 export default function CheckoutPage() {
     const [mounted, setMounted] = useState(false);
@@ -138,80 +141,101 @@ export default function CheckoutPage() {
         }
     };
 
+
+    // Encabezado simple de compra (como en los checkouts de las grandes tiendas)
+    const CheckoutHeader = (
+        <header className="bg-white border-b border-line">
+            <div className="max-w-6xl mx-auto px-4 md:px-8 h-16 md:h-20 grid grid-cols-[1fr_auto_1fr] items-center">
+                <Link href="/#catalogo" className="flex items-center gap-2 text-sm text-ink hover:text-primary min-h-[44px]">
+                    <IconChevronLeft className="w-5 h-5" /> <span className="hidden sm:inline">Seguir comprando</span>
+                </Link>
+                <Link href="/" className="flex items-center gap-2.5" aria-label="Vitö Store, inicio">
+                    <Image src="/vito-logo.png" alt="" width={40} height={40} className="rounded-full w-9 h-9 md:w-10 md:h-10" />
+                    <span className="font-display text-[22px] md:text-[26px] text-primary-dark leading-none">Vitö <span className="italic text-primary">Store</span></span>
+                </Link>
+                <span className="justify-self-end eyebrow text-[10px] text-muted hidden sm:block">Compra segura</span>
+            </div>
+        </header>
+    );
+
     if (cart.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-bg-light px-6 py-12">
-                <div className="bg-white p-10 rounded-xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] max-w-sm w-full text-center">
-                    <span className="text-5xl block mb-6">🛒</span>
-                    <h2 className="text-xl font-bold text-slate-900 mb-6">Tu carrito está vacío</h2>
-                    <Link href="/" className="w-full inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white py-3.5 rounded-xl font-bold transition-all min-h-[48px] premium-transition shadow-lg shadow-accent/20">
-                        Volver a la tienda
-                    </Link>
+            <div className="min-h-screen bg-bg-light">
+                {CheckoutHeader}
+                <div className="flex flex-col items-center justify-center text-center px-6 py-28">
+                    <IconBag className="w-10 h-10 text-primary mb-6" />
+                    <h1 className="font-display text-4xl text-primary-dark mb-3">Tu carrito está vacío</h1>
+                    <p className="text-muted mb-8">Elegí tus favoritos y volvé acá para confirmar el pedido.</p>
+                    <Link href="/#catalogo" className="btn btn-primary">Ir al catálogo</Link>
                 </div>
             </div>
         );
     }
 
+    const opcion = (activo: boolean) =>
+        `w-full p-4 border text-left flex items-center justify-between gap-4 min-h-[56px] transition-colors ${activo ? 'border-primary-dark bg-primary-light/50' : 'border-ink/15 bg-white hover:border-primary/40'}`;
+    const radio = (activo: boolean) => (
+        <span className={`shrink-0 w-[18px] h-[18px] rounded-full border flex items-center justify-center ${activo ? 'border-primary-dark' : 'border-ink/30'}`}>
+            {activo && <span className="w-2.5 h-2.5 rounded-full bg-primary-dark" />}
+        </span>
+    );
+    const campo = "w-full px-0 py-3 border-0 border-b border-ink/25 focus:border-primary outline-none bg-transparent text-base text-ink placeholder:text-muted min-h-[48px] transition-colors";
+    const etiqueta = "eyebrow text-[10.5px] text-ink";
+
     return (
-        <div className="bg-bg-light min-h-screen py-16 px-4 md:px-8 font-sans">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="bg-bg-light min-h-screen">
+            {CheckoutHeader}
+            <div className="max-w-6xl mx-auto px-4 md:px-8 py-10 md:py-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
 
-                {/* Columna Izquierda: Resumen de Compra */}
-                <div className="lg:col-span-7 bg-transparent flex flex-col pt-0">
-                    
-                    <h2 className="text-2xl font-bold text-primary-dark mb-8 flex items-center gap-3">
-                        <span className="bg-primary-light text-primary w-11 h-11 flex items-center justify-center rounded-xl text-lg shadow-sm">🛒</span> 
-                        Resumen de Compra 
-                        <span className="text-xs font-semibold text-slate-400 bg-white border border-slate-100 px-3 py-1 rounded-full shadow-sm ml-auto sm:ml-2">
-                            {cart.length} {cart.length === 1 ? 'ítem' : 'ítems'}
-                        </span>
-                    </h2>
+                {/* Columna izquierda: carrito */}
+                <section className="lg:col-span-7" aria-labelledby="titulo-carrito">
+                    <div className="flex items-end justify-between mb-6 pb-4 border-b border-line">
+                        <h1 id="titulo-carrito" className="font-display text-3xl md:text-4xl text-primary-dark">Tu carrito</h1>
+                        <span className="text-sm text-muted tabular-nums">{totalItems} {totalItems === 1 ? 'prenda' : 'prendas'}</span>
+                    </div>
 
-                    <div className="flex flex-col gap-4">
+                    <ul className="flex flex-col divide-y divide-line">
                         {cart.map((item) => {
                             let activePrice = item.precio;
                             let isDiscounted = false;
                             let comboText = '';
 
-                            if (totalItems >= 12 && item.price12 && item.price12 > 0) { activePrice = item.price12; isDiscounted = true; comboText = 'Combo 12+'; }
-                            else if (totalItems >= 9 && item.price9 && item.price9 > 0) { activePrice = item.price9; isDiscounted = true; comboText = 'Combo 9+'; }
-                            else if (totalItems >= 6 && item.price6 && item.price6 > 0) { activePrice = item.price6; isDiscounted = true; comboText = 'Combo 6+'; }
-                            else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Combo 3+'; }
-                            
+                            if (totalItems >= 12 && item.price12 && item.price12 > 0) { activePrice = item.price12; isDiscounted = true; comboText = 'Precio x 12'; }
+                            else if (totalItems >= 9 && item.price9 && item.price9 > 0) { activePrice = item.price9; isDiscounted = true; comboText = 'Precio x 9'; }
+                            else if (totalItems >= 6 && item.price6 && item.price6 > 0) { activePrice = item.price6; isDiscounted = true; comboText = 'Precio x 6'; }
+                            else if (totalItems >= 3 && item.price3 && item.price3 > 0) { activePrice = item.price3; isDiscounted = true; comboText = 'Precio x 3'; }
+
                             const parseVariants = (str?: string) => str ? str.split(/[,/|-]+/).map(s => s.trim()).filter(Boolean) : [];
                             const sheetColors = parseVariants(item.color);
                             const colorsList = sheetColors.length > 0 ? sheetColors : ['Blanco', 'Negro', 'Gris', 'Rosa', 'Fucsia', 'Rojo', 'Bordó', 'Azul', 'Celeste', 'Verde', 'Amarillo', 'Beige', 'Marrón', 'Lila', 'Surtido', 'Único'];
                             const hasSizes = Boolean(item.size && item.size.trim() !== '');
                             const hasColors = true;
+                            const img = String(item.imagenUrl || '').split(',')[0].trim();
 
                             return (
-                                <div key={item.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-white p-5 rounded-xl border border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_18px_rgba(92,36,179,0.03)] transition-all duration-300">
-                                    
-                                    {/* Imagen thumbnail con aspecto estricto 3:4 */}
-                                    <div className="flex gap-4 w-full sm:w-auto">
-                                        <div className="w-24 h-32 shrink-0 overflow-hidden rounded-xl bg-slate-50 border border-slate-100 relative">
-                                            <img src={item.imagenUrl} alt={item.nombre} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex flex-col flex-1 sm:hidden justify-center">
-                                            <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-tight">{item.nombre}</h4>
-                                            {item.description && <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-tight">{item.description}</p>}
-                                            <p className="text-base font-bold text-primary mt-2">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
-                                        </div>
+                                <li key={item.id} className="py-6 flex gap-4 md:gap-6">
+                                    <div className="w-24 md:w-28 aspect-[3/4] shrink-0 overflow-hidden bg-sand relative">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        {img && <img src={img} alt={item.nombre} className="w-full h-full object-cover" />}
                                     </div>
-                                    
-                                    <div className="flex flex-col flex-1 justify-center gap-3">
-                                        <div className="hidden sm:block">
-                                            <h4 className="text-sm md:text-base font-bold text-slate-800 line-clamp-2 leading-tight">{item.nombre}</h4>
-                                            {item.description && <p className="text-xs text-slate-500 mt-1 line-clamp-1 leading-snug">{item.description}</p>}
+
+                                    <div className="flex-1 min-w-0 flex flex-col">
+                                        <div className="flex justify-between gap-4">
+                                            <h2 className="text-[15px] text-ink leading-snug line-clamp-2 first-letter:uppercase">{item.nombre.replace(/^[^\p{L}\p{N}]+/u, '')}</h2>
+                                            <div className="text-right shrink-0">
+                                                <p className="font-semibold text-primary-dark tabular-nums">{formatPrice(Math.round(activePrice * item.cantidad))}</p>
+                                                {(isDiscounted || item.cantidad > 1) && (
+                                                    <p className="text-xs text-muted tabular-nums mt-0.5">{formatPrice(Math.round(activePrice))} c/u</p>
+                                                )}
+                                            </div>
                                         </div>
-                                        
-                                        {/* Modificadores de Variante con Touch Targets de 48px */}
-                                        <div className="flex flex-wrap gap-4 mt-1 items-end">
-                                            {/* Selector Talle */}
+                                        {isDiscounted && <p className="mt-1 eyebrow text-[9.5px] text-accent">{comboText} aplicado</p>}
+
+                                        <div className="mt-auto pt-4 flex flex-wrap items-end gap-x-5 gap-y-3">
                                             {hasSizes && (
-                                                <div className="flex flex-col gap-1 w-20 sm:w-24">
-                                                    <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Talle</span>
-                                                    <input 
+                                                <label className="flex flex-col gap-1 w-20">
+                                                    <span className="eyebrow text-[9.5px] text-muted">Talle</span>
+                                                    <input
                                                         type="text"
                                                         defaultValue={item.selectedSize || ''}
                                                         onBlur={(e) => {
@@ -219,264 +243,176 @@ export default function CheckoutPage() {
                                                                 updateCartItemVariant(item.id, e.target.value.trim(), item.selectedColor);
                                                             }
                                                         }}
-                                                        placeholder="Ej: M..."
-                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-3.5 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none font-bold text-center w-full min-h-[48px] premium-transition"
+                                                        placeholder="Ej: 90"
+                                                        className={`w-full border-0 border-b ${!item.selectedSize?.trim() ? 'border-primary' : 'border-ink/25'} focus:border-primary outline-none bg-transparent text-sm text-ink py-2 min-h-[44px]`}
                                                     />
-                                                </div>
+                                                </label>
                                             )}
 
-                                            {/* Selector Color */}
                                             {hasColors && (
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Color</span>
-                                                    <select 
+                                                <label className="flex flex-col gap-1">
+                                                    <span className="eyebrow text-[9.5px] text-muted">Color</span>
+                                                    <select
                                                         value={item.selectedColor || ''}
                                                         onChange={(e) => updateCartItemVariant(item.id, item.selectedSize, e.target.value)}
-                                                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none font-bold cursor-pointer min-h-[48px] premium-transition"
+                                                        className="border-0 border-b border-ink/25 focus:border-primary outline-none bg-transparent text-sm text-ink py-2 min-h-[44px] cursor-pointer"
                                                     >
                                                         <option value="" disabled>Elegir</option>
                                                         {colorsList.map(c => (
                                                             <option key={c} value={c}>{c}</option>
                                                         ))}
                                                     </select>
-                                                </div>
+                                                </label>
                                             )}
 
-                                            {/* Modificador Cantidad con Botones de 48px de click */}
-                                            <div className="flex flex-col gap-1 ml-auto sm:ml-0">
-                                                <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">Cant</span>
-                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl h-[48px] overflow-hidden">
-                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad - 1)} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-accent-light hover:text-accent transition-colors font-black">-</button>
-                                                    <span className="w-8 text-center text-xs font-bold text-slate-700">{item.cantidad}</span>
-                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad + 1)} className="w-10 h-full flex items-center justify-center text-slate-500 hover:bg-accent-light hover:text-accent transition-colors font-black">+</button>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="eyebrow text-[9.5px] text-muted">Cantidad</span>
+                                                <div className="flex items-center border border-line bg-white h-11">
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad - 1)} className="w-11 h-full flex items-center justify-center text-ink hover:text-primary" aria-label="Restar uno"><IconMinus className="w-4 h-4" /></button>
+                                                    <span className="w-8 text-center text-sm tabular-nums">{item.cantidad}</span>
+                                                    <button onClick={() => updateCartItemQuantity(item.id, item.cantidad + 1)} className="w-11 h-full flex items-center justify-center text-ink hover:text-primary" aria-label="Sumar uno"><IconPlus className="w-4 h-4" /></button>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Desktop details side */}
-                                    <div className="hidden sm:flex flex-col items-end justify-between h-32 py-1 text-right min-w-[100px]">
-                                        <div className="flex flex-col items-end">
-                                            <p className="text-lg font-bold text-primary tracking-tight">${(activePrice * item.cantidad).toLocaleString('es-AR')}</p>
-                                            {isDiscounted ? (
-                                                <div className="flex flex-col items-end gap-1 mt-1.5">
-                                                    <span className="text-[9px] uppercase tracking-wider font-extrabold text-accent bg-accent-light px-2 py-0.5 rounded border border-accent/15">
-                                                        {comboText}
-                                                    </span>
-                                                    <span className="text-[10px] font-semibold text-slate-400">
-                                                        ${activePrice.toLocaleString('es-AR')} c/u
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                item.cantidad > 1 && (
-                                                    <span className="text-[10px] font-semibold text-slate-400 mt-1">
-                                                        ${activePrice.toLocaleString('es-AR')} c/u
-                                                    </span>
-                                                )
-                                            )}
-                                        </div>
-                                        <button 
-                                            onClick={() => removeFromCart(item.id)} 
-                                            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 group py-2"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:scale-115 transition-transform duration-300">
-                                              <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                            </svg>
-                                            Quitar
-                                        </button>
-                                    </div>
-                                    
-                                    {/* Mobile details footer */}
-                                    <div className="flex sm:hidden items-center justify-between mt-2 pt-3 border-t border-slate-100">
-                                            {isDiscounted ? (
-                                                <p className="text-[9px] uppercase tracking-wider font-extrabold text-accent bg-accent-light px-2.5 py-1 rounded-md border border-accent/15">
-                                                    {comboText}
-                                                </p>
-                                            ) : <div></div>}
-                                            <button 
-                                                onClick={() => removeFromCart(item.id)} 
-                                                className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors py-2"
+                                            <button
+                                                onClick={() => removeFromCart(item.id)}
+                                                className="ml-auto flex items-center gap-1.5 text-xs text-muted hover:text-primary-dark min-h-[44px] underline-offset-4 hover:underline"
                                             >
-                                                Quitar producto
+                                                <IconTrash className="w-4 h-4" /> Quitar
                                             </button>
+                                        </div>
                                     </div>
-                                </div>
+                                </li>
                             );
                         })}
+                    </ul>
+
+                    {totalItems >= 3 && cart.some(item => item.price3 || item.price6 || item.price9 || item.price12) ? (
+                        <p className="mt-2 flex items-center gap-3 bg-primary-light px-4 py-3 text-sm text-primary-dark">
+                            <IconTag className="w-5 h-5 text-primary shrink-0" /> Estás pagando precio por mayor.
+                        </p>
+                    ) : cart.some(item => item.price3) ? (
+                        <p className="mt-2 flex items-center gap-3 bg-white border border-line px-4 py-3 text-sm text-ink/80">
+                            <IconTag className="w-5 h-5 text-primary shrink-0" /> Sumá {3 - totalItems} {3 - totalItems === 1 ? 'prenda más' : 'prendas más'} y pagás precio por mayor.
+                        </p>
+                    ) : null}
+
+                    <div className="mt-6 pt-6 border-t border-primary-dark/15 flex justify-between items-baseline">
+                        <span className="eyebrow text-xs text-ink">Total</span>
+                        <span className="font-display text-3xl md:text-4xl text-primary-dark tabular-nums">{formatPrice(Math.round(getTotal()))}</span>
                     </div>
+                </section>
 
-                    {totalItems >= 3 && cart.some(item => item.price3 || item.price6 || item.price9 || item.price12) && (
-                        <div className="mt-6 p-4.5 bg-accent-light border border-accent/20 rounded-xl text-xs md:text-sm font-semibold text-accent flex items-center gap-3">
-                            <span className="text-xl">✨</span>
-                            ¡Estás accediendo a precios de combo por cantidad!
-                        </div>
-                    )}
+                {/* Columna derecha: datos y pago */}
+                <section className="lg:col-span-5" aria-labelledby="titulo-datos">
+                    <div className="bg-white border border-line p-6 md:p-8 lg:sticky lg:top-8">
+                        <h2 id="titulo-datos" className="font-display text-2xl md:text-3xl text-primary-dark mb-6">Tus datos</h2>
 
-                    <div className="mt-6 p-6 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-slate-100 flex justify-between items-center">
-                        <span className="text-base md:text-lg font-bold text-slate-700">Total a Pagar:</span>
-                        <span className="text-2xl md:text-3xl font-bold text-primary">${getTotal().toLocaleString('es-AR')}</span>
-                    </div>
-                </div>
+                        <form className="flex flex-col gap-7" onSubmit={(e) => e.preventDefault()}>
+                            <label className="block">
+                                <span className={etiqueta}>Nombre y apellido</span>
+                                <input type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)} className={campo} placeholder="Ej: María Gómez" autoComplete="name" />
+                            </label>
 
-                {/* Columna Derecha: Formulario de Datos */}
-                <div className="lg:col-span-5 relative">
-                    <div className="bg-white p-6 md:p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-slate-100 sticky top-28">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 border-b border-slate-100 pb-3">Tus Datos</h2>
+                            <label className="block">
+                                <span className={etiqueta}>WhatsApp</span>
+                                <input type="tel" required value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={campo} placeholder="Ej: 3794123456" autoComplete="tel" />
+                            </label>
 
-                        <form className="flex flex-col gap-5">
-                            <div>
-                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nombre y Apellido</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    value={nombre} 
-                                    onChange={(e) => setNombre(e.target.value)} 
-                                    className="w-full px-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/25 focus:border-accent outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50 min-h-[48px] premium-transition" 
-                                    placeholder="Ej: María Gómez" 
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">WhatsApp</label>
-                                <input 
-                                    type="tel" 
-                                    required 
-                                    value={whatsapp} 
-                                    onChange={(e) => setWhatsapp(e.target.value)} 
-                                    className="w-full px-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/25 focus:border-accent outline-none transition-all text-slate-800 placeholder-slate-400 bg-slate-50/50 min-h-[48px] premium-transition" 
-                                    placeholder="Ej: 3794123456" 
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Método de Entrega</label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setMetodoEntrega('retiro')}
-                                        className={`p-4 border-2 rounded-xl text-left transition-all duration-300 min-h-[48px] premium-transition flex flex-col justify-center ${metodoEntrega === 'retiro' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex items-center justify-between mb-1 w-full">
-                                            <span className="font-bold text-slate-800 text-sm">Retirar Local 🛍️</span>
-                                            {metodoEntrega === 'retiro' && <div className="w-4 h-4 rounded-full bg-accent border-4 border-accent-light shadow-sm"></div>}
-                                        </div>
-                                        <p className="text-[11px] text-slate-500 font-semibold">Sin costo adicional</p>
+                            <fieldset>
+                                <legend className={`${etiqueta} mb-3`}>Entrega</legend>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                                    <button type="button" onClick={() => setMetodoEntrega('retiro')} className={opcion(metodoEntrega === 'retiro')} aria-pressed={metodoEntrega === 'retiro'}>
+                                        <span className="flex items-center gap-3">
+                                            <IconStore className="w-5 h-5 text-primary" />
+                                            <span><span className="block text-sm text-ink font-medium">Retiro en el local</span><span className="block text-xs text-muted mt-0.5">Sin costo</span></span>
+                                        </span>
+                                        {radio(metodoEntrega === 'retiro')}
                                     </button>
-                                    
-                                    <button 
-                                        type="button"
-                                        onClick={() => setMetodoEntrega('envio')}
-                                        className={`p-4 border-2 rounded-xl text-left transition-all duration-300 min-h-[48px] premium-transition flex flex-col justify-center ${metodoEntrega === 'envio' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex items-center justify-between mb-1 w-full">
-                                            <span className="font-bold text-slate-800 text-sm">Envío Domicilio 🛵</span>
-                                            {metodoEntrega === 'envio' && <div className="w-4 h-4 rounded-full bg-accent border-4 border-accent-light shadow-sm"></div>}
-                                        </div>
-                                        <p className="text-[11px] text-slate-500 font-semibold">Costo a coordinar</p>
+                                    <button type="button" onClick={() => setMetodoEntrega('envio')} className={opcion(metodoEntrega === 'envio')} aria-pressed={metodoEntrega === 'envio'}>
+                                        <span className="flex items-center gap-3">
+                                            <IconTruck className="w-5 h-5 text-primary" />
+                                            <span><span className="block text-sm text-ink font-medium">Envío a domicilio</span><span className="block text-xs text-muted mt-0.5">Costo a coordinar</span></span>
+                                        </span>
+                                        {radio(metodoEntrega === 'envio')}
                                     </button>
                                 </div>
-                            </div>
+                            </fieldset>
 
-                            <div>
-                                <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-3">Método de Pago</label>
-                                <div className="flex flex-col gap-3">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setMetodoPago('transferencia')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'transferencia' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-800 text-sm">Transferencia Bancaria 🏦</span>
-                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Naranja X, Ualá, MODO, Banco</span>
-                                        </div>
-                                        {metodoPago === 'transferencia' ? <div className="w-5 h-5 rounded-full bg-accent border-4 border-white shadow-sm ring-1 ring-accent"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                            <fieldset>
+                                <legend className={`${etiqueta} mb-3`}>Pago</legend>
+                                <div className="flex flex-col gap-2">
+                                    <button type="button" onClick={() => setMetodoPago('transferencia')} className={opcion(metodoPago === 'transferencia')} aria-pressed={metodoPago === 'transferencia'}>
+                                        <span><span className="block text-sm text-ink font-medium">Transferencia</span><span className="block text-xs text-muted mt-0.5">Naranja X, Ualá, MODO o tu banco</span></span>
+                                        {radio(metodoPago === 'transferencia')}
                                     </button>
-                                    
+
                                     {metodoPago === 'transferencia' && (
-                                        <div className="p-4 bg-accent-light/50 border border-accent/20 rounded-xl text-xs md:text-sm text-slate-700 animate-in fade-in duration-300">
-                                            <p className="font-black mb-2 text-accent-hover tracking-wide uppercase text-[11px]">DATOS PARA TRANSFERIR:</p>
-                                            <div className="space-y-1 text-slate-600">
-                                                <p className="flex justify-between"><span>Alias:</span> <b className="text-slate-800">vito.store</b></p>
-                                                <p className="flex justify-between"><span>Banco:</span> <b className="text-slate-800">Naranja X</b></p>
-                                                <p className="flex justify-between"><span>A nombre de:</span> <b className="text-slate-800">Bianca Irina Toledo</b></p>
-                                            </div>
-                                            <p className="mt-3 text-[10px] text-slate-400 font-semibold italic text-center">Te adjuntaré el comprobante por WhatsApp apenas realice el pago.</p>
+                                        <div className="px-4 py-4 bg-primary-light/50 text-sm animate-fade-in">
+                                            <p className="eyebrow text-[10px] text-primary-dark mb-3">Datos para transferir</p>
+                                            <dl className="space-y-1.5 text-ink/80">
+                                                <div className="flex justify-between gap-4"><dt>Alias</dt> <dd className="font-semibold text-ink">vito.store</dd></div>
+                                                <div className="flex justify-between gap-4"><dt>Banco</dt> <dd className="font-semibold text-ink">Naranja X</dd></div>
+                                                <div className="flex justify-between gap-4"><dt>Titular</dt> <dd className="font-semibold text-ink">Bianca Irina Toledo</dd></div>
+                                            </dl>
+                                            <p className="mt-3 text-xs text-muted">Después mandanos el comprobante por WhatsApp.</p>
                                         </div>
                                     )}
 
-                                    <button 
-                                        type="button"
-                                        onClick={() => setMetodoPago('efectivo')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'efectivo' ? 'border-[#25D366] bg-[#25D366]/10 ring-1 ring-[#25D366]' : 'border-slate-200 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-800 text-sm">Pago en Efectivo 💵</span>
-                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Abonás al recibir o retirar</span>
-                                        </div>
-                                        {metodoPago === 'efectivo' ? <div className="w-5 h-5 rounded-full bg-[#25D366] border-4 border-white shadow-sm ring-1 ring-[#25D366]"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+                                    <button type="button" onClick={() => setMetodoPago('efectivo')} className={opcion(metodoPago === 'efectivo')} aria-pressed={metodoPago === 'efectivo'}>
+                                        <span><span className="block text-sm text-ink font-medium">Efectivo</span><span className="block text-xs text-muted mt-0.5">Pagás al recibir o al retirar</span></span>
+                                        {radio(metodoPago === 'efectivo')}
                                     </button>
-                                    
-                                    <button 
-                                        type="button"
-                                        onClick={() => setMetodoPago('mercadopago')}
-                                        className={`p-4 border-2 rounded-xl flex items-center justify-between transition-all duration-300 min-h-[48px] premium-transition ${metodoPago === 'mercadopago' ? 'border-accent bg-accent-light/40 ring-1 ring-accent' : 'border-slate-200 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex flex-col text-left">
-                                            <span className="font-bold text-slate-800 text-sm">Mercado Pago 💳</span>
-                                            <span className="text-[11px] text-slate-500 mt-1 font-semibold">Tarjetas, Dinero en cuenta, RapiPago</span>
-                                        </div>
-                                        {metodoPago === 'mercadopago' ? <div className="w-5 h-5 rounded-full bg-accent border-4 border-white shadow-sm ring-1 ring-accent"></div> : <div className="w-5 h-5 rounded-full border-2 border-slate-300"></div>}
+
+                                    <button type="button" onClick={() => setMetodoPago('mercadopago')} className={opcion(metodoPago === 'mercadopago')} aria-pressed={metodoPago === 'mercadopago'}>
+                                        <span><span className="block text-sm text-ink font-medium">Mercado Pago</span><span className="block text-xs text-muted mt-0.5">Tarjetas, dinero en cuenta, Rapipago</span></span>
+                                        {radio(metodoPago === 'mercadopago')}
                                     </button>
+
+                                    {metodoPago === 'mercadopago' && (
+                                        <div className="px-4 py-4 bg-primary-light/50 text-sm animate-fade-in space-y-3">
+                                            <p className="eyebrow text-[10px] text-primary-dark">Datos de Mercado Pago</p>
+                                            <dl className="space-y-1.5 text-ink/80">
+                                                <div className="flex justify-between gap-4"><dt>Alias</dt> <dd className="font-semibold text-ink">VITO.STORE</dd></div>
+                                                <div className="flex justify-between gap-4"><dt>CVU</dt> <dd className="font-semibold text-ink break-all text-right">4530000800010843180599</dd></div>
+                                                <div className="flex justify-between gap-4"><dt>Titular</dt> <dd className="font-semibold text-ink text-right">Bianca Irina Toledo</dd></div>
+                                            </dl>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText('4530000800010843180599');
+                                                    toast.success('CVU copiado. Abriendo Mercado Pago...');
+                                                    setTimeout(() => {
+                                                        window.open('https://www.mercadopago.com.ar/transferencias', '_blank');
+                                                    }, 1200);
+                                                }}
+                                                className="btn btn-outline w-full"
+                                            >
+                                                <IconCard className="w-4 h-4" /> Copiar CVU y abrir la app
+                                            </button>
+                                            <p className="text-xs text-muted">Cuando transfieras, usá el botón de abajo para mandarnos talle, color y comprobante.</p>
+                                        </div>
+                                    )}
                                 </div>
+                            </fieldset>
+
+                            <div className="pt-2">
+                                <button
+                                    type="button"
+                                    onClick={handleWhatsAppOrder}
+                                    disabled={loading}
+                                    className="btn w-full bg-[#25D366] text-white hover:bg-[#1fb457] disabled:bg-muted"
+                                >
+                                    <IconWhatsApp className="w-5 h-5" />
+                                    {loading ? 'Procesando pedido...' : 'Enviar pedido por WhatsApp'}
+                                </button>
+                                <p className="mt-3 text-xs text-muted text-center leading-relaxed">
+                                    Se abre WhatsApp con tu pedido listo para enviar. Ahí coordinamos color y envío.
+                                </p>
                             </div>
-
-                            {metodoPago === 'mercadopago' && (
-                                <div className="p-4 bg-accent-light/50 border border-accent/20 rounded-xl text-xs md:text-sm text-slate-700 animate-in fade-in duration-300 space-y-3">
-                                    <p className="font-black text-accent-hover tracking-wide uppercase text-[11px]">DATOS PARA TRANSFERIR (MERCADO PAGO):</p>
-                                    <div className="bg-white/80 p-3.5 rounded-lg border border-accent/20 space-y-1.5 text-xs">
-                                        <p className="flex justify-between"><span>Alias:</span> <b className="text-slate-800">VITO.STORE</b></p>
-                                        <p className="flex justify-between"><span>CVU:</span> <b className="text-slate-800">4530000800010843180599</b></p>
-                                        <p className="flex justify-between"><span>Nombre:</span> <b className="text-slate-800 text-right">Bianca Irina Toledo</b></p>
-                                    </div>
-                                    
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            navigator.clipboard.writeText('4530000800010843180599');
-                                            toast.success('¡CVU copiado! Abriendo Mercado Pago...', { icon: '📋' });
-                                            setTimeout(() => {
-                                                window.open('https://www.mercadopago.com.ar/transferencias', '_blank');
-                                            }, 1200);
-                                        }}
-                                        className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-md shadow-accent/20 min-h-[48px] premium-transition"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
-                                        </svg>
-                                        Copiar CVU y Abrir App
-                                    </button>
-                                    <p className="text-[10px] text-slate-400 text-center font-semibold italic">Una vez transferido, usá el botón de WhatsApp abajo para enviarnos tu talle, color y comprobante.</p>
-                                </div>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={handleWhatsAppOrder}
-                                disabled={loading}
-                                className={`w-full py-4 px-6 mt-4 text-white rounded-full font-bold text-base transition-all duration-300 shadow-lg min-h-[48px] flex items-center justify-center premium-transition
-                                    ${loading ? 'bg-slate-400 cursor-not-allowed shadow-none' : 'bg-[#25D366] hover:bg-[#20bd5a] hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(37,211,102,0.25)]'}
-                                `}
-                            >
-                                {loading ? 'Procesando pedido... ⏳' : 'Generar Pedido por WhatsApp 📲'}
-                            </button>
-                            
-                            <Link href="/#catalogo" className="text-center text-slate-500 hover:text-primary text-sm font-semibold mt-5 transition-all duration-300 py-2 hover:underline block">
-                                ← Volver al catálogo
-                            </Link>
                         </form>
                     </div>
-                </div>
-
+                </section>
             </div>
         </div>
     );

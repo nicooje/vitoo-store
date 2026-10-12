@@ -1,81 +1,68 @@
+import Image from 'next/image';
+import Link from 'next/link';
+import { IconInstagram, IconPin, IconWhatsApp } from './icons';
+import { ADDRESS, INSTAGRAM_URL, MAPS_URL, NAV_CATEGORIES, WHATSAPP_URL, categoryHref } from '@/lib/site';
+
 export default function Footer() {
     return (
-        <footer className="bg-primary-dark text-slate-100 pt-20 pb-10 px-6 border-t border-white/5 relative overflow-hidden">
+        <footer className="bg-primary-light text-ink">
+            <div className="max-w-[1400px] mx-auto px-5 md:px-8 pt-16 md:pt-20 pb-24 md:pb-10">
+                <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-12">
+                    {/* Marca */}
+                    <div className="col-span-2 md:col-span-4">
+                        <Link href="/" className="inline-flex items-center gap-3">
+                            <Image src="/vito-logo.png" alt="" width={52} height={52} className="rounded-full" />
+                            <span className="font-display text-3xl text-primary-dark">Vitö <span className="italic text-primary">Store</span></span>
+                        </Link>
+                        <p className="mt-5 text-[15px] leading-relaxed text-ink/80 max-w-xs">
+                            Lencería, bombachas, tops y pijamas pensados para que te sientas cómoda y linda todos los días.
+                        </p>
+                        <div className="mt-6 flex gap-2">
+                            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="h-11 w-11 border border-primary-dark/20 flex items-center justify-center text-primary-dark hover:bg-primary-dark hover:text-white transition-colors">
+                                <IconInstagram className="w-5 h-5" />
+                            </a>
+                            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="h-11 w-11 border border-primary-dark/20 flex items-center justify-center text-primary-dark hover:bg-primary-dark hover:text-white transition-colors">
+                                <IconWhatsApp className="w-[18px] h-[18px]" />
+                            </a>
+                        </div>
+                    </div>
 
-            {/* Brillo decorativo */}
-            <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] pointer-events-none"></div>
-            <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
+                    <nav className="md:col-span-3" aria-label="Categorías">
+                        <h2 className="eyebrow text-[11px] text-primary-dark mb-5">Comprar</h2>
+                        <ul className="flex flex-col gap-1">
+                            {NAV_CATEGORIES.map((c) => (
+                                <li key={c.cat}>
+                                    <Link href={categoryHref(c.cat)} className="inline-flex min-h-[36px] items-center text-[15px] text-ink/80 hover:text-primary transition-colors">{c.label}</Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
 
-            <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-14 relative z-10">
+                    <div className="md:col-span-2">
+                        <h2 className="eyebrow text-[11px] text-primary-dark mb-5">Ayuda</h2>
+                        <ul className="flex flex-col gap-1 text-[15px] text-ink/80">
+                            <li><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] items-center hover:text-primary">Cómo comprar</a></li>
+                            <li><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] items-center hover:text-primary">Envíos</a></li>
+                            <li><a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[36px] items-center hover:text-primary">Cambios</a></li>
+                            <li><Link href="/checkout" className="inline-flex min-h-[36px] items-center hover:text-primary">Mi carrito</Link></li>
+                        </ul>
+                    </div>
 
-                {/* Marca */}
-                <div className="md:col-span-5 flex flex-col items-center md:items-start">
-                    <p className="font-display italic text-4xl text-white mb-1">Vitö</p>
-                    <p className="text-[11px] font-bold tracking-[0.3em] uppercase text-accent-light/80 mb-6">Store · Lencería</p>
-                    <p className="text-sm text-slate-300/90 max-w-xs leading-relaxed mb-8">
-                        Lencería, bombachas, tops y pijamas exclusivos con la calidez y el diseño que te merecés.
-                    </p>
-
-                    <div className="flex items-center gap-4">
-                        <a
-                            href="https://instagram.com/vitoo.store"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-100 hover:text-primary-dark hover:bg-white bg-white/10 rounded-full p-3 hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
-                            aria-label="Instagram"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                            </svg>
+                    <div className="col-span-2 md:col-span-3">
+                        <h2 className="eyebrow text-[11px] text-primary-dark mb-5">Visitanos</h2>
+                        <a href={MAPS_URL} target="_blank" rel="noopener noreferrer" className="flex gap-3 text-[15px] text-ink/80 hover:text-primary">
+                            <IconPin className="w-5 h-5 shrink-0 mt-0.5" />
+                            <span>{ADDRESS}<span className="block text-sm text-muted mt-1 underline underline-offset-4">Cómo llegar</span></span>
                         </a>
-                        <a
-                            href="https://wa.me/5493794088240"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-100 hover:text-white hover:bg-[#25D366] bg-white/10 rounded-full p-3 hover:-translate-y-1 transition-all duration-300 min-h-[48px] min-w-[48px] flex items-center justify-center"
-                            aria-label="WhatsApp"
-                        >
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.155 1.24 8.404 3.49 2.249 2.25 3.488 5.23 3.487 8.411-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.303 1.655zm6.597-5.615c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.371s-1.04 1.014-1.04 2.476 1.064 2.871 1.213 3.07c.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                            </svg>
-                        </a>
+                        <p className="mt-6 eyebrow text-[10.5px] text-primary-dark mb-3">Medios de pago</p>
+                        <p className="text-sm text-ink/80 leading-relaxed">Mercado Pago · Transferencia · Billeteras virtuales · Efectivo en el local</p>
                     </div>
                 </div>
 
-                {/* Info */}
-                <div className="md:col-span-4 flex flex-col items-center md:items-start text-sm">
-                    <h4 className="text-white font-bold uppercase tracking-[0.2em] text-[11px] mb-6">Visitanos</h4>
-                    <ul className="space-y-4 text-slate-300/90">
-                        <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light">📍</span> Av. Cangallo 136 · Corrientes Capital
-                        </li>
-                        <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light">🇦🇷</span> Envíos a todo el país
-                        </li>
-                        <li className="flex items-center gap-3 justify-center md:justify-start">
-                            <span className="text-accent-light">💬</span> Atención por WhatsApp
-                        </li>
-                    </ul>
+                <div className="mt-14 pt-6 border-t border-primary-dark/10 flex flex-col md:flex-row justify-between gap-2 text-xs text-muted">
+                    <span>© {new Date().getFullYear()} Vitö Store. Todos los derechos reservados.</span>
+                    <span>Hecho en Corrientes, Argentina</span>
                 </div>
-
-                {/* Links */}
-                <div className="md:col-span-3 flex flex-col items-center md:items-start text-sm">
-                    <h4 className="text-white font-bold uppercase tracking-[0.2em] text-[11px] mb-6">Colecciones</h4>
-                    <nav className="flex flex-col gap-3.5 text-slate-300/90">
-                        <a href="/?category=Conjuntos" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Conjuntos</a>
-                        <a href="/?category=Corpiños-Tops" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Corpiños y Tops</a>
-                        <a href="/?category=Bombachas" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Bombachas</a>
-                        <a href="/?category=Invierno" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Invierno</a>
-                        <a href="https://maps.app.goo.gl/MQrF2XJRg23bXV2q7" target="_blank" rel="noopener noreferrer" className="link-underline w-max py-1 hover:text-white transition-colors duration-300">Cómo llegar</a>
-                    </nav>
-                </div>
-
-            </div>
-
-            {/* Copyright */}
-            <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] tracking-wide text-slate-400 relative z-10">
-                <span>© {new Date().getFullYear()} Vitö Store. Todos los derechos reservados.</span>
-                <span className="font-display italic text-slate-500">Hecho con amor en Corrientes 💜</span>
             </div>
         </footer>
     );

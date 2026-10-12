@@ -1,122 +1,120 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Product } from '@/lib/googleSheets';
+import { IconChevronLeft, IconChevronRight } from './icons';
+import { categoryHref, formatPrice } from '@/lib/site';
 
 interface HeroSectionProps {
     products?: Product[];
 }
 
+const firstImage = (p?: Product) => (p?.image_url || '').split(',')[0].trim();
+
 export default function HeroSection({ products = [] }: HeroSectionProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [paused, setPaused] = useState(false);
-
     const hasProducts = products.length > 0;
 
     useEffect(() => {
         if (!hasProducts || paused) return;
-
-        const interval = setInterval(() => {
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
-        }, 4500);
-
+        const interval = setInterval(() => setCurrentIndex((i) => (i + 1) % products.length), 5500);
         return () => clearInterval(interval);
     }, [hasProducts, paused, products.length]);
 
     if (!hasProducts) {
-        return (
-            <section className="px-3 md:px-6 pt-4 pb-10 bg-bg-light">
-                <div className="max-w-[1400px] mx-auto rounded-[2rem] overflow-hidden bg-slate-200 min-h-[55vh] animate-pulse" />
-            </section>
-        );
+        return <section className="bg-primary-light min-h-[60vh] animate-pulse" aria-hidden />;
     }
 
     const current = products[currentIndex];
+    const go = (d: number) => setCurrentIndex((i) => (i + d + products.length) % products.length);
+    const pad = (n: number) => String(n).padStart(2, '0');
 
     return (
         <section
-            className="px-3 md:px-6 pt-4 pb-12 bg-bg-light"
+            className="grid md:grid-cols-12 bg-primary-light"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
+            aria-roledescription="carrusel"
+            aria-label="Destacados"
         >
-            <div className="max-w-[1400px] mx-auto relative rounded-[2rem] overflow-hidden bg-primary-dark min-h-[68vh] md:min-h-[76vh] flex items-end shadow-2xl group">
-
-                {/* Carrusel de imagenes con zoom cinematografico */}
+            {/* Foto */}
+            <div className="relative md:col-span-7 aspect-[4/5] md:aspect-auto md:h-[min(78vh,760px)] overflow-hidden bg-sand">
                 {products.map((product, index) => (
                     <div
                         key={product.id}
-                        className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        className={`absolute inset-0 transition-opacity duration-700 ease-out ${index === currentIndex ? 'opacity-100' : 'opacity-0'}`}
+                        aria-hidden={index !== currentIndex}
                     >
-                        {product.image_url ? (
+                        {firstImage(product) && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                                src={product.image_url}
+                                src={firstImage(product)}
                                 alt={product.name}
-                                className={`w-full h-full object-cover object-center ${index === currentIndex ? 'animate-ken-burns' : ''}`}
+                                className={`w-full h-full object-cover ${index === currentIndex ? 'animate-ken-burns' : ''}`}
+                                loading={index === 0 ? 'eager' : 'lazy'}
                             />
-                        ) : (
-                            <div className="w-full h-full bg-slate-800" />
                         )}
-                        {/* Velo editorial: mas intenso abajo-izquierda para el texto */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/90 via-primary-dark/25 to-transparent"></div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/40 to-transparent"></div>
                     </div>
                 ))}
 
-                {/* Contenido sobre el carrusel */}
-                <div className="relative z-20 w-full max-w-[1400px] px-7 md:px-14 pb-12 md:pb-16 pt-24 flex flex-col items-start text-left">
+                <div className="absolute bottom-4 right-4 flex gap-2">
+                    <button onClick={() => go(-1)} className="h-11 w-11 bg-white/90 hover:bg-white text-primary-dark flex items-center justify-center transition-colors" aria-label="Anterior">
+                        <IconChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button onClick={() => go(1)} className="h-11 w-11 bg-white/90 hover:bg-white text-primary-dark flex items-center justify-center transition-colors" aria-label="Siguiente">
+                        <IconChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
 
-                    <p className="font-display italic text-xl md:text-2xl text-accent-light mb-2">
-                        {current?.name}
-                    </p>
-                    <h1 className="font-display text-4xl md:text-6xl leading-tight text-white mb-6 drop-shadow-lg max-w-3xl">
-                        ${Number(current?.price).toLocaleString('es-AR')}
-                    </h1>
-
-                    <a
-                        href="#catalogo"
-                        className="inline-flex items-center justify-center gap-2 px-9 py-4 text-base font-bold text-primary-dark bg-white hover:bg-accent-light rounded-full transition-all hover:scale-[1.03] active:scale-95 shadow-xl min-h-[48px] premium-transition"
-                    >
-                        Ver catálogo
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                        </svg>
-                    </a>
-
-                    {/* Indicadores */}
-                    <div className="flex gap-2 mt-10">
-                        {products.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => setCurrentIndex(idx)}
-                                className={`h-1.5 rounded-full transition-all duration-500 premium-transition ${idx === currentIndex ? 'w-10 bg-white' : 'w-4 bg-white/35 hover:bg-white/60'}`}
-                                aria-label={`Ir a la diapositiva ${idx + 1}`}
-                            />
-                        ))}
-                    </div>
+            {/* Texto */}
+            <div className="md:col-span-5 flex flex-col justify-center px-6 py-10 md:px-12 lg:px-16">
+                <div className="flex items-center gap-4 mb-6 md:mb-10">
+                    <span className="eyebrow text-primary">Nuevos ingresos</span>
+                    <span className="h-px flex-1 bg-primary/25" />
+                    <span className="eyebrow text-primary-dark tabular-nums">{pad(currentIndex + 1)} / {pad(products.length)}</span>
                 </div>
 
-                {/* Flechas manuales */}
-                <button
-                    onClick={() => setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-2.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/25 backdrop-blur-md text-white rounded-full"
-                    aria-label="Anterior"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                    </svg>
-                </button>
+                <div key={current.id} className="animate-slide-up">
+                    <h1 className="font-display text-[34px] leading-[1.08] md:text-5xl lg:text-[56px] text-primary-dark first-letter:uppercase">
+                        {current.name.replace(/^[^\p{L}\p{N}]+/u, '')}
+                    </h1>
+                    <p className="mt-5 text-2xl md:text-3xl font-light text-primary-dark tabular-nums">
+                        {formatPrice(current.price)}
+                    </p>
+                    {current.price3 ? (
+                        <p className="mt-1 text-sm text-accent font-medium">
+                            Llevando 3 o más: {formatPrice(Math.round(Number(current.price3)))} c/u
+                        </p>
+                    ) : null}
+                </div>
 
-                <button
-                    onClick={() => setCurrentIndex((prev) => (prev + 1) % products.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-2.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/10 hover:bg-white/25 backdrop-blur-md text-white rounded-full"
-                    aria-label="Siguiente"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                </button>
+                <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-3">
+                    <Link href="/#catalogo" className="btn btn-primary">Ver catálogo</Link>
+                    {current.category && (
+                        <Link href={categoryHref(current.category)} className="btn btn-outline">
+                            Más {current.category.replace('-', ' y ').toLowerCase()}
+                        </Link>
+                    )}
+                </div>
 
+                {/* Progreso */}
+                <div className="mt-10 md:mt-14 flex gap-2" role="tablist">
+                    {products.map((p, idx) => (
+                        <button
+                            key={p.id}
+                            onClick={() => setCurrentIndex(idx)}
+                            className="group flex-1 py-3"
+                            role="tab"
+                            aria-selected={idx === currentIndex}
+                            aria-label={`Ver destacado ${idx + 1}`}
+                        >
+                            <span className={`block h-[2px] transition-colors duration-300 ${idx === currentIndex ? 'bg-primary-dark' : 'bg-primary/20 group-hover:bg-primary/40'}`} />
+                        </button>
+                    ))}
+                </div>
             </div>
         </section>
     );

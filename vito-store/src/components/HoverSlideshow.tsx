@@ -34,7 +34,7 @@ export default function HoverSlideshow({ imageUrls, productName }: Props) {
         return () => clearInterval(interval);
     }, [isHovered, images.length]);
 
-    if (images.length === 0) return <div className="w-full h-full bg-slate-100" />;
+    if (images.length === 0) return <div className="w-full h-full bg-sand" />;
 
     return (
         <div 
@@ -47,14 +47,14 @@ export default function HoverSlideshow({ imageUrls, productName }: Props) {
                 alt={productName} 
                 fill
                 sizes="(max-width: 768px) 50vw, 25vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                className="object-cover" 
             />
             {images.length > 1 && (
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                <div className="absolute top-3 right-3 flex gap-1 z-10 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                     {images.map((_, idx) => (
                         <div 
                             key={idx} 
-                            className={`h-1 rounded-full transition-all duration-300 shadow-sm ${idx === currentIndex ? 'w-3 bg-white' : 'w-1.5 bg-white/60'}`} 
+                            className={`h-[2px] transition-all duration-300 ${idx === currentIndex ? 'w-4 bg-white' : 'w-2 bg-white/60'}`} 
                         />
                     ))}
                 </div>

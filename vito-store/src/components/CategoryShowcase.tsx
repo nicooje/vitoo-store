@@ -1,58 +1,62 @@
 import Link from 'next/link';
 import { Product } from '@/lib/googleSheets';
 import Reveal from './Reveal';
+import { NAV_CATEGORIES, categoryHref } from '@/lib/site';
 
 interface CategoryShowcaseProps {
     products: Product[];
 }
 
-const COLLECTIONS = [
-    { cat: 'Conjuntos', label: 'Conjuntos', tagline: 'El favorito de todas' },
-    { cat: 'Bombachas', label: 'Bombachas', tagline: 'Comodidad diaria' },
-    { cat: 'Corpiños-Tops', label: 'Corpiños y Tops', tagline: 'Para brillar' },
-    { cat: 'Invierno', label: 'Invierno', tagline: 'Calidez que enamora' },
-];
+const TAGLINES: Record<string, string> = {
+    'Conjuntos': 'El favorito de todas',
+    'Corpiños-Tops': 'Con aro, push up y deportivos',
+    'Bombachas': 'Comodidad de todos los días',
+    'Medias': 'Soquetes y pantimedias',
+    'Invierno': 'Pijamas y térmicas',
+    'Lubricantes y juegos': 'Para jugar de a dos',
+    'Varios': 'Accesorios y más',
+};
 
 export default function CategoryShowcase({ products }: CategoryShowcaseProps) {
-    const tiles = COLLECTIONS.map((c) => {
-        const first = products.find((p) => p.category === c.cat && p.image_url);
-        const img = first ? first.image_url.split(',')[0].trim() : '';
-        return { ...c, img };
+    const tiles = NAV_CATEGORIES.map((c) => {
+        const inCat = products.filter((p) => p.category === c.cat && p.image_url);
+        const img = inCat[0] ? inCat[0].image_url.split(',')[0].trim() : '';
+        return { ...c, img, count: inCat.length };
     }).filter((t) => t.img);
 
     if (!tiles.length) return null;
 
     return (
-        <section className="bg-bg-light px-3 md:px-6 pb-20 pt-2">
+        <section className="px-4 md:px-8 py-14 md:py-20" aria-labelledby="titulo-categorias">
             <div className="max-w-[1400px] mx-auto">
-                <Reveal className="text-center mb-10">
-                    <p className="font-display italic text-primary text-lg mb-1">Colecciones</p>
-                    <h2 className="font-display text-4xl md:text-5xl text-primary-dark">Elegí tu estilo</h2>
+                <Reveal className="mb-7 md:mb-9 flex items-end justify-between gap-6">
+                    <div>
+                        <p className="eyebrow text-primary mb-2">Comprá por categoría</p>
+                        <h2 id="titulo-categorias" className="font-display text-3xl md:text-[44px] leading-tight text-primary-dark">Elegí tu estilo</h2>
+                    </div>
+                    <Link href="/#catalogo" className="hidden md:inline eyebrow text-primary-dark link-underline shrink-0">Ver todo</Link>
                 </Reveal>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
-                    {tiles.map((tile, i) => (
-                        <Reveal key={tile.cat} delay={i * 90}>
-                            <Link
-                                href={`/?category=${encodeURIComponent(tile.cat)}`}
-                                className="group relative block overflow-hidden rounded-[1.4rem] aspect-[3/4] premium-shadow"
-                            >
+                {/* Carril: desliza en el celu, grilla en compu */}
+                <div className="flex gap-3 md:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:grid md:overflow-visible" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
+                    {tiles.map((tile) => (
+                        <Link
+                            key={tile.cat}
+                            href={categoryHref(tile.cat)}
+                            className="group snap-start shrink-0 w-[42vw] sm:w-[30vw] md:w-auto"
+                        >
+                            <div className="relative aspect-[3/4] overflow-hidden bg-sand">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={tile.img}
-                                    alt={tile.label}
-                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110"
+                                    alt=""
+                                    loading="lazy"
+                                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/85 via-primary-dark/15 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="absolute inset-x-0 bottom-0 p-4 md:p-6">
-                                    <p className="font-display text-xl md:text-2xl text-white leading-tight">{tile.label}</p>
-                                    <p className="text-white/75 text-xs md:text-sm mt-0.5">{tile.tagline}</p>
-                                    <span className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.18em] uppercase text-accent-light translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                                        Ver más →
-                                    </span>
-                                </div>
-                            </Link>
-                        </Reveal>
+                            </div>
+                            <p className="mt-3 eyebrow text-[11.5px] text-primary-dark group-hover:text-primary transition-colors">{tile.label}</p>
+                            <p className="mt-1 text-[13px] text-muted leading-snug">{TAGLINES[tile.cat] ?? `${tile.count} productos`}</p>
+                        </Link>
                     ))}
                 </div>
             </div>

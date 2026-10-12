@@ -42,7 +42,7 @@ export function extractPrices(text: string): Record<number, number> {
     // docena exige el signo $ para no confundirse con otros numeros
     const docRe = new RegExp(String.raw`docena[^$\n]*?\$\s*` + AMT, 'i');
     if ((m = docRe.exec(text))) {
-        const amt = parseAmount(m[2]);
+        const amt = parseAmount(m[1]);
         if (amt && amt >= 500) out[12] ??= amt;
         rest = rest.replace(docRe, ' ');
     }
@@ -320,7 +320,7 @@ export function buildImportPlan(chatProducts: ChatProduct[], sheetRows: SheetRow
     for (const p of withImages) if (!usedP.has(p.key)) appended.push(p);
 
     return {
-        updates: pairs.map(p => ({ chat: p.p, sheet: p.s, score: p.sc })),
+        updates: updates.map(p => ({ chat: p.p, sheet: p.s, score: p.sc })),
         appends: appended,
         noImages,
         dupes,

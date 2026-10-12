@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
-import MarqueeBand from '@/components/MarqueeBand';
 import CategoryShowcase from '@/components/CategoryShowcase';
 import CatalogoSection from '@/components/CatalogoSection';
 import BenefitsBar from '@/components/BenefitsBar';
@@ -10,6 +9,7 @@ import CategoryFilter from '@/components/CategoryFilter';
 import Reveal from '@/components/Reveal';
 import { getProductsFromSheet } from '@/lib/googleSheets';
 import FloatingCart from '@/components/FloatingCart';
+import PromoTiles from '@/components/PromoTiles';
 
 export const revalidate = 60;
 
@@ -50,34 +50,39 @@ export default async function Home(props: { searchParams?: Promise<{ [key: strin
 
   const isBrowsing = Boolean(activeCategory && activeCategory !== 'Todos') || Boolean(searchQuery);
 
+    const withImages = cleanedProducts.filter(p => p.image_url);
+    const promoImage = withImages[5]?.image_url.split(',')[0].trim() || withImages[0]?.image_url.split(',')[0].trim();
+    const title = searchQuery ? `"${searchQuery}"` : isBrowsing ? activeCategory.replace('-', ' y ') : 'Lo más deseado';
+
     return (
         <main className="bg-bg-light min-h-screen">
             <Header />
-            <HeroSection products={cleanedProducts.filter(p => p.image_url).slice(0, 5)} />
-            <MarqueeBand />
+            {!isBrowsing && <HeroSection products={withImages.slice(0, 5)} />}
 
             {/* Al navegar por categoria o busqueda, el catalogo es lo principal */}
             {!isBrowsing && <CategoryShowcase products={cleanedProducts} />}
 
-            <section id="catalogo" className="pt-20 pb-28 px-4 md:px-8 bg-bg-light">
+            <section id="catalogo" className={`scroll-mt-16 md:scroll-mt-28 px-4 md:px-8 pb-20 md:pb-28 ${isBrowsing ? 'pt-10 md:pt-14' : 'pt-4'}`}>
                 <div className="max-w-[1400px] mx-auto w-full">
-                    <Reveal className="text-center mb-12">
-                        <p className="font-display italic text-primary text-lg mb-1">
-                            {searchQuery ? `Resultados para "${searchQuery}"` : 'Nuestro catálogo'}
-                        </p>
-                        <h2 className="font-display text-4xl lg:text-5xl text-primary-dark">
-                            {isBrowsing ? activeCategory : 'Lo más deseado'}
-                        </h2>
+                    <Reveal className="mb-6 md:mb-8 flex items-end justify-between gap-6">
+                        <div>
+                            <p className="eyebrow text-primary mb-2">
+                                {searchQuery ? 'Resultados de búsqueda' : isBrowsing ? 'Categoría' : 'Nuestro catálogo'}
+                            </p>
+                            <h2 className="font-display text-3xl md:text-[44px] leading-tight text-primary-dark">{title}</h2>
+                        </div>
+                        <p className="text-sm text-muted shrink-0 tabular-nums">{filteredProducts.length} productos</p>
                     </Reveal>
 
-                    <Suspense fallback={<div className="text-center mb-8 font-medium text-slate-500 animate-pulse">Cargando filtros...</div>}>
+                    <Suspense fallback={<div className="h-[69px] mb-10 border-y border-line" />}>
                         <CategoryFilter categories={filterCategories} />
                     </Suspense>
 
-                    <CatalogoSection products={filteredProducts} />
+                    <CatalogoSection key={`${activeCategory}|${searchQuery}|${activeSort}`} products={filteredProducts} />
                 </div>
             </section>
 
+            {!isBrowsing && <PromoTiles image={promoImage} />}
             <BenefitsBar />
             <Footer />
             <FloatingCart />

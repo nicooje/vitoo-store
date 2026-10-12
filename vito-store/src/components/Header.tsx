@@ -1,166 +1,152 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import SidebarMenu from './SidebarMenu';
+import { IconBag, IconMenu, IconSearch, IconClose } from './icons';
+import { NAV_CATEGORIES, categoryHref } from '@/lib/site';
 
 const ANNOUNCEMENTS = [
-    '✨ Envíos a todo el país',
-    '🇦🇷 Corrientes Capital · Av. Cangallo 136',
-    '💜 Comprá fácil por WhatsApp',
-    '✨ Nuevos ingresos todas las semanas',
+    'Envíos a todo el país',
+    'Precio por mayor desde 3 prendas',
+    'Pagá con Mercado Pago o transferencia',
+    'Nuevos ingresos todas las semanas',
 ];
 
 export default function Header() {
     const cart = useCartStore((state) => state.cart);
-    const totalItems = cart.reduce((acc, item) => acc + item.cantidad, 0);
+    const [mounted, setMounted] = useState(false);
+    const totalItems = mounted ? cart.reduce((acc, item) => acc + item.cantidad, 0) : 0;
 
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [announce, setAnnounce] = useState(0);
     const router = useRouter();
+
+    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => {
+        const t = setInterval(() => setAnnounce((i) => (i + 1) % ANNOUNCEMENTS.length), 4000);
+        return () => clearInterval(t);
+    }, []);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
-            router.push(`/?search=${encodeURIComponent(searchQuery)}`);
+            router.push(`/?search=${encodeURIComponent(searchQuery)}#catalogo`);
             setSearchOpen(false);
             setSearchQuery('');
         }
     };
 
     return (
-        <header className="sticky top-0 z-50 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-            {/* Barra de anuncios */}
-            <div className="bg-gradient-to-r from-primary-dark via-primary to-primary-dark overflow-hidden">
-                <div className="flex w-max animate-marquee py-2">
-                    {[0, 1].map((copy) => (
-                        <div key={copy} className="flex shrink-0" aria-hidden={copy === 1}>
-                            {ANNOUNCEMENTS.map((msg) => (
-                                <span key={`${copy}-${msg}`} className="mx-8 text-[11px] font-medium tracking-[0.18em] uppercase text-primary-light/90 whitespace-nowrap">
-                                    {msg}
-                                </span>
-                            ))}
-                        </div>
+        <>
+            {/* Barra de anuncios: un mensaje a la vez */}
+            <div className="bg-primary-dark text-white">
+                <div className="relative h-9 max-w-[1400px] mx-auto overflow-hidden" aria-live="polite">
+                    {ANNOUNCEMENTS.map((msg, i) => (
+                        <p
+                            key={msg}
+                            className={`absolute inset-0 flex items-center justify-center eyebrow text-[10px] md:text-[11px] text-white/90 transition-all duration-500 ${i === announce ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}
+                            aria-hidden={i !== announce}
+                        >
+                            {msg}
+                        </p>
                     ))}
                 </div>
             </div>
 
-            {/* Barra principal */}
-            <div className="bg-primary-dark/95 backdrop-blur-xl border-b border-white/10 px-6 md:px-12 py-4 md:py-5 premium-transition">
-                <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
-
-                    {/* Lado izquierdo - Menú hamburguesa y Búsqueda */}
-                    <div className="flex justify-start items-center gap-6">
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="text-white hover:text-accent-light transition-colors duration-300 p-2 -ml-2 rounded-full hover:bg-white/5 active:scale-95 min-h-[48px] min-w-[48px] flex items-center justify-center"
-                            aria-label="Abrir menú"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5M3.75 15h16.5" />
-                            </svg>
-                        </button>
-
-                        {/* Búsqueda interactiva (Desktop) */}
-                        <div className="hidden md:flex items-center relative">
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-line">
+                <div className="max-w-[1400px] mx-auto px-3 md:px-8">
+                    {/* Fila principal */}
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center h-16 md:h-20">
+                        <div className="flex items-center gap-1 md:gap-5">
                             <button
-                                onClick={() => setSearchOpen(!isSearchOpen)}
-                                className="text-slate-300 hover:text-white p-2 rounded-full hover:bg-white/5 transition-all duration-300"
-                                aria-label="Buscar productos"
+                                onClick={() => setSidebarOpen(true)}
+                                className="flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center md:justify-start text-ink hover:text-primary transition-colors"
+                                aria-label="Abrir menú"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                </svg>
+                                <IconMenu className="w-6 h-6" />
+                                <span className="hidden md:inline eyebrow">Menú</span>
                             </button>
+                            <button
+                                onClick={() => setSearchOpen((v) => !v)}
+                                className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-ink"
+                                aria-label="Buscar"
+                            >
+                                {isSearchOpen ? <IconClose className="w-6 h-6" /> : <IconSearch className="w-6 h-6" />}
+                            </button>
+                        </div>
 
-                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? 'w-56 ml-2 opacity-100' : 'w-0 opacity-0'}`}>
-                                <form onSubmit={handleSearchSubmit}>
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar conjunto, top..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full text-sm border-b border-white/30 bg-transparent py-1 px-2 focus:outline-none focus:border-accent-light text-white placeholder-slate-400 premium-transition"
-                                        autoFocus={isSearchOpen}
-                                    />
-                                </form>
-                            </div>
+                        {/* Logo + marca */}
+                        <Link href="/" className="flex items-center gap-2 md:gap-3" aria-label="Vitö Store, inicio">
+                            <Image src="/vito-logo.png" alt="" width={44} height={44} priority className="rounded-full w-9 h-9 md:w-11 md:h-11" />
+                            <span className="font-display text-[21px] sm:text-[26px] md:text-[30px] leading-none text-primary-dark tracking-tight">
+                                Vitö <span className="italic text-primary">Store</span>
+                            </span>
+                        </Link>
+
+                        <div className="flex items-center justify-end gap-2 md:gap-5">
+                            {/* Buscador desktop siempre visible, como las tiendas grandes */}
+                            <form onSubmit={handleSearchSubmit} className="hidden md:flex items-center gap-2 border-b border-ink/25 focus-within:border-primary transition-colors w-56 lg:w-64">
+                                <IconSearch className="w-4 h-4 text-muted" />
+                                <input
+                                    type="search"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Buscar conjunto, top..."
+                                    className="w-full bg-transparent py-2 text-sm text-ink placeholder:text-muted focus:outline-none"
+                                    aria-label="Buscar productos"
+                                />
+                            </form>
+                            <Link
+                                href="/checkout"
+                                className="relative min-h-[44px] min-w-[44px] flex items-center justify-center text-ink hover:text-primary transition-colors"
+                                aria-label={`Ir al carrito (${totalItems} productos)`}
+                            >
+                                <IconBag className="w-6 h-6" />
+                                {totalItems > 0 && (
+                                    <span className="absolute top-1.5 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center">
+                                        {totalItems}
+                                    </span>
+                                )}
+                            </Link>
                         </div>
                     </div>
 
-                    {/* Centro - Logo e Identidad */}
-                    <div className="flex justify-center">
-                        <Link href="/" className="flex items-center gap-3 group">
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-accent/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                                <Image
-                                    src="/vito-logo.png"
-                                    alt="Vito Store Logo"
-                                    width={48}
-                                    height={48}
-                                    className="relative rounded-full shadow-md group-hover:scale-105 group-hover:shadow-lg transition-all duration-500 border border-white/20"
+                    {/* Navegación por categorías (desktop) */}
+                    <nav className="hidden md:flex justify-center gap-9 pb-4" aria-label="Categorías">
+                        {NAV_CATEGORIES.map((c) => (
+                            <Link key={c.cat} href={categoryHref(c.cat)} className="eyebrow text-[11.5px] text-ink/85 hover:text-primary link-underline transition-colors">
+                                {c.label}
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* Buscador mobile */}
+                    {isSearchOpen && (
+                        <form onSubmit={handleSearchSubmit} className="md:hidden pb-3 animate-fade-in">
+                            <div className="flex items-center gap-2 bg-sand px-3">
+                                <IconSearch className="w-4 h-4 text-muted" />
+                                <input
+                                    type="search"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Buscar conjuntos, tops..."
+                                    className="w-full bg-transparent py-3 text-base text-ink placeholder:text-muted focus:outline-none min-h-[48px]"
+                                    autoFocus
+                                    aria-label="Buscar productos"
                                 />
                             </div>
-                            <span className="hidden md:block font-display italic text-[26px] leading-none text-white tracking-wide group-hover:text-accent-light transition-all duration-500">Vitö</span>
-                        </Link>
-                    </div>
-
-                    {/* Lado derecho - Carrito */}
-                    <div className="flex justify-end items-center gap-4">
-                        <button
-                            onClick={() => setSearchOpen(!isSearchOpen)}
-                            className="md:hidden text-white hover:text-accent-light p-2 rounded-full hover:bg-white/5 active:scale-95 min-h-[48px] min-w-[48px] flex items-center justify-center"
-                            aria-label="Buscar"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                            </svg>
-                        </button>
-
-                        <Link
-                            href="/checkout"
-                            className="relative text-white hover:text-accent-light transition-all duration-300 p-2 rounded-full hover:bg-white/5 group min-h-[48px] min-w-[48px] flex items-center justify-center"
-                            aria-label="Ir al carrito"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-                            </svg>
-                            {totalItems > 0 && (
-                                <span className="absolute top-0.5 right-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-accent border-2 border-primary-dark text-[10px] font-black text-white shadow-md group-hover:scale-110 group-hover:-translate-y-0.5 premium-transition px-1">
-                                    {totalItems}
-                                </span>
-                            )}
-                        </Link>
-                    </div>
-
-                </div>
-
-                {/* Barra de búsqueda expandida para Mobile */}
-                {isSearchOpen && (
-                    <div className="md:hidden mt-4 animate-fade-in-down">
-                        <form onSubmit={handleSearchSubmit} className="relative">
-                            <input
-                                type="text"
-                                placeholder="Buscar conjuntos, tops..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white/10 border border-white/20 rounded-xl py-3.5 px-4 text-sm text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent min-h-[48px]"
-                                autoFocus
-                            />
-                            <button type="submit" className="absolute right-4 top-3 text-accent-light hover:text-white font-extrabold text-sm min-h-[30px]">
-                                Buscar
-                            </button>
                         </form>
-                    </div>
-                )}
+                    )}
+                </div>
+            </header>
 
-                {/* Componente del Menú Lateral */}
-                <SidebarMenu isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
-            </div>
-        </header>
+            <SidebarMenu isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+        </>
     );
 }

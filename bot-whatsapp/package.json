@@ -1,0 +1,25 @@
+{
+  "name": "vito-bot-whatsapp",
+  "private": true,
+  "type": "module",
+  "description": "Pasa las publicaciones del grupo de WhatsApp de Vito Store al catálogo de la web",
+  "scripts": {
+    "actualizar": "tsx src/bot.ts",
+    "simular": "tsx src/bot.ts --simular",
+    "test": "tsx test/probar.ts"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "googleapis": "^171.4.0",
+    "pino": "^9.6.0",
+    "qrcode-terminal": "^0.12.0",
+    "tsx": "^4.23.15"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.9.3"
+  }
+}

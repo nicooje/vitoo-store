@@ -1,0 +1,14 @@
+{
+  "telefono": "",
+  "grupos": [
+    "Vitö store 2"
+  ],
+  "desde": "2026-08-22",
+  "cloudinary": {
+    "cloudName": "dzhz0gz5i",
+    "uploadPreset": "vitoo_store"
+  },
+  "env": "../vito-store/.env.local",
+  "esperaSilencioSegundos": 15,
+  "esperaMaximaSegundos": 180
+}

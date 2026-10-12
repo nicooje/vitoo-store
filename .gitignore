@@ -8,3 +8,8 @@ vito-store/import-plan.json
 
 .vercel
 .env*
+
+# bot de WhatsApp: sesion vinculada y estado (NUNCA subir)
+bot-whatsapp/datos/
+bot-whatsapp/node_modules/
+bot-whatsapp/config.local.json

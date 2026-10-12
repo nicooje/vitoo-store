@@ -3,8 +3,15 @@
 import { Product } from '@/lib/googleSheets';
 import { useCartStore } from '@/store/cartStore';
 import HoverSlideshow from './HoverSlideshow';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { IconBag, IconClose, IconPlus } from './icons';
+import { formatPrice } from '@/lib/site';
+
+const NUEVO_DIAS = 21;
+// los productos cargados por el bot/importador tienen como id la fecha de carga (ms)
+const esNuevo = (id: number) => id > 1e12 && Date.now() - id < NUEVO_DIAS * 864e5;
+const firstImage = (p: Product) => (p.image_url || '').split(',')[0].trim();
 
 export default function CatalogoSection({ products }: { products: Product[] }) {
     const addToCart = useCartStore((state) => state.addToCart);
@@ -30,7 +37,7 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
             color: product.color
         }, size, color);
 
-        toast.success(`🛒 ${product.name} sumado a tu cesta.`);
+        toast.success(`${product.name} se sumó a tu carrito`);
         setActiveProduct(null);
         setSelectedSize('');
         setSelectedColor('');
@@ -53,178 +60,165 @@ export default function CatalogoSection({ products }: { products: Product[] }) {
         }
     };
 
+
+    // cerrar la ficha con Escape
+    useEffect(() => {
+        if (!activeProduct) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setActiveProduct(null); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [activeProduct]);
+
     if (!products || products.length === 0) {
         return (
-            <div className="text-center py-20 col-span-full">
-                <p className="font-display italic text-2xl text-primary mb-2">Ups, no encontramos nada acá</p>
-                <p className="text-sm text-slate-500 font-medium">Probá con otra categoría o buscá por otro nombre.</p>
+            <div className="text-center py-24 border-t border-line">
+                <p className="font-display text-3xl text-primary-dark mb-3">No encontramos nada acá</p>
+                <p className="text-sm text-muted">Probá con otra categoría o buscá por otro nombre.</p>
             </div>
         );
     }
 
+    const shown = Math.min(visibleCount, products.length);
+
     return (
         <>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-14 max-w-[1400px] mx-auto w-full px-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-5 gap-y-10 md:gap-y-14 w-full">
             {products.slice(0, visibleCount).map((product) => {
                 const stockAtexto = String(product.stock).toUpperCase();
                 const hasStock = product.stock === true || stockAtexto === "SI" || stockAtexto === "TRUE";
+                const nuevo = esNuevo(Number(product.id));
+                const combo = product.price3 && Number(product.price3) < Number(product.price) ? Math.round(Number(product.price3)) : 0;
 
                 return (
-                    <div key={product.id} className="group flex flex-col relative w-full premium-transition">
-
-                        {/* Imagen con Badges y Quick Buy - Aspecto Estricto 3:4 */}
-                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-white rounded-[1.2rem] border border-primary/5 shadow-[0_4px_16px_rgba(42,12,92,0.04)] group-hover:shadow-[0_20px_40px_rgba(42,12,92,0.12)] group-hover:-translate-y-1.5 transition-all duration-500 z-10">
-                            <HoverSlideshow imageUrls={product.image_url} productName={product.name} />
-                            
-                            {/* Badge flotante Arriba a la Izquierda */}
-                            {!hasStock && (
-                                <div className="absolute top-3 left-3 bg-slate-800/90 text-white px-3 py-1.5 text-[9px] md:text-xs font-bold rounded-lg uppercase tracking-wider shadow-sm z-10 backdrop-blur-sm">
-                                    Agotado
-                                </div>
-                            )}
-
-                            {/* Botón Quick Buy Flotante (Desktop Hover) en Azul interactivo */}
-                            {hasStock && (
-                                <button
-                                    onClick={(e) => { e.preventDefault(); openOptionsModal(product); }}
-                                    className="hidden md:flex absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 bg-white border border-slate-100 hover:bg-accent hover:text-white hover:border-transparent text-accent rounded-full w-12 h-12 shadow-[0_8px_20px_rgba(0,0,0,0.08)] items-center justify-center z-20 hover:scale-110 active:scale-95"
-                                    title="Agregar al carrito"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Bloque Inferior - Minimalista */}
-                        <div className="flex flex-col mt-4 px-1">
-                            
-                            {/* Título elegante */}
-                            <h3 className="text-xs md:text-[15px] text-primary-dark/80 font-medium leading-snug group-hover:text-primary transition-colors duration-200 line-clamp-2 min-h-[38px] mb-1">
-                                {product.name}
-                            </h3>
-                            
-                            {/* Variantes (Talle / Color) */}
-                            {(product.size || product.color) && (
-                                <div className="flex flex-wrap items-center gap-1.5 mb-2 h-[20px] overflow-hidden">
-                                    {product.size && (
-                                        <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                                            Talle {product.size}
-                                        </span>
-                                    )}
-                                    {product.color && (
-                                        <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                                            {product.color}
-                                        </span>
-                                    )}
-                                </div>
-                            )}
-                            
-                            {/* Precio destacado en Morado de marca y BOLD */}
-                            <div className="mt-1 flex flex-col">
-                                <span className="text-base md:text-lg font-bold text-primary tracking-tight">
-                                    ${Number(product.price).toLocaleString('es-AR')}
-                                </span>
-                                {product.price3 && (
-                                    <span className="text-[10px] font-bold text-accent bg-accent-light inline-block px-2 py-0.5 rounded-md mt-1 w-max">
-                                        Combo 3+: ${Number(product.price3).toLocaleString('es-AR')}
-                                    </span>
-                                )}
-                                {!product.price3 && (
-                                    <span className="text-[10px] text-slate-400 mt-1">3 cuotas sin interés</span>
-                                )}
+                    <article key={product.id} className="group flex flex-col w-full">
+                        <div className="relative aspect-[3/4] w-full overflow-hidden bg-sand">
+                            <div className={`absolute inset-0 transition-transform duration-500 ease-out md:group-hover:scale-[1.03] ${!hasStock ? 'opacity-60' : ''}`}>
+                                <HoverSlideshow imageUrls={product.image_url} productName={product.name} />
                             </div>
 
-                            {/* Botón Carrito en Mobile: CTA en Azul, min-h 48px */}
-                            <button
-                                onClick={(e) => { e.preventDefault(); openOptionsModal(product); }}
-                                disabled={!hasStock}
-                                className={`md:hidden mt-4 w-full py-3 rounded-xl font-bold text-xs shadow-sm transition-all duration-300 min-h-[48px] flex items-center justify-center gap-2 ${
-                                    hasStock 
-                                    ? 'bg-accent text-white hover:bg-accent-hover shadow-accent/10 active:scale-95' 
-                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
-                                }`}
-                            >
-                                {hasStock ? (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
-                                        </svg>
-                                        Comprar
-                                    </>
-                                ) : 'Agotado'}
-                            </button>
+                            {/* Etiqueta */}
+                            {!hasStock ? (
+                                <span className="absolute top-2.5 left-2.5 bg-ink text-white eyebrow text-[9.5px] px-2.5 py-1.5 z-10">Agotado</span>
+                            ) : nuevo ? (
+                                <span className="absolute top-2.5 left-2.5 bg-white text-primary-dark eyebrow text-[9.5px] px-2.5 py-1.5 z-10">Nuevo</span>
+                            ) : null}
+
+                            {hasStock && (
+                                <>
+                                    {/* Compu: barra "agregar" que aparece al pasar el mouse */}
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); openOptionsModal(product); }}
+                                        className="hidden md:flex absolute inset-x-3 bottom-3 z-20 btn btn-light translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 shadow-[0_6px_24px_rgba(42,12,92,0.12)]"
+                                    >
+                                        <IconPlus className="w-4 h-4" /> Agregar
+                                    </button>
+                                    {/* Celu: botón chico siempre visible */}
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); openOptionsModal(product); }}
+                                        className="md:hidden absolute bottom-2 right-2 z-20 h-11 w-11 bg-white text-primary-dark flex items-center justify-center active:scale-95 transition-transform"
+                                        aria-label={`Agregar ${product.name} al carrito`}
+                                    >
+                                        <IconBag className="w-5 h-5" />
+                                    </button>
+                                </>
+                            )}
                         </div>
-                    </div>
+
+                        <div className="flex flex-col mt-3 md:mt-4">
+                            <h3 className="text-[13px] md:text-[15px] text-ink leading-snug line-clamp-2 first-letter:uppercase">
+                                {product.name.replace(/^[^\p{L}\p{N}]+/u, '')}
+                            </h3>
+                            {product.size && (
+                                <p className="text-[11px] md:text-xs text-muted mt-1 line-clamp-1">Talles {product.size.replace(/^talles?\s*/i, '')}</p>
+                            )}
+                            <p className="mt-2 text-[15px] md:text-base font-semibold text-primary-dark tabular-nums">
+                                {formatPrice(product.price)}
+                            </p>
+                            {combo ? (
+                                <p className="text-[11px] md:text-xs text-accent mt-0.5">Llevando 3 o más: {formatPrice(combo)} c/u</p>
+                            ) : null}
+                        </div>
+                    </article>
                 );
             })}
         </div>
-        
+
         {visibleCount < products.length && (
-            <div className="mt-16 flex justify-center w-full col-span-full">
-                <button
-                    onClick={() => setVisibleCount(prev => prev + 12)}
-                    className="group inline-flex items-center gap-2 bg-transparent border border-primary/30 hover:border-primary hover:bg-primary text-primary hover:text-white font-bold px-10 py-4 rounded-full transition-all active:scale-95 min-h-[48px] premium-transition"
-                >
+            <div className="mt-16 flex flex-col items-center gap-4">
+                <p className="text-sm text-muted tabular-nums">Viendo {shown} de {products.length} productos</p>
+                <div className="w-48 h-[2px] bg-line">
+                    <div className="h-full bg-primary-dark transition-all duration-500" style={{ width: `${(shown / products.length) * 100}%` }} />
+                </div>
+                <button onClick={() => setVisibleCount(prev => prev + 12)} className="btn btn-outline mt-2">
                     Ver más productos
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 transition-transform group-hover:translate-y-0.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-                    </svg>
                 </button>
             </div>
         )}
 
-        {/* Modal Selección de Talles y Colores */}
+        {/* Ficha rápida: talle y confirmación (hoja inferior en celu, ventana en compu) */}
         {activeProduct && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={() => setActiveProduct(null)}>
-                <div 
-                    className="bg-white rounded-xl p-8 w-full max-w-sm relative shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-300"
+            <div className="fixed inset-0 z-[80] flex items-end md:items-center justify-center md:p-4 bg-primary-dark/40 animate-fade-in" onClick={() => setActiveProduct(null)}>
+                <div
+                    className="bg-white w-full md:max-w-[560px] max-h-[90dvh] overflow-y-auto relative animate-slide-up"
                     onClick={(e) => e.stopPropagation()}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="ficha-titulo"
                 >
-                    <button 
+                    <button
                         onClick={() => setActiveProduct(null)}
-                        className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors"
-                        aria-label="Cerrar modal"
+                        className="absolute top-2 right-2 z-10 h-11 w-11 flex items-center justify-center text-ink hover:text-primary bg-white/80"
+                        aria-label="Cerrar"
                     >
-                        ✕
+                        <IconClose className="w-5 h-5" />
                     </button>
-                    
-                    <h3 className="text-lg font-bold text-slate-950 mb-1 pr-6">{activeProduct.name}</h3>
-                    <p className="text-primary font-bold text-lg mb-4">${Number(activeProduct.price).toLocaleString('es-AR')}</p>
-                    
-                    {activeProduct.description && (
-                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 mb-6">
-                            <p className="text-xs text-slate-600 font-medium whitespace-pre-wrap leading-relaxed">{activeProduct.description}</p>
+
+                    <div className="grid grid-cols-[110px_1fr] md:grid-cols-[180px_1fr]">
+                        <div className="relative aspect-[3/4] bg-sand">
+                            {firstImage(activeProduct) && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={firstImage(activeProduct)} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                            )}
                         </div>
-                    )}
+                        <div className="p-5 md:p-6 pr-12 flex flex-col justify-center">
+                            <p className="eyebrow text-[10px] text-primary mb-2">{activeProduct.category.replace('-', ' y ')}</p>
+                            <h3 id="ficha-titulo" className="font-display text-xl md:text-2xl leading-snug text-primary-dark first-letter:uppercase">
+                                {activeProduct.name.replace(/^[^\p{L}\p{N}]+/u, '')}
+                            </h3>
+                            <p className="mt-3 text-lg font-semibold text-primary-dark tabular-nums">{formatPrice(activeProduct.price)}</p>
+                        </div>
+                    </div>
 
                     {(() => {
                         const requiresSize = Boolean(activeProduct.size && activeProduct.size.trim() !== '');
-
                         return (
-                            <div className="flex flex-col gap-5">
-                                <div className="bg-accent-light p-3.5 rounded-xl text-xs md:text-sm text-accent-hover font-semibold border border-accent/20 leading-snug">
-                                    ✨ <b>Colores Surtidos:</b> Al enviar tu pedido al carrito vas a poder especificar mediante WhatsApp el color que deseás para revisar su disponibilidad.
-                                </div>
-                                
-                                {requiresSize && (
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-slate-700">Talle de Preferencia:</label>
-                                        <input 
-                                            type="text" 
-                                            value={selectedSize}
-                                            onChange={(e) => setSelectedSize(e.target.value)}
-                                            placeholder="Escribí tu talle (ej: M, 38...)"
-                                            className="w-full px-4 py-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-accent/20 focus:border-accent outline-none transition-all placeholder-slate-400 bg-slate-50 text-slate-800 min-h-[48px] premium-transition"
-                                        />
-                                    </div>
+                            <div className="p-5 md:p-6 flex flex-col gap-5 border-t border-line">
+                                {activeProduct.description && (
+                                    <p className="text-sm text-ink/80 whitespace-pre-wrap leading-relaxed">{activeProduct.description}</p>
                                 )}
 
-                                <button 
+                                <p className="text-[13px] leading-relaxed text-primary-dark bg-primary-light px-4 py-3">
+                                    <b className="font-semibold">Colores surtidos.</b> Cuando confirmes el pedido por WhatsApp nos decís qué color querés y te confirmamos si hay.
+                                </p>
+
+                                {requiresSize && (
+                                    <label className="flex flex-col gap-2">
+                                        <span className="eyebrow text-[10.5px] text-ink">Tu talle <span className="normal-case tracking-normal text-muted">(disponibles: {activeProduct.size})</span></span>
+                                        <input
+                                            type="text"
+                                            value={selectedSize}
+                                            onChange={(e) => setSelectedSize(e.target.value)}
+                                            placeholder="Ej: 90, M, 38..."
+                                            className="w-full px-0 py-3 border-0 border-b border-ink/30 focus:border-primary outline-none bg-transparent text-base text-ink placeholder:text-muted min-h-[48px] transition-colors"
+                                            autoFocus
+                                        />
+                                    </label>
+                                )}
+
+                                <button
                                     onClick={() => handleAddToCart(activeProduct, selectedSize, "Surtidos")}
                                     disabled={(requiresSize && !selectedSize.trim())}
-                                    className="w-full mt-6 py-3.5 bg-accent hover:bg-accent-hover text-white font-bold rounded-xl shadow-lg shadow-accent/20 hover:-translate-y-0.5 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none min-h-[48px] flex items-center justify-center premium-transition"
+                                    className="btn btn-primary w-full"
                                 >
                                     Agregar al carrito
                                 </button>

@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
-import { Poppins, Playfair_Display } from 'next/font/google';
+import { Jost, Bodoni_Moda } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import Script from 'next/script';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 import './globals.css';
 
-const poppins = Poppins({
+// Texto: Jost (geometrica limpia, tipica de las marcas de lenceria)
+const jost = Jost({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '900']
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-sans',
 });
 
-const playfair = Playfair_Display({
+// Titulares: Bodoni Moda (didona de alto contraste, estilo editorial de moda)
+const bodoni = Bodoni_Moda({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
   variable: '--font-display',
 });
@@ -82,8 +85,8 @@ export default function RootLayout({
             `}
         </Script>
       </head>
-      <body className={`${poppins.className} ${playfair.variable}`}>
-        <Toaster position="bottom-center" />
+      <body className={`${jost.className} ${jost.variable} ${bodoni.variable}`}>
+        <Toaster position="top-center" toastOptions={{ style: { borderRadius: 2, background: '#2a0c5c', color: '#fff', fontSize: 14 } }} />
         {children}
         <FloatingWhatsApp />
       </body>
