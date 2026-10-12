@@ -16,6 +16,20 @@ WhatsApp → Dispositivos vinculados → Vincular un dispositivo → *Vincular c
 Usalo al menos cada 10–14 días: si el bot pasa mucho tiempo sin conectarse,
 WhatsApp puede desvincularlo (en ese caso vuelve a pedir el código, no se pierde nada).
 
+## Botón en el panel de administración (opcional)
+
+Para actualizar desde el panel (`/admin` → WhatsApp), también desde el celular:
+
+1. Doble clic en **`Instalar agente (boton del panel).bat`** (una sola vez).
+2. Listo: el agente queda corriendo en segundo plano y arranca solo con Windows.
+
+El agente **no se conecta a WhatsApp** por su cuenta: cada 15 segundos mira en la pestaña
+`Bot` del Google Sheet si apretaste el botón. Cuando lo apretás, corre el bot y el panel
+muestra el avance, el código de vinculación (si hace falta) y el resultado.
+Si la PC está apagada, el pedido queda en cola y se hace apenas la prendas.
+
+Para sacarlo: **`Desinstalar agente (boton del panel).bat`**. Registro: `datos/agente.log`.
+
 ## Sin repetidos
 
 - Cada mensaje del grupo se procesa **una sola vez** (queda anotado en `datos/estado.json`).
@@ -31,7 +45,7 @@ WhatsApp puede desvincularlo (en ese caso vuelve a pedir el código, no se pierd
 
 | campo | qué es |
 |---|---|
-| `telefono` | número vinculado al bot: va en `config.local.json` (no se sube a GitHub), formato internacional sin + |
+| `telefono` | número vinculado al bot (formato internacional, sin +) |
 | `grupos` | nombre (o parte del nombre) de los grupos a leer |
 | `desde` | no procesa publicaciones anteriores a esta fecha |
 

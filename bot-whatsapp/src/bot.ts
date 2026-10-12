@@ -22,6 +22,11 @@ const SESION = path.join(DATOS, 'sesion');
 const ESTADO = path.join(DATOS, 'estado.json');
 const SIMULAR = process.argv.includes('--simular');
 const USAR_QR = process.argv.includes('--qr');
+// cuando lo lanza el agente (botón del panel), avisa su progreso con líneas "@@..."
+const AGENTE = process.env.VITO_AGENTE === '1';
+const argValor = (flag: string) => { const i = process.argv.indexOf(flag); return i > -1 ? process.argv[i + 1] : undefined; };
+const INFORME_JSON = argValor('--informe-json');
+const LOCK = path.join(DATOS, 'ejecutando.lock');
 
 interface Config {
     telefono: string; grupos: string[]; desde: string;
@@ -33,6 +38,24 @@ const leerJson = (f: string) => { try { return JSON.parse(fs.readFileSync(path.j
 const config: Config = { ...leerJson('config.json'), ...leerJson('config.local.json') };
 const logger = pino({ level: 'silent' });
 const log = (...a: unknown[]) => console.log(...a);
+/** Paso visible para la persona (en el panel se ve como estado). */
+const paso = (texto: string) => { log(texto); if (AGENTE) console.log('@@ESTADO ' + texto.replace(/\s+/g, ' ').trim()); };
+
+// ---- candado: nunca dos corridas a la vez (botón del panel + .bat) ----
+function tomarCandado() {
+    try {
+        const prev = JSON.parse(fs.readFileSync(LOCK, 'utf8'));
+        const vivo = (() => { try { process.kill(prev.pid, 0); return true; } catch { return false; } })();
+        if (vivo && Date.now() - prev.desde < 15 * 60 * 1000)
+            throw new Error('Ya hay una actualización corriendo en esta PC. Esperá a que termine.');
+    } catch (e: any) { if (e?.message?.startsWith('Ya hay')) throw e; }
+    fs.mkdirSync(DATOS, { recursive: true });
+    fs.writeFileSync(LOCK, JSON.stringify({ pid: process.pid, desde: Date.now() }));
+    tengoCandado = true;
+}
+let tengoCandado = false;
+const soltarCandado = () => { if (tengoCandado) { try { fs.rmSync(LOCK, { force: true }); } catch { /* nada */ } } };
+const escribirResultado = (r: unknown) => { if (INFORME_JSON) { try { fs.writeFileSync(INFORME_JSON, JSON.stringify(r)); } catch { /* nada */ } } };
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N} ]/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 const esGrupoBuscado = (nombre: string) => config.grupos.some(g => fold(nombre).includes(fold(g)));
 
@@ -115,11 +138,12 @@ async function conectar(estado: Estado): Promise<WASocket> {
                             log('  En el celular: WhatsApp > Dispositivos vinculados > Vincular un dispositivo');
                             log('  > "Vincular con el número de teléfono" e ingresá este código:');
                             log(`\n                  ${codigo.slice(0, 4)}-${codigo.slice(4)}\n`);
+                            if (AGENTE) console.log(`@@CODIGO ${codigo.slice(0, 4)}-${codigo.slice(4)}`);
                             log('==============================================================\n');
                         } catch (e: any) { log('No se pudo pedir el código de vinculación:', e.message, '\nProbá con "--qr".'); }
                     }
                 }
-                if (connection === 'open') { ultimaActividad = Date.now(); resolve(sock); }
+                if (connection === 'open') { ultimaActividad = Date.now(); if (AGENTE) console.log('@@CODIGO '); resolve(sock); }
                 if (connection === 'close') {
                     const code = (lastDisconnect?.error as any)?.output?.statusCode;
                     if (code === DisconnectReason.loggedOut) {
@@ -147,13 +171,14 @@ async function esperarSilencio(silencioMs: number, maxMs: number) {
 // ------------------------------------------------------------------ principal
 async function main() {
     log(SIMULAR ? '>> MODO VISTA PREVIA: no se va a cambiar nada en la web\n' : '>> Actualizando la web desde el grupo de WhatsApp\n');
+    tomarCandado();
     const estado = cargarEstado(ESTADO);
     const primeraVez = !estado.ultimaCorrida;
     const desdeTs = Math.floor(new Date(config.desde + 'T00:00:00').getTime() / 1000);
 
-    log('Conectando a WhatsApp...');
+    paso('Conectando a WhatsApp...');
     const sock = await conectar(estado);
-    log('Conectado. Buscando el grupo...');
+    paso('Conectado. Buscando el grupo...');
 
     const grupos = await sock.groupFetchAllParticipating();
     for (const [jid, g] of Object.entries(grupos)) estado.gruposVistos[jid] = g.subject || '';
@@ -162,13 +187,14 @@ async function main() {
         log(`\nNo encontré ningún grupo que se llame como ${config.grupos.map(g => `"${g}"`).join(' o ')}.`);
         log('Grupos donde está este número:\n' + Object.values(estado.gruposVistos).map(n => '  - ' + n).join('\n'));
         log('\nCorregí "grupos" en bot-whatsapp/config.json.');
-        sock.end(undefined); guardarEstado(ESTADO, estado); return;
+        sock.end(undefined); guardarEstado(ESTADO, estado);
+        throw new Error(`No encontré el grupo ${config.grupos.join(' / ')} en este WhatsApp.`);
     }
     log('Grupo: ' + buscados.map(([, n]) => n).join(', '));
     for (const [jid, msgs] of enEspera) if (esGrupoBuscado(estado.gruposVistos[jid] || '')) for (const m of msgs) registrar(estado, jid, m);
     enEspera.clear();
 
-    log('Recibiendo mensajes...');
+    paso('Recibiendo mensajes...');
     await esperarSilencio(config.esperaSilencioSegundos * 1000, config.esperaMaximaSegundos * 1000);
 
     // completar huecos pidiéndole al celular mensajes más viejos del grupo
@@ -178,7 +204,7 @@ async function main() {
             const delGrupo = Object.values(estado.mensajes).filter(m => m.jid === jid);
             const base = (primeraVez ? delGrupo : delGrupo.filter(m => recibidosAhora.has(m.id))).sort((a, b) => a.ts - b.ts)[0];
             if (!base || base.ts <= objetivo) break;
-            if (ronda === 0) log('Pidiendo al celular publicaciones anteriores...');
+            if (ronda === 0) paso('Pidiendo al celular publicaciones anteriores...');
             const antes = Object.keys(estado.mensajes).length;
             try {
                 await sock.fetchMessageHistory(50, { remoteJid: jid, id: base.id, fromMe: !!base.fromMe }, base.ts * 1000);
@@ -191,7 +217,7 @@ async function main() {
 
     const pendientes = Object.values(estado.mensajes).filter(m =>
         buscados.some(([jid]) => jid === m.jid) && !estado.procesados[m.id] && !m.deleted && m.ts >= desdeTs);
-    log(`Mensajes nuevos del grupo: ${pendientes.length}`);
+    paso(`Mensajes nuevos del grupo: ${pendientes.length}`);
 
     const env = leerEnv(path.resolve(RAIZ, config.env));
     const cliente = clienteSheets(env);
@@ -205,7 +231,7 @@ async function main() {
     if (!SIMULAR) {
         for (const [i, n] of d.nuevos.entries()) {
             const urls: string[] = [];
-            log(`Subiendo fotos de "${n.producto.name}" (${n.fotos.length})...`);
+            paso(`Subiendo fotos de "${n.producto.name}" (${n.fotos.length})...`);
             for (const id of n.fotos) {
                 try {
                     const m = estado.mensajes[id];
@@ -220,7 +246,7 @@ async function main() {
             agregados.push(n.producto.name);
         }
         if (d.actualizar.length || appends.length) {
-            log('Escribiendo en el catálogo (Google Sheets)...');
+            paso('Escribiendo en el catálogo (Google Sheets)...');
             await escribir(cliente, d.actualizar.map(u => ({ rowNumber: u.fila.rowNumber, cells: u.cells })), appends);
         }
         const ahora = Date.now();
@@ -252,9 +278,29 @@ async function main() {
     log('\n' + informe);
     fs.mkdirSync(path.join(DATOS, 'informes'), { recursive: true });
     fs.writeFileSync(path.join(DATOS, 'informes', `${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}${SIMULAR ? '-vista-previa' : ''}.txt`), informe);
+
+    // resumen para el panel de administración
+    escribirResultado({
+        fecha: new Date().toISOString(),
+        simular: SIMULAR,
+        mensajes: pendientes.length,
+        nuevos: d.nuevos.map(n => ({
+            nombre: n.producto.name, precio: n.producto.priceSet[1], fotos: n.fotos.length,
+            categoria: n.producto.category, fallo: n.grupoIds.some(id => fallidos.has(id)) || undefined,
+        })),
+        actualizados: d.actualizar.map(u => ({ fila: u.fila.rowNumber, nombre: u.fila.name, precio: u.producto.priceSet[1] })),
+        revisar: d.revisar.map(r => ({ nombre: r.producto.name, parecido: r.fila.name, fila: r.fila.rowNumber, score: Math.round(r.score * 100) / 100 })),
+        sinFoto: d.sinFoto.map(p => p.name),
+    });
 }
 
-main().then(() => setTimeout(() => process.exit(0), 500)).catch(e => {
-    console.error('\nERROR: ' + (e?.message || e));
+main().then(() => {
+    soltarCandado();
+    setTimeout(() => process.exit(0), 500);
+}).catch(e => {
+    const msg = String(e?.message || e);
+    console.error('\nERROR: ' + msg);
+    escribirResultado({ fecha: new Date().toISOString(), simular: SIMULAR, mensajes: 0, nuevos: [], actualizados: [], revisar: [], sinFoto: [], error: msg });
+    soltarCandado();
     setTimeout(() => process.exit(1), 500);
 });

@@ -6,7 +6,8 @@
   "scripts": {
     "actualizar": "tsx src/bot.ts",
     "simular": "tsx src/bot.ts --simular",
-    "test": "tsx test/probar.ts"
+    "test": "tsx test/probar.ts",
+    "agente": "tsx src/agente.ts"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",

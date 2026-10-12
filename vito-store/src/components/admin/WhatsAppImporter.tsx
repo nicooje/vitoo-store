@@ -220,13 +220,13 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
             {phase === 'idle' && (
                 <div
                     onClick={() => fileRef.current?.click()}
-                    className="border-2 border-dashed border-pink-200 bg-white rounded-2xl p-10 text-center cursor-pointer hover:border-pink-400 hover:bg-pink-50/50 transition-all"
+                    className="border border-dashed border-primary/40 bg-white p-8 text-center cursor-pointer hover:border-primary hover:bg-primary-light/50 transition-all"
                 >
                     <input ref={fileRef} type="file" accept=".zip,application/zip" className="hidden"
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZip(f); }} />
-                    <div className="text-5xl mb-4">📲</div>
-                    <h3 className="text-lg font-black text-gray-900">Arrastrá o hacé clic para subir el .zip del grupo</h3>
-                    <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
+                    <p className="eyebrow text-[10px] text-primary mb-3">Archivo .zip</p>
+                    <h3 className="font-display text-xl text-primary-dark">Tocá para subir el .zip del grupo</h3>
+                    <p className="text-sm text-muted mt-2 max-w-md mx-auto">
                         Exportá el chat de WhatsApp ("Exportar chat → Sin archivos multimedia" no sirve: necesitás el ZIP <b>con</b> archivos) y subilo acá.
                         Detectamos productos nuevos, cambios de precio y republicaciones automáticamente.
                     </p>
@@ -234,11 +234,11 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
             )}
 
             {phase === 'parsing' && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-                    <div className="animate-spin h-10 w-10 mx-auto text-pink-500 mb-4">
+                <div className="bg-white rounded-sm border border-line p-10 text-center">
+                    <div className="animate-spin h-10 w-10 mx-auto text-primary mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                     </div>
-                    <p className="font-bold text-gray-900">{progress?.label || `Procesando ${fileName}...`}</p>
+                    <p className="font-bold text-primary-dark">{progress?.label || `Procesando ${fileName}...`}</p>
                 </div>
             )}
 
@@ -255,21 +255,21 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
                     {plan.updates.length > 0 && (
                         <Section title={`🔄 Actualizar precios (${selUpdates.size}/${plan.updates.length})`} defaultOpen>
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-line">
                                 {plan.updates.map((u, idx) => (
-                                    <label key={u.sheet.rowNumber} className="flex items-start gap-3 p-4 hover:bg-gray-50 cursor-pointer">
-                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-pink-600"
+                                    <label key={u.sheet.rowNumber} className="flex items-start gap-3 p-4 hover:bg-bg-light cursor-pointer">
+                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-[#5c24b3]"
                                             checked={selUpdates.has(u.sheet.rowNumber)}
                                             onChange={() => toggle(selUpdates, u.sheet.rowNumber, setSelUpdates as any)} />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-bold text-gray-900 text-sm">{u.chat.name}</span>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">fila {u.sheet.rowNumber}</span>
+                                                <span className="font-bold text-primary-dark text-sm">{u.chat.name}</span>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sand text-muted">fila {u.sheet.rowNumber}</span>
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${u.score >= 0.95 ? 'bg-blue-50 text-blue-500' : 'bg-amber-100 text-amber-700'}`}>
                                                     coincidencia {Math.round(u.score * 100)}%{u.score < 0.95 ? ' ← REVISAR' : ''}
                                                 </span>
                                             </div>
-                                            <div className="text-xs text-gray-500 mt-1 grid sm:grid-cols-2 gap-x-4">
+                                            <div className="text-xs text-muted mt-1 grid sm:grid-cols-2 gap-x-4">
                                                 <span>Web: “{u.sheet.name}” · ${sanitizeLegacyPack(u.sheet.price) || '?'} · packs {sanitizeLegacyPack(u.sheet.p3) || '-'}/{sanitizeLegacyPack(u.sheet.p6) || '-'}/{sanitizeLegacyPack(u.sheet.p12) || '-'}</span>
                                                 <span>Chat: ${u.chat.priceSet[1] ?? '?'} · packs {u.chat.priceSet[3] ?? '-'}/{u.chat.priceSet[6] ?? '-'}/{u.chat.priceSet[12] ?? '-'}</span>
                                             </div>
@@ -282,19 +282,19 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
                     {plan.appends.length > 0 && (
                         <Section title={`✨ Productos nuevos (${selAppends.size}/${plan.appends.length})`} defaultOpen>
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-line">
                                 {plan.appends.map(p => (
-                                    <label key={p.key} className="flex items-start gap-3 p-4 hover:bg-gray-50 cursor-pointer">
-                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-pink-600"
+                                    <label key={p.key} className="flex items-start gap-3 p-4 hover:bg-bg-light cursor-pointer">
+                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-[#5c24b3]"
                                             checked={selAppends.has(p.key)}
                                             onChange={() => toggle(selAppends, p.key, setSelAppends as any)} />
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <span className="font-bold text-gray-900 text-sm">{p.name}</span>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-50 text-pink-600">{p.category}</span>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{p.images.length} fotos</span>
+                                                <span className="font-bold text-primary-dark text-sm">{p.name}</span>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary-light text-primary">{p.category}</span>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sand text-muted">{p.images.length} fotos</span>
                                             </div>
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className="text-xs text-muted mt-1">
                                                 ${p.priceSet[1] ?? '?'} · packs {p.priceSet[3] ?? '-'}/{p.priceSet[6] ?? '-'}/{p.priceSet[12] ?? '-'}{p.sizes ? ` · talles: ${p.sizes}` : ''} · {p.date}
                                             </div>
                                         </div>
@@ -306,16 +306,16 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
                     {plan.noImages.length > 0 && (
                         <Section title={`⚠️ Publicaciones sin foto en el export (${selNoImages.size}/${plan.noImages.length})`}>
-                            <p className="text-xs text-gray-500 px-4 pt-3">Estas se publicaron sin imágenes descargables. Podés agregarlas igual (quedarán sin foto hasta que les cargues una).</p>
-                            <div className="divide-y divide-gray-100">
+                            <p className="text-xs text-muted px-4 pt-3">Estas se publicaron sin imágenes descargables. Podés agregarlas igual (quedarán sin foto hasta que les cargues una).</p>
+                            <div className="divide-y divide-line">
                                 {plan.noImages.map(p => (
-                                    <label key={p.key} className="flex items-start gap-3 p-4 hover:bg-gray-50 cursor-pointer">
-                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-pink-600"
+                                    <label key={p.key} className="flex items-start gap-3 p-4 hover:bg-bg-light cursor-pointer">
+                                        <input type="checkbox" className="mt-1 w-4 h-4 accent-[#5c24b3]"
                                             checked={selNoImages.has(p.key)}
                                             onChange={() => toggle(selNoImages, p.key, setSelNoImages as any)} />
                                         <div className="flex-1 min-w-0">
-                                            <span className="font-bold text-gray-900 text-sm">{p.name}</span>
-                                            <div className="text-xs text-gray-500 mt-0.5">${p.priceSet[1] ?? '?'} · packs {p.priceSet[3] ?? '-'}/{p.priceSet[6] ?? '-'}/{p.priceSet[12] ?? '-'} · {p.category}</div>
+                                            <span className="font-bold text-primary-dark text-sm">{p.name}</span>
+                                            <div className="text-xs text-muted mt-0.5">${p.priceSet[1] ?? '?'} · packs {p.priceSet[3] ?? '-'}/{p.priceSet[6] ?? '-'}/{p.priceSet[12] ?? '-'} · {p.category}</div>
                                         </div>
                                     </label>
                                 ))}
@@ -325,14 +325,14 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
                     {plan.dupes.length > 0 && (
                         <Section title={`🧹 Duplicados dentro del catálogo (${selDupes.size}/${plan.dupes.length})`}>
-                            <p className="text-xs text-gray-500 px-4 pt-3">Filas repetidas que se van a vaciar (queda la más antigua).</p>
-                            <div className="divide-y divide-gray-100">
+                            <p className="text-xs text-muted px-4 pt-3">Filas repetidas que se van a vaciar (queda la más antigua).</p>
+                            <div className="divide-y divide-line">
                                 {plan.dupes.map(d => (
-                                    <label key={d.rowNumber} className="flex items-center gap-3 p-3 px-4 hover:bg-gray-50 cursor-pointer text-sm">
-                                        <input type="checkbox" className="w-4 h-4 accent-pink-600"
+                                    <label key={d.rowNumber} className="flex items-center gap-3 p-3 px-4 hover:bg-bg-light cursor-pointer text-sm">
+                                        <input type="checkbox" className="w-4 h-4 accent-[#5c24b3]"
                                             checked={selDupes.has(d.rowNumber)}
                                             onChange={() => toggle(selDupes, d.rowNumber, setSelDupes as any)} />
-                                        <span className="text-gray-700">fila {d.rowNumber}: {d.name} (${sanitizeLegacyPack(d.price)})</span>
+                                        <span className="text-ink">fila {d.rowNumber}: {d.name} (${sanitizeLegacyPack(d.price)})</span>
                                     </label>
                                 ))}
                             </div>
@@ -340,25 +340,25 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
                     )}
 
                     {/* Barra de acción */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 px-6 flex items-center justify-between gap-4 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] rounded-t-xl">
+                    <div className="sticky bottom-0 bg-white border-t border-line p-4 -mx-6 px-6 flex items-center justify-between gap-4 shadow-[0_-4px_12px_rgba(0,0,0,0.04)] rounded-sm">
                         <button onClick={reset} disabled={phase === 'applying'}
-                            className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 disabled:opacity-50">
+                            className="px-5 py-2.5 rounded-sm text-sm font-bold text-ink/80 hover:bg-sand disabled:opacity-50">
                             Cancelar
                         </button>
                         <div className="flex items-center gap-4">
                             {phase === 'applying' && progress && (
                                 <div className="hidden sm:block w-48">
-                                    <div className="text-[11px] font-bold text-gray-500 mb-1 truncate">{progress.label}</div>
-                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-pink-500 rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
+                                    <div className="text-[11px] font-bold text-muted mb-1 truncate">{progress.label}</div>
+                                    <div className="h-2 bg-sand rounded-full overflow-hidden">
+                                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
                                     </div>
                                 </div>
                             )}
                             <button onClick={applyPlan} disabled={phase === 'applying' || totalSel === 0}
-                                className={`px-7 py-3 rounded-xl font-black text-white text-sm transition-all min-w-[220px] ${
+                                className={`px-7 py-3 rounded-sm font-semibold text-white text-sm transition-all min-w-[220px] ${
                                     phase === 'applying' || totalSel === 0
-                                        ? 'bg-pink-300 cursor-not-allowed'
-                                        : 'bg-pink-600 hover:bg-pink-700 shadow-lg shadow-pink-600/20 hover:-translate-y-0.5'
+                                        ? 'bg-primary/40 cursor-not-allowed'
+                                        : 'bg-primary-dark hover:bg-primary'
                                 }`}>
                                 {phase === 'applying' ? 'Aplicando...' : `Aplicar ${totalSel} cambio${totalSel === 1 ? '' : 's'}`}
                             </button>
@@ -369,13 +369,13 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
             {/* Resultado */}
             {phase === 'done' && result && (
-                <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-                    <div className="text-5xl mb-4">🎉</div>
-                    <h3 className="text-xl font-black text-gray-900 mb-2">Importación completada</h3>
-                    <p className="text-gray-600">
+                <div className="bg-white rounded-sm border border-line p-10 text-center">
+                    <p className="eyebrow text-[10px] text-primary mb-3">Listo</p>
+                    <h3 className="text-xl font-semibold text-primary-dark mb-2">Importación completada</h3>
+                    <p className="text-ink/80">
                         {result.updated} actualizados · {result.appended} agregados · {result.cleared} duplicados vaciados
                     </p>
-                    <button onClick={reset} className="mt-6 px-6 py-3 rounded-xl bg-pink-600 text-white font-bold text-sm hover:bg-pink-700">
+                    <button onClick={reset} className="mt-6 px-6 py-3 rounded-sm bg-primary-dark text-white font-bold text-sm hover:bg-primary">
                         Importar otro ZIP
                     </button>
                 </div>
@@ -386,10 +386,10 @@ export default function WhatsAppImporter({ onDone }: { onDone: () => void }) {
 
 function SummaryCard({ icon, value, label, color }: { icon: string; value: number; label: string; color: string }) {
     return (
-        <div className={`rounded-2xl border p-4 flex items-center gap-3 ${color}`}>
+        <div className={`rounded-sm border p-4 flex items-center gap-3 ${color}`}>
             <span className="text-2xl">{icon}</span>
             <div>
-                <div className="text-2xl font-black leading-none">{value}</div>
+                <div className="text-2xl font-semibold leading-none">{value}</div>
                 <div className="text-xs font-bold uppercase tracking-wide opacity-80">{label}</div>
             </div>
         </div>
@@ -399,11 +399,11 @@ function SummaryCard({ icon, value, label, color }: { icon: string; value: numbe
 function Section({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-            <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50">
-                <span className="font-black text-gray-900 text-sm">{title}</span>
+        <div className="bg-white rounded-sm border border-line overflow-hidden ">
+            <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-4 text-left hover:bg-bg-light">
+                <span className="font-semibold text-primary-dark text-sm">{title}</span>
                 <svg fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor"
-                    className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}>
+                    className={`w-4 h-4 text-muted transition-transform ${open ? 'rotate-180' : ''}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
             </button>
