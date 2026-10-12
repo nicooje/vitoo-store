@@ -80,7 +80,9 @@ export function BotCard({ b, compacta = false, onVerMas }: { b: Bot; compacta?: 
                             {enCola ? (
                                 bot?.pcConectada
                                     ? 'Pedido enviado. Tu PC lo toma en unos segundos...'
-                                    : <>Quedó <b>en cola</b>. Tu PC parece apagada: se hace apenas la prendas.</>
+                                    : !bot?.latido
+                                        ? <>Quedó <b>en cola</b>, pero el agente todavía no está instalado en tu PC. En la carpeta VitoStoreWeb hacé doble clic en <b>&ldquo;Instalar agente (boton del panel).bat&rdquo;</b> y el pedido arranca solo.</>
+                                        : <>Quedó <b>en cola</b>. Tu PC parece apagada: se hace apenas la prendas.</>
                             ) : (bot?.detalle || 'Trabajando...')}
                         </div>
                     </div>
