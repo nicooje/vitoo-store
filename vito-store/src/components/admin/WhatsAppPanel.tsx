@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import WhatsAppImporter from './WhatsAppImporter';
-import { Badge, Panel, SectionHeader, Spinner, fechaHora, haceCuanto, money } from './ui';
+import { Badge, Panel, SectionHeader, Spinner, cleanName, fechaHora, haceCuanto, money, type Product } from './ui';
 import type { BotEstado } from '@/lib/botControl';
 
 /** Estado del bot de la PC, consultado más seguido mientras hay algo en marcha. */
@@ -113,7 +113,8 @@ export function BotCard({ b, compacta = false, onVerMas }: { b: Bot; compacta?: 
                         ) : (
                             <p className="text-ink">
                                 <b>{r.nuevos.filter(n => !n.fallo).length}</b> {r.simular ? 'para agregar' : 'agregados'} · <b>{r.actualizados.length}</b> {r.simular ? 'para actualizar' : 'actualizados'}
-                                {r.revisar.length > 0 && <> · <b className="text-[#8a4b00]">{r.revisar.length}</b> para revisar</>}
+                                {(r.precios?.length ?? 0) > 0 && <> · <b>{r.precios!.length}</b> precios {r.simular ? 'para corregir' : 'corregidos'}</>}
+                                {(r.revisar.length + (r.sugerencias?.length ?? 0)) > 0 && <> · <b className="text-[#8a4b00]">{r.revisar.length + (r.sugerencias?.length ?? 0)}</b> para revisar</>}
                                 <span className="text-muted"> · {r.mensajes} mensajes leídos</span>
                             </p>
                         )}
@@ -134,7 +135,51 @@ function Lista({ titulo, items, vacio }: { titulo: string; items: React.ReactNod
     );
 }
 
-export default function WhatsAppSection({ b, onImportado }: { b: Bot; onImportado: () => void }) {
+type Sugerencia = NonNullable<NonNullable<BotEstado['resultado']>['sugerencias']>[number];
+
+/** Posibles precios viejos: el bot encontró algo parecido en el grupo pero no estaba seguro. */
+function Sugerencias({ items, products, onAplicar }: {
+    items: Sugerencia[];
+    products: Product[];
+    onAplicar: (p: Product, precios: Record<string, number>) => Promise<void>;
+}) {
+    const [aplicando, setAplicando] = useState<number | null>(null);
+    const [hechas, setHechas] = useState<Set<number>>(new Set());
+    // mostrar solo las que siguen vigentes (si ya se cambió el precio a mano, desaparece)
+    const vivas = items.map(s => ({ s, p: products.find(p => String(p.id) === String(s.id)) || products.find(p => p.id === s.fila) }))
+        .filter(({ s, p }) => p && !hechas.has(s.fila) && Math.round(Number(p.price)) !== Math.round(s.precios['1'] || 0));
+    if (!vivas.length) return null;
+    return (
+        <Panel title={`Posibles precios viejos (${vivas.length})`}>
+            <p className="px-5 pt-4 text-sm text-ink/80">El grupo tiene un producto parecido con otro precio. No los cambié solo porque no estoy seguro de que sea el mismo: revisalos y aplicá los que correspondan.</p>
+            <ul className="divide-y divide-line mt-3 border-t border-line">
+                {vivas.map(({ s, p }) => (
+                    <li key={s.fila} className="px-5 py-4 grid sm:grid-cols-[1fr_auto] gap-3 items-center">
+                        <div className="text-sm min-w-0">
+                            <p className="text-ink"><span className="text-muted">Web:</span> {cleanName(p!.name)} · <b className="tabular-nums">{money(p!.price)}</b></p>
+                            <p className="text-ink mt-1"><span className="text-muted">Grupo ({s.fecha.split('-').reverse().join('/')}):</span> {cleanName(s.nombreGrupo)} · <b className="tabular-nums text-primary">{money(s.precios['1'])}</b>
+                                {s.precios['3'] ? <span className="text-muted"> · 3x {money(s.precios['3'])}</span> : null}</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button className="btn btn-primary !min-h-[40px]" disabled={aplicando === s.fila}
+                                onClick={async () => { setAplicando(s.fila); try { await onAplicar(p!, s.precios); setHechas(h => new Set(h).add(s.fila)); } finally { setAplicando(null); } }}>
+                                {aplicando === s.fila ? <Spinner /> : null} Aplicar {money(s.precios['1'])}
+                            </button>
+                            <button className="btn btn-outline !min-h-[40px]" onClick={() => setHechas(h => new Set(h).add(s.fila))}>No es el mismo</button>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </Panel>
+    );
+}
+
+export default function WhatsAppSection({ b, onImportado, products, onAplicarPrecio }: {
+    b: Bot;
+    onImportado: () => void;
+    products: Product[];
+    onAplicarPrecio: (p: Product, precios: Record<string, number>) => Promise<void>;
+}) {
     const r = b.bot?.resultado;
     return (
         <>
@@ -154,12 +199,20 @@ export default function WhatsAppSection({ b, onImportado }: { b: Bot; onImportad
                                     <Lista titulo="Para revisar a mano" vacio=""
                                         items={r.revisar.map(x => <span>&ldquo;{x.nombre}&rdquo; se parece a &ldquo;{x.parecido}&rdquo; ({Math.round(x.score * 100)}%). No se tocó.</span>)} />
                                 )}
+                                {(r.precios?.length ?? 0) > 0 && (
+                                    <Lista titulo={r.simular ? 'Precios viejos para corregir' : 'Precios viejos corregidos'} vacio=""
+                                        items={r.precios!.map(x => <span className="flex justify-between gap-4"><span>{cleanName(x.nombre)}{x.tipo === 'color' ? <span className="text-muted"> · otro color del mismo modelo</span> : null}</span><span className="tabular-nums shrink-0"><span className="text-muted line-through mr-2">{money(x.antes)}</span>{money(x.despues)}</span></span>)} />
+                                )}
                                 {r.sinFoto.length > 0 && (
                                     <Lista titulo="Publicaciones sin foto (no se suben)" vacio="" items={r.sinFoto.map(n => <span>{n}</span>)} />
                                 )}
                             </div>
                         </Panel>
                     )}
+
+                    {r && !r.error && r.sugerencias?.length ? (
+                        <Sugerencias items={r.sugerencias} products={products} onAplicar={onAplicarPrecio} />
+                    ) : null}
                 </div>
 
                 <div className="lg:col-span-2 flex flex-col gap-4 md:gap-6">

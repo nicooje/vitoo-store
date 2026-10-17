@@ -3,6 +3,7 @@ import fs from 'fs';
 import assert from 'assert/strict';
 import { aEvento, agrupar, aTextoExport, type Guardado } from '../src/convertir.ts';
 import { decidir } from '../src/procesar.ts';
+import { revisarPrecios } from '../src/precios.ts';
 import { parseChatText, type SheetRow } from '../../vito-store/src/lib/whatsappChat.ts';
 
 let ok = 0;
@@ -98,6 +99,56 @@ prueba('la misma foto republicada se sube una sola vez', () => {
 prueba('mensajes borrados no se publican', () => {
     const m = ev(img('X1', T0, CAP)); m.deleted = true;
     assert.equal(decidir([m], []).nuevos.length, 0);
+});
+
+// ---- revisión de precios de todo el catálogo
+const pub = (id: string, ts: number, nombre: string, precio: number, talles = 'Talles 85 al 100') =>
+    ev(img(id, ts, `✨*${nombre}*\n${talles}\nPor menor:\n1x$${precio.toLocaleString('es-AR')}\nPor mayor:\n3x$${(precio * 2.8).toLocaleString('es-AR')}`));
+const filaP = (rowNumber: number, name: string, price: string, size = ''): SheetRow => ({ ...fila(rowNumber, name, price), size, id: 'r' + rowNumber });
+
+prueba('precio viejo de un producto ya publicado: se corrige', () => {
+    const r = revisarPrecios([pub('V1', T0, 'Conjunto de algodón c/aro y push up', 7500)], [filaP(5, '✨Conjunto de algodón c/aro y push up', '6500')], {}, new Set());
+    assert.equal(r.cambios.length, 1);
+    assert.equal(r.cambios[0].despues, 7500);
+    assert.equal(r.cambios[0].cells[3], '7500');
+});
+
+prueba('el modelo general actualiza sus variantes de color', () => {
+    const r = revisarPrecios([pub('V2', T0, 'Conjunto c/aro de morley y encaje', 9900)], [
+        filaP(9, '✨Conjunto rosa viejo c/aro de morley y encaje', '9500'),
+        filaP(10, '✨Conjunto beige c/aro de morley y encaje', '9500'),
+    ], {}, new Set());
+    assert.deepEqual(r.cambios.map(c => [c.fila.rowNumber, c.tipo, c.despues]), [[9, 'color', 9900], [10, 'color', 9900]]);
+});
+
+prueba('distinto rango de talles = distinto producto (no se pisa)', () => {
+    const r = revisarPrecios([pub('V3', T0, 'colaless de algodón (t36-42)', 1800, 'Talle único 36 al 42')], [filaP(85, 'Colaless de algodón (T44-50)', '2200', 'T44-50')], {}, new Set());
+    assert.equal(r.cambios.length, 0);
+});
+
+prueba('mismo nombre en dos talles con distinto precio: usa el talle de la fila', () => {
+    const r = revisarPrecios([
+        pub('V4', T0, 'Less regulable de morley', 2000, 'Talles 38 al 44 de pantalón'),
+        pub('V5', T0 + 30, 'less regulable de morley (t46-50)', 2800, 'Abarcan desde un talle 46 al 50'),
+    ], [filaP(26, '✨less regulable de morley', '1800', ' (t46-50)')], {}, new Set());
+    assert.equal(r.cambios.length, 1);
+    assert.equal(r.cambios[0].despues, 2800);
+});
+
+prueba('un precio cambiado a mano no se pisa hasta que haya una publicación más nueva', () => {
+    const aplicados: Record<string, string> = {};
+    const h = [pub('V6', T0, 'Top de morley', 6500)];
+    const f1 = [filaP(110, 'Top de morley', '6000')];
+    assert.equal(revisarPrecios(h, f1, aplicados, new Set()).cambios.length, 1);
+    aplicados['r110'] = '9999-12-31 23:59'; // ya aplicada (simula la corrida anterior)
+    assert.equal(revisarPrecios(h, [filaP(110, 'Top de morley', '5000')], aplicados, new Set()).cambios.length, 0);
+});
+
+prueba('parecido pero no seguro: queda como sugerencia, sin tocar', () => {
+    const r = revisarPrecios([ev({ ...img('V7', T0, '✨*hilo dental de encaje c/pompón*\nTalle único\n1x$4500\n3x$12000'), })],
+        [{ ...filaP(127, 'hilo dental regulable de encaje c/pompón', '3000'), category: 'Bombachas' }], {}, new Set());
+    assert.equal(r.cambios.length, 0);
+    assert.equal(r.sugerencias.length, 1);
 });
 
 // ---- regresión contra un chat exportado real: el camino del bot debe dar lo mismo

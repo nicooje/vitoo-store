@@ -109,6 +109,16 @@ export default function AdminPage() {
         await cargarProductos();
     };
 
+    // aplicar un precio sugerido por el bot (los packs del grupo vienen como total; la web los divide sola)
+    const aplicarPrecio = async (p: Product, pr: Record<string, number>) => {
+        const nuevo: Product = { ...p, price: pr['1'] ?? p.price, price3: pr['3'] ?? p.price3, price6: pr['6'] ?? p.price6, price12: pr['12'] ?? p.price12 };
+        try {
+            await api('/api/admin/products', 'PUT', { id: p.id, ...filaDe(nuevo) });
+            toast.success(`Precio actualizado: ${p.name}`);
+            await cargarProductos();
+        } catch (e: any) { toast.error(`No se guardó: ${e.message}`); throw e; }
+    };
+
     const cambiarEstado = async (id: string, status: string) => {
         const prev = orders;
         setOrders(o => o.map(x => x.id === id ? { ...x, status } : x));
@@ -135,7 +145,7 @@ export default function AdminPage() {
                 <Productos products={products} loading={loadingP} inicial={filtroProductos}
                     onSave={guardarProducto} onQuick={cambioRapido} onDelete={eliminar} onBulk={cambioMasivo} />
             )}
-            {seccion === 'whatsapp' && <WhatsAppSection b={b} onImportado={cargarProductos} />}
+            {seccion === 'whatsapp' && <WhatsAppSection b={b} onImportado={cargarProductos} products={products} onAplicarPrecio={aplicarPrecio} />}
         </AdminShell>
     );
 }

@@ -9,6 +9,7 @@ export interface Estado {
     procesados: Record<string, number>;           // id -> cuándo se procesó (ms)
     ultimaCorrida?: number;                       // ms
     ultimoMensajeTs?: number;                     // s: el mensaje más nuevo visto hasta la corrida anterior
+    preciosAplicados?: Record<string, string>;    // fila (id o nombre) -> fecha de la publicación cuyo precio ya se le aplicó
 }
 
 export function cargarEstado(archivo: string): Estado {

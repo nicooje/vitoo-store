@@ -15,6 +15,7 @@ import { aEvento } from './convertir.ts';
 import { cargarEstado, guardarEstado, type Estado } from './estado.ts';
 import { leerEnv, clienteSheets, leerFilas, escribir, subirACloudinary } from './sheet.ts';
 import { decidir, filaNueva, resumenPrecios, UMBRAL_SEGURO } from './procesar.ts';
+import { revisarPrecios, selloDe } from './precios.ts';
 
 const RAIZ = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DATOS = path.join(RAIZ, 'datos');
@@ -224,6 +225,13 @@ async function main() {
     const filas = await leerFilas(cliente);
     const d = decidir(pendientes, filas);
 
+    // revisión de precios de TODO el catálogo contra el historial completo del grupo
+    estado.preciosAplicados ??= {};
+    const historial = Object.values(estado.mensajes).filter(m => buscados.some(([jid]) => jid === m.jid));
+    const aplicadosAntes = { ...estado.preciosAplicados };
+    const rev = revisarPrecios(historial, filas, SIMULAR ? aplicadosAntes : estado.preciosAplicados, new Set(d.actualizar.map(u => u.fila.rowNumber)));
+    if (rev.cambios.length) paso(`Precios a corregir en la web: ${rev.cambios.length}`);
+
     // -------- aplicar
     const fallidos = new Set<string>();
     const appends: string[][] = [];
@@ -245,9 +253,15 @@ async function main() {
             appends.push(filaNueva(n.producto, urls, i));
             agregados.push(n.producto.name);
         }
-        if (d.actualizar.length || appends.length) {
+        if (d.actualizar.length || rev.cambios.length || appends.length) {
             paso('Escribiendo en el catálogo (Google Sheets)...');
-            await escribir(cliente, d.actualizar.map(u => ({ rowNumber: u.fila.rowNumber, cells: u.cells })), appends);
+            await escribir(cliente, [
+                ...d.actualizar.map(u => ({ rowNumber: u.fila.rowNumber, cells: u.cells })),
+                ...rev.cambios.map(c => ({ rowNumber: c.fila.rowNumber, cells: c.cells })),
+            ], appends);
+            // recordar qué publicación se aplicó a cada fila: no se vuelve a tocar salvo que haya una más nueva
+            for (const u of d.actualizar) estado.preciosAplicados[u.fila.id || u.fila.name] = selloDe(u.producto);
+            for (const c of rev.cambios) estado.preciosAplicados[c.fila.id || c.fila.name] = selloDe(c.producto);
         }
         const ahora = Date.now();
         for (const m of pendientes) if (!fallidos.has(m.id)) estado.procesados[m.id] = ahora;
@@ -270,9 +284,17 @@ async function main() {
         L.push(`Parecidos a uno existente pero no seguro (< ${UMBRAL_SEGURO * 100}%), NO se tocaron — revisalos en el admin:`);
         for (const r of d.revisar) L.push(`  ? "${r.producto.name}" se parece a fila ${r.fila.rowNumber} "${r.fila.name}" (${Math.round(r.score * 100)}%)`);
     }
+    if (rev.cambios.length) {
+        L.push(`Precios viejos ${SIMULAR ? 'para corregir' : 'corregidos'} (revisión de todo el catálogo): ${rev.cambios.length}`);
+        for (const c of rev.cambios) L.push(`  $ fila ${c.fila.rowNumber} "${c.fila.name}"  $${c.antes.toLocaleString('es-AR')} -> ${resumenPrecios(c.producto)}${c.tipo === 'color' ? '  (mismo modelo, otro color)' : ''}`);
+    }
+    if (rev.sugerencias.length) {
+        L.push(`Posibles precios viejos (no se tocaron, aplicalos desde el panel si corresponde): ${rev.sugerencias.length}`);
+        for (const g of rev.sugerencias) L.push(`  ? fila ${g.fila.rowNumber} "${g.fila.name}" $${g.fila.price}  ~  "${g.producto.name}" ${resumenPrecios(g.producto)}`);
+    }
     if (d.sinFoto.length) { L.push('Publicaciones sin foto (no se suben):'); d.sinFoto.forEach(p => L.push(`  ! ${p.name}`)); }
     if (d.duplicadosEnSheet.length) L.push(`Aviso: el catálogo ya tiene ${d.duplicadosEnSheet.length} fila(s) repetida(s); podés limpiarlas con el importador del admin.`);
-    if (!d.nuevos.length && !d.actualizar.length) L.push('No había publicaciones nuevas. La web ya está al día.');
+    if (!d.nuevos.length && !d.actualizar.length && !rev.cambios.length) L.push('No había publicaciones nuevas ni precios viejos. La web ya está al día.');
     L.push('=================================================');
     const informe = L.join('\n');
     log('\n' + informe);
@@ -291,6 +313,11 @@ async function main() {
         actualizados: d.actualizar.map(u => ({ fila: u.fila.rowNumber, nombre: u.fila.name, precio: u.producto.priceSet[1] })),
         revisar: d.revisar.map(r => ({ nombre: r.producto.name, parecido: r.fila.name, fila: r.fila.rowNumber, score: Math.round(r.score * 100) / 100 })),
         sinFoto: d.sinFoto.map(p => p.name),
+        precios: rev.cambios.map(c => ({ fila: c.fila.rowNumber, nombre: c.fila.name, antes: c.antes, despues: c.despues, tipo: c.tipo })),
+        sugerencias: rev.sugerencias.map(g => ({
+            fila: g.fila.rowNumber, id: g.fila.id, nombre: g.fila.name, precioWeb: Number(String(g.fila.price).replace(/\D/g, '')) || 0,
+            nombreGrupo: g.producto.name, precios: g.producto.priceSet, fecha: g.producto.date, score: Math.round(g.score * 100) / 100,
+        })),
     });
 }
 

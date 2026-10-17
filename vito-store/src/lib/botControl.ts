@@ -17,6 +17,11 @@ export interface BotResultado {
     actualizados: { fila: number; nombre: string; precio?: number }[];
     revisar: { nombre: string; parecido: string; fila: number; score: number }[];
     sinFoto: string[];
+    precios?: { fila: number; nombre: string; antes: number; despues: number; tipo: 'mismo' | 'color' }[];
+    sugerencias?: {
+        fila: number; id: string; nombre: string; precioWeb: number;
+        nombreGrupo: string; precios: Record<string, number>; fecha: string; score: number;
+    }[];
     error?: string;
 }
 
